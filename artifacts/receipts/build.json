@@ -1,8 +1,8 @@
 {
   "ok": true,
   "kind": "production-build",
-  "at": "2026-11-19T22:50:25.158Z",
-  "ms": 777,
+  "at": "2026-11-19T22:56:58.975Z",
+  "ms": 1057,
   "files": [
     {
       "file": "dist/index.html",
@@ -10,7 +10,7 @@
     },
     {
       "file": "dist/brass_core.wasm",
-      "bytes": 78437
+      "bytes": 78745
     }
   ]
 }

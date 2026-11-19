@@ -61,7 +61,7 @@ Travel uses `sim_switch_map`. A return of `-2` means a wave is live, `-3` means 
 
 The track graph is a cube net. Neighbour edges cost 14 to 22 brass, and far hops have no edge (`sim_track_cost` returns `-1`).
 
-The world has six 32 by 32 faces at 1:8 scale. The engine bound is 5,009.375 km against a 40,075 km real planet. A seat steps one cell at a time and clamps at the face edge.
+The world has six 32 by 32 faces at 1:8 scale. The engine bound is 5,009.375 km against a 40,075 km real planet. A seat steps one cell at a time and crosses a face seam by projecting the point across the cube edge.
 
 Regions are 4 by 4 cells. The stream is the 3 by 3 block around the seat plus seam-neighbour regions. Ids are deduped, sorted, and hashed into a stream epoch.
 
@@ -161,7 +161,7 @@ The build is one JavaScript chunk of about 648 KB, or 167 KB gzipped. It is not 
 
 ## Verification
 
-- `cargo test` covers the core with 34 tests.
+- `cargo test` covers the core with 35 tests.
 - `npm test` loads the real wasm and runs 33 bridge tests.
-- `npm run probe` runs 115 checks for routes, waves, contracts, marsh, line, survey, seeds, clock, seasons, world streaming, determinism, and saves.
+- `npm run probe` runs 116 checks for routes, waves, contracts, marsh, line, survey, seeds, clock, seasons, seam walking, world streaming, determinism, and saves.
 - `npm run gate` checks prose, ledgers, tickets, progress, ABI, receipts, and secrets.

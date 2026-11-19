@@ -24,6 +24,7 @@ export const REFUSALS = {
   seasonMs: "season-real-ms",
   streamEpoch: "stream-epoch-load",
   idleClock: "idle-clock-stop",
+  seamClamp: "seam-clamp",
   release: "release-unverified",
 } as const;
 

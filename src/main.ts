@@ -181,8 +181,11 @@ function buildHud(hasSaved: boolean) {
       }
     },
     onWorldStep: (dx, dz) => {
+      const before = sim.snapshot().world.face;
       const code = sim.worldStep(dx, dz);
-      hud.showToast(code === 0 ? COPY.worldMoved : COPY.worldEdge, code === 0 ? "good" : "bad");
+      const after = sim.snapshot().world.face;
+      const moved = code !== 0 ? COPY.worldEdge : after !== before ? `${COPY.traveled} ${DISTRICTS[after].name}.` : COPY.worldMoved;
+      hud.showToast(moved, code === 0 ? "good" : "bad");
       hud.openSheet("map");
       refreshHover();
     },

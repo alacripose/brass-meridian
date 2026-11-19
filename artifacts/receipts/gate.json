@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "at": "2026-11-19T22:50:27.891Z",
+  "at": "2026-11-19T22:57:02.602Z",
   "passed": 47,
   "total": 47,
   "percent": 5.2,
@@ -28,7 +28,7 @@
     {
       "name": "ledger has rows",
       "ok": true,
-      "detail": "202 rows"
+      "detail": "207 rows"
     },
     {
       "name": "ledger failures",
@@ -158,7 +158,7 @@
     {
       "name": "wasm receipt matches artifact",
       "ok": true,
-      "detail": "f4a32e9297d6ba45c89e8f4fbc6bb973d70e7dcefe568c0c7ae92c27c55a0d68"
+      "detail": "5974f2c057a5a795c4e753c513c3c9cd360b9af34e603602e1f8cfc1a1b53b85"
     },
     {
       "name": "typescript tests passed",
@@ -183,7 +183,7 @@
     {
       "name": "refusal ids are documented",
       "ok": true,
-      "detail": "23 ids"
+      "detail": "24 ids"
     },
     {
       "name": "no committed secrets",

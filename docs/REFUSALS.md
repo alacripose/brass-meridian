@@ -166,6 +166,12 @@ A probe expects the clock to run while the core is defeated.
 
 The clock stops on defeat. Patch world time in a fixture instead of idling.
 
+## `seam-clamp`
+
+A seat refuses to cross a face edge instead of projecting across it.
+
+The cube projection is the only bound. A live wave may still pin the battle face.
+
 ## `release-unverified`
 
 A tag is pushed without a green CI run on the same commit.
