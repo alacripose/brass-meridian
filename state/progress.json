@@ -742,7 +742,7 @@
         "three slots",
         "0.4 import"
       ],
-      "next": "Add the first format 7 journal block."
+      "next": "Add the first format 8 journal block."
     }
   ],
   "totals": {
@@ -954,7 +954,7 @@
     {
       "id": "A42",
       "title": "Save and persistence",
-      "next": "Add the first format 7 journal block."
+      "next": "Add the first format 8 journal block."
     }
   ],
   "limits": [

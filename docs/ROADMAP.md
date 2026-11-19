@@ -2,7 +2,7 @@
 
 The 6.0 interview changes the world model, not only the content count. This page replaces the 0.4 plan.
 
-The measured 6.0 inventory is 4.8%. It counts 58 existing capabilities against 1,213 required ones.
+The measured 6.0 inventory is 5.2%. It counts 63 existing capabilities against 1,213 required ones.
 
 ## Status
 
@@ -25,10 +25,10 @@ The inventory is `state/scope.json`. The reconciliation is `docs/RECONCILIATION.
 | Enemies | Five enemies, one boss | 12 roles, six modifiers, all wave-legal | P5 confirms |
 | Ecology | One marsh, six species | 16/19/3 catalog, 12 deferred rows, four tiers | P8 reopens |
 | People | Decorative civilians | 24 residents, full needs, two faction layers | P13 reopens |
-| Save | Byte image format 5 | Snapshot, journal, checkpoint, format 7 | P7 and P17 reopen |
+| Save | Byte image format 5 | Snapshot, journal, checkpoint, format 8 | P7 and P17 reopen |
 | UI | Sheets and cards | Four views, dashboard and fault history | P15 reopens |
 | Community | Local survey maps | Seed and map strings, no live network | P10 narrows |
-| Progress | Legacy 205-item estimate | 58 of 1,213 capabilities, 4.8% | Measured by T-0015 |
+| Progress | Legacy 205-item estimate | 63 of 1,213 capabilities, 5.2% | Measured by T-0016 |
 
 ## Ticket impact
 
@@ -95,7 +95,7 @@ The inventory is `state/scope.json`. The reconciliation is `docs/RECONCILIATION.
 
 ## Phase 0.9: beta surface
 
-- Snapshot, journal and checkpoint save in format 7.
+- Snapshot, journal and checkpoint save in format 8.
 - One world with three slots, plus one-way 0.4 import.
 - Strategic, city, tactical and close-interaction views.
 - Region zoom enters at the planet scale.
@@ -119,7 +119,7 @@ The inventory is `state/scope.json`. The reconciliation is `docs/RECONCILIATION.
 | Ticket | Scope | Why first |
 | --- | --- | --- |
 | T-0015 | Rebuild `state/scope.json` for 6.0 | Done: 4.8% measured baseline |
-| T-0016 | Planet spine and save format 7 | Every other system sits on it |
+| T-0016 | Bounded world spine and save format 8 | Every other system sits on it |
 | T-0017 | Production cells and seven resources | The city must feed the roster |
 
 ## Release debt
