@@ -1,0 +1,129 @@
+{
+  "ok": true,
+  "kind": "headless-probe",
+  "at": "2026-11-19T15:11:29.746Z",
+  "sha256": "5b7bbf4933433748f4926d2322b1a3b462b2b7c7618f6749566116b8ee240937",
+  "checks": [
+    {
+      "name": "snapshot length",
+      "ok": true,
+      "detail": "8480"
+    },
+    {
+      "name": "version",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "straight route is 16 steps",
+      "ok": true,
+      "detail": "16"
+    },
+    {
+      "name": "straight path has 17 nodes",
+      "ok": true,
+      "detail": "17"
+    },
+    {
+      "name": "empty plot",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "pylon placed",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "placement detours the route",
+      "ok": true,
+      "detail": "18"
+    },
+    {
+      "name": "occupied plot refuses",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "tower count",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "brass paid",
+      "ok": true,
+      "detail": "115"
+    },
+    {
+      "name": "a wall refuses at least one cell",
+      "ok": true,
+      "detail": "11"
+    },
+    {
+      "name": "a route survives every accepted wall",
+      "ok": true,
+      "detail": "18"
+    },
+    {
+      "name": "wave preview is eight drudges",
+      "ok": true,
+      "detail": "8"
+    },
+    {
+      "name": "wave called",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "wave spawns enemies",
+      "ok": true,
+      "detail": "7"
+    },
+    {
+      "name": "wave goes live",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "foundry built",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "foundry makes ingots",
+      "ok": true,
+      "detail": "0.900"
+    },
+    {
+      "name": "save length is stable",
+      "ok": true,
+      "detail": "337/337"
+    },
+    {
+      "name": "same seed is deterministic",
+      "ok": true,
+      "detail": "337 bytes"
+    },
+    {
+      "name": "save loads",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "loaded towers match",
+      "ok": true,
+      "detail": "2"
+    },
+    {
+      "name": "loaded enemies match",
+      "ok": true,
+      "detail": "4"
+    },
+    {
+      "name": "loaded route matches",
+      "ok": true,
+      "detail": "16"
+    }
+  ],
+  "bytes": 50991
+}

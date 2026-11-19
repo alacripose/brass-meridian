@@ -1,0 +1,2 @@
+{"seq":1,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0001","claim":"Core tests cover placement, armor, waves, city, and saves.","ev":"artifacts/receipts/rust-test.json","ok":true}
+{"seq":2,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0002","claim":"Client tests load the wasm and read the snapshot.","ev":"artifacts/receipts/test.json","ok":true}

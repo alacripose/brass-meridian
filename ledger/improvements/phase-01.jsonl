@@ -1,0 +1,5 @@
+{"seq":1,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0001","claim":"Sealed and over-budget placements are named refusals.","ev":"artifacts/receipts/probe.json","ok":true}
+{"seq":2,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0002","claim":"The snapshot layout is pinned on both sides.","ev":"artifacts/receipts/test.json","ok":true}
+{"seq":3,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0004","claim":"Maxed and full controls keep data-maxed.","ev":"docs/REFUSALS.md","ok":true}
+{"seq":4,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0005","claim":"A save image is validated before it replaces a run.","ev":"artifacts/receipts/probe.json","ok":true}
+{"seq":5,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0006","claim":"The prose checker enforces the two-second rule.","ev":"tools/prose.mjs","ok":true}
