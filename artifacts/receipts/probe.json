@@ -1,8 +1,8 @@
 {
   "ok": true,
   "kind": "headless-probe",
-  "at": "2026-11-19T15:11:29.746Z",
-  "sha256": "5b7bbf4933433748f4926d2322b1a3b462b2b7c7618f6749566116b8ee240937",
+  "at": "2026-11-19T15:40:20.530Z",
+  "sha256": "5027776d65cd30f76f418f0c34743a3c5b2c726d8b15c5f4f76c13c1212516e5",
   "checks": [
     {
       "name": "snapshot length",
@@ -65,6 +65,41 @@
       "detail": "18"
     },
     {
+      "name": "home tower placed",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "switch to the flank",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "flank is active",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "flank starts empty",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "home keeps its tower",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "flank route is legal",
+      "ok": true,
+      "detail": "16"
+    },
+    {
+      "name": "switch back home",
+      "ok": true,
+      "detail": ""
+    },
+    {
       "name": "wave preview is eight drudges",
       "ok": true,
       "detail": "8"
@@ -85,6 +120,11 @@
       "detail": "1"
     },
     {
+      "name": "a live wave pins the map",
+      "ok": true,
+      "detail": ""
+    },
+    {
       "name": "foundry built",
       "ok": true,
       "detail": ""
@@ -97,12 +137,12 @@
     {
       "name": "save length is stable",
       "ok": true,
-      "detail": "337/337"
+      "detail": "340/340"
     },
     {
       "name": "same seed is deterministic",
       "ok": true,
-      "detail": "337 bytes"
+      "detail": "340 bytes"
     },
     {
       "name": "save loads",
@@ -125,5 +165,5 @@
       "detail": "16"
     }
   ],
-  "bytes": 50991
+  "bytes": 52617
 }

@@ -16,6 +16,7 @@ const H = {
   towers: 13,
   enemies: 14,
   pathSteps: 25,
+  map: 29,
   pathCount: 31,
 };
 const SNAPSHOT = 8480;
@@ -68,6 +69,16 @@ const walled = snap(buildEx);
 check("a wall refuses at least one cell", refusals > 0, `${refusals}`);
 check("a route survives every accepted wall", walled[H.pathSteps] >= 0 && walled[H.pathSteps] <= 40, `${walled[H.pathSteps]}`);
 
+const mapEx = boot(42);
+check("home tower placed", mapEx.sim_place(8, 6, 3) === 0);
+check("switch to the flank", mapEx.sim_switch_map(1) === 0);
+const flank = snap(mapEx);
+check("flank is active", flank[H.map] === 1, `${flank[H.map]}`);
+check("flank starts empty", flank[H.towers] === 0, `${flank[H.towers]}`);
+check("home keeps its tower", mapEx.sim_map_tower_count(0) === 1, `${mapEx.sim_map_tower_count(0)}`);
+check("flank route is legal", flank[H.pathSteps] > 0 && flank[H.pathSteps] <= 40, `${flank[H.pathSteps]}`);
+check("switch back home", mapEx.sim_switch_map(0) === 0);
+
 const waveEx = boot(7);
 check("wave preview is eight drudges", waveEx.sim_preview_count(0) === 8, `${waveEx.sim_preview_count(0)}`);
 check("wave called", waveEx.sim_call_wave() === 0);
@@ -75,6 +86,7 @@ for (let i = 0; i < 120; i++) waveEx.sim_step(33);
 const live = snap(waveEx);
 check("wave spawns enemies", live[H.enemies] > 0, `${live[H.enemies]}`);
 check("wave goes live", live[H.phase] === 1, `${live[H.phase]}`);
+check("a live wave pins the map", waveEx.sim_switch_map(1) === -2);
 
 const cityEx = boot(11);
 check("foundry built", cityEx.sim_city(0) === 0);

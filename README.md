@@ -19,7 +19,11 @@ The city is not a separate menu. Each work changes the line.
 - Workshop coils raise damage.
 - Depot stores core spares.
 
-This is version 0.1. The defensive slice is playable end to end. The wider frontier is on the roadmap.
+This is version 0.2. The defensive slice is playable end to end.
+
+Two districts share one core. The Switchyard holds the tight approach. Coldwater opens a wider flank.
+
+Travel is allowed between waves. Each district keeps its own towers.
 
 ## Play
 
@@ -46,6 +50,7 @@ Tap **Build**, choose a tower, then tap a plot. Tap a tower to upgrade or sell.
 3. Keep the route open. A wall that seals the core is refused.
 4. Spend wave income on towers and city works.
 5. Hold ten waves, then face the endless frontier.
+6. Travel between districts between waves. Both builds stay.
 
 ### Towers
 
@@ -83,9 +88,9 @@ The wasm step needs a Rust toolchain with `wasm32-unknown-unknown`.
 
 | Check | Evidence |
 | --- | --- |
-| 12 client tests | `artifacts/receipts/test.json` |
-| 10 core tests | `artifacts/receipts/rust-test.json` |
-| 24 headless probes | `artifacts/receipts/probe.json` |
+| 14 client tests | `artifacts/receipts/test.json` |
+| 13 core tests | `artifacts/receipts/rust-test.json` |
+| 32 headless probes | `artifacts/receipts/probe.json` |
 | Production build | `artifacts/receipts/build.json` |
 | Repository gate | `artifacts/receipts/gate.json` |
 | Release v0.1.0 | `artifacts/receipts/release-0.1.0.json` |

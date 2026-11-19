@@ -1,0 +1,2 @@
+{"seq":1,"at":"2026-11-19T15:45:00.000Z","ticket":"T-0008","claim":"The client bridge passes 13 tests.","ev":"artifacts/receipts/test.json","ok":true}
+{"seq":2,"at":"2026-11-19T15:48:00.000Z","ticket":"T-0008","claim":"A version 2 save still loads on the Switchyard.","ev":"tests/fixtures/save-v2.bin","ok":true}

@@ -12,11 +12,13 @@ Pages serves the build at https://alacripose.github.io/brass-meridian/.
 
 The `v0.1.0` release carries the built game and the changelog section.
 
+The 0.2 frontier cut is built locally. Two districts keep separate tower sets and travel only between waves.
+
 ## What is proved
 
-- 10 Rust tests pass.
-- 12 client tests pass against the real wasm.
-- The headless probe passes 24 checks.
+- 13 Rust tests pass.
+- 14 client tests pass against the real wasm.
+- The headless probe passes 32 checks.
 - The production build succeeds.
 - The gate checks prose, ledgers, tickets, progress, ABI, receipts, and secrets.
 - CI passes both jobs. Pages returns 200 and the wasm is `application/wasm`.
@@ -24,8 +26,8 @@ The `v0.1.0` release carries the built game and the changelog section.
 
 ## Next 120 minutes
 
-1. Start ticket T-0008: the frontier map graph.
-2. Add the district view, two build states, and save migration.
+1. Prove, tag, and publish `v0.2.0`.
+2. Finish T-0008 with tracks, threat edges, and a region zoom.
 
 ## After that
 
@@ -40,7 +42,8 @@ Order matters. Each phase needs save migration and a proof before the next one s
 
 - No physical phone test.
 - The preview page was backgrounded, so no live wave was visually reviewed.
-- No frontier, expeditions, ecology, or automation.
+- The frontier is two districts, not a track graph with threat edges.
+- No expeditions, ecology, or automation.
 - The renderer is one bundle and not code-split.
 
 ## Commands

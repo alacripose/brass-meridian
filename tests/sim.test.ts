@@ -20,6 +20,7 @@ describe("snapshot bridge", () => {
     expect(snap.core).toBe(20);
     expect(snap.wave).toBe(1);
     expect(snap.canCall).toBe(true);
+    expect(snap.map).toBe(0);
     expect(snap.towerCount).toBe(0);
     expect(SNAPSHOT_FLOATS).toBe(8480);
   });
@@ -70,6 +71,19 @@ describe("maze placement", () => {
     expect(value).toBeGreaterThan(0);
     expect(sim.sell(0)).toBe(value);
     expect(sim.snapshot().towerCount).toBe(0);
+  });
+
+  it("keeps a build on each district", () => {
+    const sim = fresh();
+    expect(sim.place(8, 6, 3)).toBe(PLACE.ok);
+    expect(sim.switchMap(1)).toBe(0);
+    expect(sim.snapshot().map).toBe(1);
+    expect(sim.snapshot().towerCount).toBe(0);
+    expect(sim.mapTowerCount(0)).toBe(1);
+    expect(sim.place(8, 6, 0)).toBe(PLACE.ok);
+    expect(sim.switchMap(0)).toBe(0);
+    expect(sim.snapshot().towerCount).toBe(1);
+    expect(sim.mapTowerCount(1)).toBe(1);
   });
 });
 
@@ -129,5 +143,14 @@ describe("save image", () => {
   it("rejects a corrupt image", () => {
     const sim = fresh();
     expect(sim.loadBytes(new Uint8Array([1, 2, 3, 4, 5, 6]))).not.toBe(0);
+  });
+
+  it("loads a version 2 save on the Switchyard", () => {
+    const image = new Uint8Array(readFileSync(resolve(process.cwd(), "tests/fixtures/save-v2.bin")));
+    const sim = Sim.fromBytes(wasm);
+    expect(sim.loadBytes(image)).toBe(0);
+    const snap = sim.snapshot();
+    expect(snap.map).toBe(0);
+    expect(snap.towerCount).toBe(1);
   });
 });

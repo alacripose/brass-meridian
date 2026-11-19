@@ -61,6 +61,11 @@ export const ENEMIES: EnemyCopy[] = [
   { name: "Cathedral", note: "Boss. Breaks six core." },
 ];
 
+export const DISTRICTS = [
+  { name: "Switchyard", role: "The home gate." },
+  { name: "Coldwater", role: "A wider flank." },
+] as const;
+
 export const COPY = {
   brand: "Brass Meridian",
   mode: "Open Frontier",
@@ -83,6 +88,13 @@ export const COPY = {
   build: "Build",
   city: "City",
   intel: "Intel",
+  map: "Map",
+  frontier: "Frontier",
+  here: "Here",
+  travel: "Travel",
+  mapFoot: "Travel between waves. Each district keeps its towers.",
+  mapLocked: "Finish the wave first.",
+  traveled: "Arrived at",
   close: "Close",
   brass: "Brass",
   ingots: "Ingots",

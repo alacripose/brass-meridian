@@ -1,4 +1,4 @@
-import { CITY, COPY, ENEMIES, TOWERS } from "./copy";
+import { CITY, COPY, DISTRICTS, ENEMIES, TOWERS } from "./copy";
 import type { Snapshot } from "./sim";
 
 export type HudModel = {
@@ -8,6 +8,7 @@ export type HudModel = {
   cityCost: (kind: number, level: number, ingots: number) => number;
   previewCount: (kind: number) => number;
   repairCost: () => number;
+  mapTowerCount: (map: number) => number;
 };
 
 export type HudActions = {
@@ -18,6 +19,7 @@ export type HudActions = {
   onUpgrade: () => void;
   onSell: () => void;
   onCity: (kind: number) => void;
+  onMap: (map: number) => void;
   onRepair: () => void;
   onCall: () => void;
   onPause: () => void;
@@ -29,7 +31,7 @@ export type HudActions = {
   onCancelBuild: () => void;
 };
 
-type SheetKind = "build" | "tower" | "city" | "intel";
+type SheetKind = "build" | "tower" | "city" | "map" | "intel";
 
 const money = (n: number) => Math.floor(Math.max(0, n)).toLocaleString("en-US");
 
@@ -121,6 +123,9 @@ export class Hud {
         <button type="button" class="dock-btn" data-act="tab-city" aria-pressed="false">
           <i class="dock-mark city" aria-hidden="true"></i><span>${COPY.city}</span>
         </button>
+        <button type="button" class="dock-btn" data-act="tab-map" aria-pressed="false">
+          <i class="dock-mark map" aria-hidden="true"></i><span>${COPY.map}</span>
+        </button>
         <button type="button" class="dock-btn" data-act="tab-intel" aria-pressed="false">
           <i class="dock-mark intel" aria-hidden="true"></i><span>${COPY.intel}</span>
         </button>
@@ -208,6 +213,9 @@ export class Hud {
       case "tab-city":
         this.openSheet("city");
         break;
+      case "tab-map":
+        this.openSheet("map");
+        break;
       case "tab-intel":
         this.openSheet("intel");
         break;
@@ -222,6 +230,9 @@ export class Hud {
         break;
       case "city":
         this.actions.onCity(kind);
+        break;
+      case "travel":
+        this.actions.onMap(kind);
         break;
       case "repair":
         this.actions.onRepair();
@@ -267,6 +278,7 @@ export class Hud {
     for (const [act, tab] of [
       ["tab-build", "build"],
       ["tab-city", "city"],
+      ["tab-map", "map"],
       ["tab-intel", "intel"],
     ] as const) {
       const button = this.root.querySelector<HTMLElement>(`[data-act="${act}"]`);
@@ -387,6 +399,8 @@ export class Hud {
         ? COPY.build
         : this.sheetKind === "city"
           ? COPY.city
+          : this.sheetKind === "map"
+            ? COPY.frontier
           : this.sheetKind === "intel"
             ? COPY.intel
             : TOWERS[snap.towers[this.selected].kind].name;
@@ -395,6 +409,8 @@ export class Hud {
         ? this.buildSheet(snap)
         : this.sheetKind === "city"
           ? this.citySheet(snap)
+          : this.sheetKind === "map"
+            ? this.mapSheet(snap)
           : this.sheetKind === "intel"
             ? this.intelSheet(snap)
             : this.towerSheet(snap);
@@ -473,6 +489,25 @@ export class Hud {
         </button>
       </article>`;
     }).join("")}</div>`;
+  }
+
+  private mapSheet(snap: Snapshot): string {
+    const cards = DISTRICTS.map((district, id) => {
+      const here = snap.map === id;
+      const towers = Math.round(this.model.mapTowerCount(id));
+      const disabled = here || snap.phase !== 0 ? "disabled" : "";
+      return `<article class="city-row${here ? " here" : ""}">
+        <div class="city-main">
+          <div class="city-title"><h3>${district.name}</h3><span class="tag">${here ? COPY.here : COPY.open}</span></div>
+          <p>${district.role}</p>
+          <div class="city-facts"><span>${COPY.towers} <b>${towers}</b></span><span>${COPY.route} <b>${here ? snap.pathSteps : "—"}</b></span></div>
+        </div>
+        <button type="button" class="primary compact" data-act="travel" data-kind="${id}" ${disabled}>
+          ${here ? COPY.here : COPY.travel}
+        </button>
+      </article>`;
+    }).join("");
+    return `<p class="foot">${COPY.mapFoot}</p><div class="city-list">${cards}</div>`;
   }
 
   private intelSheet(snap: Snapshot): string {

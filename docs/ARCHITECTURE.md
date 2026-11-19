@@ -41,6 +41,8 @@ The snapshot is a flat `f32` buffer. It is 8,480 floats, about 34 KB.
 
 The header carries the tower, enemy, projectile, and effect counts. The renderer reads only those counts.
 
+Header slot 29 holds the active district id. It replaced an unused core-base value, so the total stays 8,480 floats.
+
 The TypeScript constants mirror the Rust constants. The gate confirms the wasm length and the stride values. The client test pins the total.
 
 ## Determinism
@@ -53,7 +55,9 @@ Time is passed in from the browser. The core clamps one call to one second and s
 
 ## Save
 
-The save starts with `BMG1` and a format byte. It stores the seed, economy, wave state, city levels, towers, enemies, projectiles, effects, and the spawn queue.
+The save starts with `BMG1` and format byte 3. It stores the seed, economy, wave state, city levels, both district tower lists, enemies, projectiles, effects, and the spawn queue.
+
+Format 2 saves still load. They open on the Switchyard with an empty Coldwater build.
 
 Loading validates the magic, version, counts, and cell bounds. A bad image returns a negative code and leaves the current run alone.
 
@@ -71,7 +75,7 @@ A tap raycasts a ground plane and rounds to a cell.
 
 ## UI
 
-`src/ui.ts` is plain DOM. It has no framework and no state of its own beyond the open sheet.
+`src/ui.ts` is plain DOM. It has no framework and no state of its own beyond the open sheet. The dock holds Build, City, Map, and Intel.
 
 All player-facing text is in `src/copy.ts`. That makes the prose checker meaningful.
 

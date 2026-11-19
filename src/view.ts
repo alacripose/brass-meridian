@@ -91,6 +91,7 @@ export class Battlefield {
   private coreRing!: THREE.Mesh;
   private coreGlow!: THREE.PointLight;
   private readonly city: Array<{ group: THREE.Group; lamp: THREE.MeshStandardMaterial }> = [];
+  private readonly rubbleGroups: THREE.Group[] = [];
   private readonly dust: THREE.Points;
   private pathSig = "";
   private lastTime = 0;
@@ -296,33 +297,34 @@ export class Battlefield {
       this.scene.add(trim);
     }
 
-    // Worked stone rubble on the unbuildable cells.
-    const rubble: Array<[number, number]> = [
-      [4, 2],
-      [4, 3],
-      [5, 2],
-      [12, 10],
-      [13, 10],
-      [12, 9],
-    ];
+    // Keep these cells in step with terrain() in the core.
+    this.buildRubble(0, [[4, 2], [4, 3], [5, 2], [12, 10], [13, 10], [12, 9]]);
+    this.buildRubble(1, [[7, 3], [7, 4], [8, 3], [8, 9], [9, 9], [9, 8]]);
+
+    this.buildCity();
+  }
+
+  private buildRubble(map: number, cells: Array<[number, number]>) {
+    const group = new THREE.Group();
+    group.visible = map === 0;
     const rockGeo = new THREE.DodecahedronGeometry(0.78, 0);
     const rockMat = new THREE.MeshStandardMaterial({ color: 0x2b3b3c, roughness: 0.95 });
-    for (const [gx, gz] of rubble) {
+    for (const [gx, gz] of cells) {
       const rock = new THREE.Mesh(rockGeo, rockMat);
       rock.position.set(worldX(gx), 0.38, worldZ(gz));
       rock.rotation.set(gx * 0.4, gz * 0.7, 0.2);
       rock.scale.set(1.15, 0.65, 0.95);
       rock.castShadow = true;
       rock.receiveShadow = true;
-      this.scene.add(rock);
+      group.add(rock);
       const shard = new THREE.Mesh(rockGeo, rockMat);
       shard.position.set(worldX(gx) + 0.65, 0.18, worldZ(gz) - 0.5);
       shard.scale.setScalar(0.4);
       shard.castShadow = true;
-      this.scene.add(shard);
+      group.add(shard);
     }
-
-    this.buildCity();
+    this.rubbleGroups.push(group);
+    this.scene.add(group);
   }
 
   private buildCity() {
@@ -1151,6 +1153,10 @@ export class Battlefield {
       const built = this.city[i];
       built.group.scale.y = 0.72 + level * 0.16;
       built.lamp.emissiveIntensity = level > 0 ? 0.7 + level * 0.7 : 0.05;
+    }
+
+    for (let i = 0; i < this.rubbleGroups.length; i++) {
+      this.rubbleGroups[i].visible = snap.map === i;
     }
 
     this.dust.rotation.y += dt * 0.006;
