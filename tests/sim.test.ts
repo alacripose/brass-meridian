@@ -139,6 +139,30 @@ describe("waves and city", () => {
 });
 
 describe("save image", () => {
+  it("derives stable named sub-seeds", () => {
+    const sim = fresh(7);
+    expect(sim.subSeed(0)).toBe(6_670_117_944_832_240_039n);
+    expect(sim.subSeed(2)).toBe(8_634_259_405_812_031_504n);
+    expect(sim.subSeeds()).toHaveLength(6);
+    expect(new Set(sim.subSeeds()).size).toBe(6);
+    expect(fresh(8).subSeed(0)).not.toBe(sim.subSeed(0));
+  });
+
+  it("advances one real second to eight world seconds", () => {
+    const sim = fresh(7);
+    for (let i = 0; i < 4; i++) sim.step(250);
+    const clock = sim.clock();
+    expect(clock.worldMs).toBe(8000);
+    expect(clock.day).toBe(1);
+    expect(clock.hour).toBe(0);
+    expect(clock.minute).toBe(0);
+    const image = sim.saveBytes();
+    expect(image[4]).toBe(7);
+    const loaded = Sim.fromBytes(wasm);
+    expect(loaded.loadBytes(image)).toBe(0);
+    expect(loaded.clock().worldMs).toBe(8000);
+  });
+
   it("keeps the exact 64-bit family seed", () => {
     const exact = 9_418_646_105_956_113_635n;
     const sim = Sim.fromBytes(wasm);

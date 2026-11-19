@@ -53,6 +53,22 @@ export const FX_STRIDE = 8;
 export const PATH_BASE = FX_BASE + 128 * FX_STRIDE;
 export const SNAPSHOT_FLOATS = PATH_BASE + 64 * 2;
 
+export const SUB_SEED_NAMES = [
+  "terrain",
+  "sites",
+  "waves",
+  "ecology",
+  "expeditions",
+  "surveys",
+] as const;
+
+export type ClockView = {
+  worldMs: number;
+  day: number;
+  hour: number;
+  minute: number;
+};
+
 export const PLACE = {
   ok: 0,
   outside: -1,
@@ -73,6 +89,9 @@ type Exports = {
   sim_init64(lo: number, hi: number): void;
   sim_seed_lo(): number;
   sim_seed_hi(): number;
+  sim_sub_seed_lo(index: number): number;
+  sim_sub_seed_hi(index: number): number;
+  sim_clock(field: number): number;
   sim_step(ms: number): void;
   sim_place(gx: number, gz: number, kind: number): number;
   sim_can_place(gx: number, gz: number, kind: number): number;
@@ -240,6 +259,25 @@ export class Sim {
 
   seedHi(): number {
     return this.ex.sim_seed_hi() >>> 0;
+  }
+
+  subSeed(index: number): bigint {
+    const lo = BigInt(this.ex.sim_sub_seed_lo(index) >>> 0);
+    const hi = BigInt(this.ex.sim_sub_seed_hi(index) >>> 0);
+    return (hi << 32n) | lo;
+  }
+
+  subSeeds(): bigint[] {
+    return SUB_SEED_NAMES.map((_, index) => this.subSeed(index));
+  }
+
+  clock(): ClockView {
+    return {
+      worldMs: this.ex.sim_clock(0),
+      day: Math.floor(this.ex.sim_clock(1)),
+      hour: Math.floor(this.ex.sim_clock(2)),
+      minute: Math.floor(this.ex.sim_clock(3)),
+    };
   }
 
   step(ms: number): void {

@@ -319,6 +319,13 @@ button:disabled {
   color: var(--text);
 }
 
+.clock {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--brass-hi);
+  white-space: nowrap;
+}
+
 .wave-state {
   font-size: 10px;
   color: var(--muted);

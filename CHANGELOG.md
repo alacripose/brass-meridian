@@ -8,8 +8,10 @@ The format follows Keep a Changelog, and versions use semantic numbering.
 ### Added
 
 - A 100-row reconciliation ledger with evidence and verdicts.
-- A measured 6.0 inventory: 55 of 1,213 capabilities, or 4.5 percent.
-- A format 6 save block that preserves the full 64-bit seed.
+- A measured 6.0 inventory: 58 of 1,213 capabilities, or 4.8 percent.
+- A format 7 save block that preserves the full 64-bit seed and the world clock.
+- Six named sub-seeds for terrain, sites, waves, ecology, expeditions and surveys.
+- A 1:8 world clock with a 24 hour day and a live HUD timer.
 - A public MIT repo with CI and Pages deployment for the playable build.
 - A pre-push scan for secrets, keys, env files, and machine paths.
 - A 6.0 roadmap for the planet, city cells, roster and living world.
@@ -17,7 +19,7 @@ The format follows Keep a Changelog, and versions use semantic numbering.
 ### Changed
 
 - The planet replaces the flat field, three districts and 120 authored waves.
-- Tests now cover 25 Rust cases, 28 client cases, and 89 probes.
+- Tests now cover 28 Rust cases, 30 client cases, and 99 probes.
 
 ## [0.4.0] - 2026-11-19
 

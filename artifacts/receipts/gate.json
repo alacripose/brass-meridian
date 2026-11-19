@@ -1,9 +1,9 @@
 {
   "ok": true,
-  "at": "2026-11-19T22:16:25.056Z",
+  "at": "2026-11-19T22:26:53.409Z",
   "passed": 46,
   "total": 46,
-  "percent": 4.5,
+  "percent": 4.8,
   "checks": [
     {
       "name": "package is MIT",
@@ -28,32 +28,32 @@
     {
       "name": "ledger has rows",
       "ok": true,
-      "detail": "181 rows"
+      "detail": "191 rows"
     },
     {
       "name": "ledger failures",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl"
+      "detail": "phase-01.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl,phase-07.jsonl"
     },
     {
       "name": "ledger health",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl,phase-07.jsonl"
     },
     {
       "name": "ledger probes",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl,phase-07.jsonl"
     },
     {
       "name": "ledger tests",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl,phase-07.jsonl"
     },
     {
       "name": "ledger improvements",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl,phase-07.jsonl"
     },
     {
       "name": "ledger reconciliation",
@@ -73,12 +73,12 @@
     {
       "name": "progress is labelled 6.0",
       "ok": true,
-      "detail": "55/1213"
+      "detail": "58/1213"
     },
     {
       "name": "status percentage is current",
       "ok": true,
-      "detail": "expected 4.5%"
+      "detail": "expected 4.8%"
     },
     {
       "name": "status rejects the legacy label",
@@ -108,12 +108,12 @@
     {
       "name": "scope percentage is single digit",
       "ok": true,
-      "detail": "4.5%"
+      "detail": "4.8%"
     },
     {
       "name": "progress mirrors scope",
       "ok": true,
-      "detail": "55/1213"
+      "detail": "58/1213"
     },
     {
       "name": "scope drops the old figure",
@@ -136,7 +136,7 @@
       "detail": ""
     },
     {
-      "name": "save format 6 is declared",
+      "name": "save format 7 is declared",
       "ok": true,
       "detail": ""
     },
@@ -153,7 +153,7 @@
     {
       "name": "wasm receipt matches artifact",
       "ok": true,
-      "detail": "6ae9dd0f6606180180fc1f5bc4c554242d238d3093594bf632dd0da101f4bb5c"
+      "detail": "73f05a972dc8a4c81ec76f9082a957b0347600b641a979cac9cbfb43de510738"
     },
     {
       "name": "typescript tests passed",
