@@ -90,6 +90,10 @@ export class Battlefield {
   private coreCrystal!: THREE.Mesh;
   private coreRing!: THREE.Mesh;
   private coreGlow!: THREE.PointLight;
+  private hemi!: THREE.HemisphereLight;
+  private key!: THREE.DirectionalLight;
+  private rim!: THREE.DirectionalLight;
+  private season = -1;
   private readonly city: Array<{ group: THREE.Group; lamp: THREE.MeshStandardMaterial }> = [];
   private readonly rubbleGroups: THREE.Group[] = [];
   private readonly dust: THREE.Points;
@@ -224,8 +228,10 @@ export class Battlefield {
 
   private buildLights() {
     const hemi = new THREE.HemisphereLight(0x9be4dc, 0x160f0a, 1.15);
+    this.hemi = hemi;
     this.scene.add(hemi);
     const key = new THREE.DirectionalLight(0xffe1ad, 2.5);
+    this.key = key;
     key.position.set(10, 28, 16);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
@@ -238,6 +244,7 @@ export class Battlefield {
     key.shadow.bias = -0.0006;
     this.scene.add(key);
     const rim = new THREE.DirectionalLight(0x4ecfc3, 1.2);
+    this.rim = rim;
     rim.position.set(-18, 12, -12);
     this.scene.add(rim);
     this.coreGlow = new THREE.PointLight(0xffb35c, 22, 16, 2);
@@ -957,11 +964,29 @@ export class Battlefield {
     return slot;
   }
 
+  private applySeason(season: number) {
+    if (season === this.season) return;
+    this.season = season;
+    const palettes = [
+      { hemi: 0x9be4dc, key: 0xffe1ad, rim: 0x4ecfc3, fog: 0x081214, keyI: 2.5 },
+      { hemi: 0xd8e7a2, key: 0xffd37a, rim: 0x7fd6a0, fog: 0x0b1511, keyI: 2.8 },
+      { hemi: 0xe8b18a, key: 0xffb36b, rim: 0xc76a4c, fog: 0x180e0a, keyI: 2.7 },
+      { hemi: 0x7f9fcc, key: 0xb8d0ff, rim: 0x5d7fbf, fog: 0x0a0e1a, keyI: 2.2 },
+    ];
+    const p = palettes[Math.max(0, Math.min(palettes.length - 1, season))];
+    this.hemi.color.setHex(p.hemi);
+    this.key.color.setHex(p.key);
+    this.key.intensity = p.keyI;
+    this.rim.color.setHex(p.rim);
+    (this.scene.fog as THREE.FogExp2).color.setHex(p.fog);
+  }
+
   update(options: ViewOptions) {
     const now = performance.now() / 1000;
     const dt = this.lastTime ? Math.min(0.1, now - this.lastTime) : 0.016;
     this.lastTime = now;
     const snap = options.snapshot;
+    this.applySeason(Math.round(snap.world.season));
 
     const sig = snap.towers.map((t) => `${t.id}.${t.kind}.${t.level}`).join("|");
     if (sig !== this.towerSig.value) {

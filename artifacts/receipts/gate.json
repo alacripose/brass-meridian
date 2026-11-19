@@ -1,9 +1,9 @@
 {
   "ok": true,
-  "at": "2026-11-19T22:26:53.409Z",
-  "passed": 46,
-  "total": 46,
-  "percent": 4.8,
+  "at": "2026-11-19T22:50:27.891Z",
+  "passed": 47,
+  "total": 47,
+  "percent": 5.2,
   "checks": [
     {
       "name": "package is MIT",
@@ -28,7 +28,7 @@
     {
       "name": "ledger has rows",
       "ok": true,
-      "detail": "191 rows"
+      "detail": "202 rows"
     },
     {
       "name": "ledger failures",
@@ -73,12 +73,12 @@
     {
       "name": "progress is labelled 6.0",
       "ok": true,
-      "detail": "58/1213"
+      "detail": "63/1213"
     },
     {
       "name": "status percentage is current",
       "ok": true,
-      "detail": "expected 4.8%"
+      "detail": "expected 5.2%"
     },
     {
       "name": "status rejects the legacy label",
@@ -108,12 +108,12 @@
     {
       "name": "scope percentage is single digit",
       "ok": true,
-      "detail": "4.8%"
+      "detail": "5.2%"
     },
     {
       "name": "progress mirrors scope",
       "ok": true,
-      "detail": "58/1213"
+      "detail": "63/1213"
     },
     {
       "name": "scope drops the old figure",
@@ -123,7 +123,7 @@
     {
       "name": "wasm snapshot length",
       "ok": true,
-      "detail": "8480"
+      "detail": "8489"
     },
     {
       "name": "wasm ABI version",
@@ -136,7 +136,12 @@
       "detail": ""
     },
     {
-      "name": "save format 7 is declared",
+      "name": "save format 8 is declared",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "world ABI is exported",
       "ok": true,
       "detail": ""
     },
@@ -153,7 +158,7 @@
     {
       "name": "wasm receipt matches artifact",
       "ok": true,
-      "detail": "73f05a972dc8a4c81ec76f9082a957b0347600b641a979cac9cbfb43de510738"
+      "detail": "f4a32e9297d6ba45c89e8f4fbc6bb973d70e7dcefe568c0c7ae92c27c55a0d68"
     },
     {
       "name": "typescript tests passed",
@@ -178,7 +183,7 @@
     {
       "name": "refusal ids are documented",
       "ok": true,
-      "detail": "20 ids"
+      "detail": "23 ids"
     },
     {
       "name": "no committed secrets",

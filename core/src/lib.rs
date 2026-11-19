@@ -20,11 +20,29 @@ const MAX_ENEMIES: usize = 320;
 const MAX_PROJ: usize = 192;
 const MAX_FX: usize = 128;
 const MAX_PATH_PTS: usize = 64;
-const MAP_COUNT: usize = 3;
+const FACE_COUNT: usize = 6;
+const MAP_COUNT: usize = FACE_COUNT;
+const FACE_SIDE: u32 = 32;
+const REGION_SIDE: u32 = 4;
+const REGIONS_PER_AXIS: u32 = FACE_SIDE / REGION_SIDE;
+const STREAM_MAX: usize = 16;
 const EXP_LEGS: u8 = 3;
-const TRACK_COST: [[i32; MAP_COUNT]; MAP_COUNT] = [[0, 14, -1], [14, 0, 22], [-1, 22, 0]];
-const TRACK_TIME: [[f32; MAP_COUNT]; MAP_COUNT] =
-    [[0.0, 1.5, 0.0], [1.5, 0.0, 2.5], [0.0, 2.5, 0.0]];
+const TRACK_COST: [[i32; MAP_COUNT]; MAP_COUNT] = [
+    [0, 14, -1, 18, 20, -1],
+    [14, 0, 22, -1, -1, 18],
+    [-1, 22, 0, 16, -1, 20],
+    [18, -1, 16, 0, 22, -1],
+    [20, -1, -1, 22, 0, 14],
+    [-1, 18, 20, -1, 14, 0],
+];
+const TRACK_TIME: [[f32; MAP_COUNT]; MAP_COUNT] = [
+    [0.0, 1.5, 0.0, 2.0, 2.2, 0.0],
+    [1.5, 0.0, 2.5, 0.0, 0.0, 2.0],
+    [0.0, 2.5, 0.0, 1.8, 0.0, 2.2],
+    [2.0, 0.0, 1.8, 0.0, 2.4, 0.0],
+    [2.2, 0.0, 0.0, 2.4, 0.0, 1.5],
+    [0.0, 2.0, 2.2, 0.0, 1.5, 0.0],
+];
 
 // Snapshot layout. Shared with src/sim.ts; a version bump means both change.
 const H_VERSION: usize = 0;
@@ -59,8 +77,17 @@ const H_CITY_MAX: usize = 28;
 const H_MAP: usize = 29;
 const H_RAID: usize = 30;
 const H_PATH_COUNT: usize = 31;
+const H_WORLD_FACE: usize = 32;
+const H_WORLD_X: usize = 33;
+const H_WORLD_Z: usize = 34;
+const H_WORLD_REGION: usize = 35;
+const H_WORLD_REGIONS: usize = 36;
+const H_SEASON: usize = 37;
+const H_SEASON_PROGRESS: usize = 38;
+const H_WORLD_KM: usize = 39;
+const H_STREAM_EPOCH: usize = 40;
 
-const TOWER_BASE: usize = 32;
+const TOWER_BASE: usize = 41;
 const TOWER_STRIDE: usize = 16;
 const ENEMY_BASE: usize = TOWER_BASE + MAX_TOWERS * TOWER_STRIDE;
 const ENEMY_STRIDE: usize = 12;
@@ -109,9 +136,21 @@ fn base_terrain(map: u8, gx: usize, gz: usize) -> bool {
             (gx, gz),
             (7, 3) | (7, 4) | (8, 3) | (8, 9) | (9, 9) | (9, 8)
         ),
-        _ => matches!(
+        2 => matches!(
             (gx, gz),
             (3, 8) | (4, 8) | (3, 9) | (11, 2) | (12, 2) | (11, 3)
+        ),
+        3 => matches!(
+            (gx, gz),
+            (4, 4) | (5, 4) | (4, 5) | (12, 3) | (12, 4) | (12, 5)
+        ),
+        4 => matches!(
+            (gx, gz),
+            (3, 3) | (3, 4) | (4, 3) | (13, 9) | (13, 8) | (12, 9)
+        ),
+        _ => matches!(
+            (gx, gz),
+            (6, 2) | (6, 3) | (7, 2) | (10, 10) | (10, 9) | (9, 10)
         ),
     }
 }
@@ -151,6 +190,112 @@ fn mix64(mut value: u64) -> u64 {
 
 fn named_sub_seed(master: u64, name: &str) -> u64 {
     mix64(master ^ fnv1a(name))
+}
+
+const WORLD_KM_REAL: f64 = 40_075.0;
+const WORLD_KM_ENGINE: f64 = WORLD_KM_REAL / 8.0;
+const FACE_KM: f64 = WORLD_KM_ENGINE / 4.0;
+const FACE_CELL_KM: f64 = FACE_KM / FACE_SIDE as f64;
+const SEASON_COUNT: u8 = 4;
+const SEASON_MS: f64 = WORLD_DAY_MS / SEASON_COUNT as f64;
+const FACE_NAMES: [&str; FACE_COUNT] = [
+    "Switchyard",
+    "Coldwater",
+    "Ashfall",
+    "Verdant",
+    "Aurora",
+    "Umbral",
+];
+
+#[derive(Clone, Copy)]
+struct WorldPos {
+    face: u8,
+    x: u8,
+    z: u8,
+}
+
+impl WorldPos {
+    const fn center(face: u8) -> Self {
+        WorldPos {
+            face,
+            x: (FACE_SIDE / 2) as u8,
+            z: (FACE_SIDE / 2) as u8,
+        }
+    }
+}
+
+fn region_of(x: u8, z: u8) -> u8 {
+    (z as u32 / REGION_SIDE) as u8 * REGIONS_PER_AXIS as u8
+        + (x as u32 / REGION_SIDE) as u8
+}
+
+/// Map the region on one face edge to the region on the shared edge.
+/// Edges are west 0, east 1, north 2, south 3.
+fn seam_region(face: u8, edge: u8, lane: u8) -> (u8, u8, u8) {
+    let l = lane.min(REGIONS_PER_AXIS as u8 - 1);
+    let far = REGIONS_PER_AXIS as u8 - 1;
+    match (face, edge) {
+        (0, 0) => (5, far, l),
+        (0, 1) => (4, 0, l),
+        (0, 2) => (2, l, far),
+        (0, 3) => (3, l, 0),
+        (1, 0) => (4, far, l),
+        (1, 1) => (5, 0, l),
+        (1, 2) => (2, far - l, 0),
+        (1, 3) => (3, far - l, far),
+        (2, 0) => (5, l, 0),
+        (2, 1) => (4, far - l, 0),
+        (2, 2) => (1, far - l, 0),
+        (2, 3) => (0, l, 0),
+        (3, 0) => (5, far - l, far),
+        (3, 1) => (4, l, far),
+        (3, 2) => (0, l, far),
+        (3, 3) => (1, l, far),
+        (4, 0) => (0, far, l),
+        (4, 1) => (1, 0, l),
+        (4, 2) => (2, far, far - l),
+        (4, 3) => (3, far, l),
+        (5, 0) => (1, far, l),
+        (5, 1) => (0, 0, l),
+        (5, 2) => (2, 0, l),
+        (5, 3) => (3, 0, far - l),
+        _ => (face, 0, 0),
+    }
+}
+
+/// One cell's point on the unit cube-sphere. The six faces are the cube
+/// faces; normalising the cube point places it on the sphere.
+fn world_point(face: u8, x: u8, z: u8) -> [f64; 3] {
+    let u = ((x.min((FACE_SIDE - 1) as u8) as f64 + 0.5) / FACE_SIDE as f64) * 2.0 - 1.0;
+    let v = ((z.min((FACE_SIDE - 1) as u8) as f64 + 0.5) / FACE_SIDE as f64) * 2.0 - 1.0;
+    let p = match face.min(5) {
+        0 => [1.0, v, u],
+        1 => [-1.0, v, -u],
+        2 => [u, 1.0, -v],
+        3 => [u, -1.0, v],
+        4 => [u, v, 1.0],
+        _ => [-u, v, -1.0],
+    };
+    let len = (p[0] * p[0] + p[1] * p[1] + p[2] * p[2]).sqrt().max(1.0);
+    [p[0] / len, p[1] / len, p[2] / len]
+}
+
+fn season_for(world_ms: f64) -> u8 {
+    ((world_ms.max(0.0) / SEASON_MS).floor() as u64 % SEASON_COUNT as u64) as u8
+}
+
+fn season_fraction(world_ms: f64) -> f32 {
+    ((world_ms.max(0.0) % SEASON_MS) / SEASON_MS) as f32
+}
+
+/// Seasonal ecology drift per real second: soil, water, cover, prey, predator.
+fn season_eco(season: u8) -> (f32, f32, f32, f32, f32) {
+    match season.min(3) {
+        0 => (0.0, 0.0, 0.0, 0.0, 0.0),
+        1 => (-0.006, -0.018, 0.004, 0.004, -0.004),
+        2 => (0.004, -0.006, -0.012, 0.002, 0.002),
+        _ => (-0.002, 0.008, -0.018, -0.012, 0.008),
+    }
 }
 
 fn tower_stats(kind: u8, level: u8) -> (f32, f32, f32, f32) {
@@ -433,6 +578,11 @@ struct Sim {
     seed: u64,
     sub_seeds: [u64; SUB_SEED_NAMES.len()],
     world_ms: f64,
+    world: WorldPos,
+    stream: [u16; STREAM_MAX],
+    stream_count: usize,
+    stream_sig: u64,
+    stream_epoch: u32,
     rng: u32,
     brass: f32,
     ingots: f32,
@@ -487,6 +637,11 @@ impl Sim {
             seed,
             sub_seeds,
             world_ms: 0.0,
+            world: WorldPos::center(0),
+            stream: [0; STREAM_MAX],
+            stream_count: 0,
+            stream_sig: 0,
+            stream_epoch: 0,
             rng: if wave_seed as u32 == 0 { 0x9E37_79B9 } else { wave_seed as u32 },
             brass: 150.0,
             ingots: 0.0,
@@ -537,7 +692,7 @@ impl Sim {
             custom_ready: false,
             custom_cells: [false; NCELL],
             towers: Vec::new(),
-            stored: [Vec::new(), Vec::new(), Vec::new()],
+            stored: std::array::from_fn(|_| Vec::new()),
             enemies: Vec::new(),
             projectiles: Vec::new(),
             fx: Vec::new(),
@@ -555,8 +710,128 @@ impl Sim {
             save_buf: Vec::new(),
         };
         sim.recompute();
+        sim.recompute_stream();
         sim.fill_snapshot();
         sim
+    }
+
+    fn recompute_stream(&mut self) {
+        let rx = (self.world.x as u32 / REGION_SIDE) as i32;
+        let rz = (self.world.z as u32 / REGION_SIDE) as i32;
+        let mut ids = [0u16; STREAM_MAX];
+        let mut n = 0usize;
+        let push = |face: u8, x: i32, z: i32, ids: &mut [u16; STREAM_MAX], n: &mut usize| {
+            let x = x.clamp(0, REGIONS_PER_AXIS as i32 - 1) as u8;
+            let z = z.clamp(0, REGIONS_PER_AXIS as i32 - 1) as u8;
+            let id = face.min(5) as u16 * 64 + (z as u16 * REGIONS_PER_AXIS as u16 + x as u16);
+            if !ids[..*n].contains(&id) && *n < STREAM_MAX {
+                ids[*n] = id;
+                *n += 1;
+            }
+        };
+        for dz in -1..=1 {
+            for dx in -1..=1 {
+                push(self.world.face, rx + dx, rz + dz, &mut ids, &mut n);
+            }
+        }
+        if rx == 0 {
+            let (face, x, z) = seam_region(self.world.face, 0, rz as u8);
+            push(face, x as i32, z as i32, &mut ids, &mut n);
+        }
+        if rx == REGIONS_PER_AXIS as i32 - 1 {
+            let (face, x, z) = seam_region(self.world.face, 1, rz as u8);
+            push(face, x as i32, z as i32, &mut ids, &mut n);
+        }
+        if rz == 0 {
+            let (face, x, z) = seam_region(self.world.face, 2, rx as u8);
+            push(face, x as i32, z as i32, &mut ids, &mut n);
+        }
+        if rz == REGIONS_PER_AXIS as i32 - 1 {
+            let (face, x, z) = seam_region(self.world.face, 3, rx as u8);
+            push(face, x as i32, z as i32, &mut ids, &mut n);
+        }
+        ids[..n].sort_unstable();
+        let mut sig = 0xcbf2_9ce4_8422_2325u64;
+        for id in &ids[..n] {
+            sig ^= *id as u64;
+            sig = sig.wrapping_mul(0x100_0000_01b3);
+        }
+        if sig != self.stream_sig {
+            self.stream_epoch = self.stream_epoch.wrapping_add(1);
+            self.stream_sig = sig;
+        }
+        self.stream = ids;
+        self.stream_count = n;
+    }
+
+    fn season(&self) -> u8 {
+        season_for(self.world_ms)
+    }
+
+    fn season_unit(&self) -> u8 {
+        [1, 3, 2, 0][self.season() as usize]
+    }
+
+    fn season_extra(&self, wave: u32) -> u8 {
+        let pools: [[u8; 3]; 4] = [[1, 0, 3], [3, 0, 1], [2, 1, 0], [2, 3, 0]];
+        let pool = pools[self.season() as usize];
+        let roll = mix64(
+            self.sub_seeds[ECOLOGY_SUB_SEED]
+                ^ (self.season() as u64 + 1).wrapping_mul(0x9E37_79B9_7F4A_7C15)
+                ^ wave as u64,
+        );
+        pool[(roll % 3) as usize]
+    }
+
+    fn seasonal_composition(&self, wave: u32) -> Vec<u8> {
+        let mut v = composition(wave);
+        if wave >= 2 {
+            v.push(self.season_unit());
+        }
+        if wave >= 4 {
+            v.push(self.season_extra(wave));
+        }
+        v
+    }
+
+    fn season_stats(&self, kind: u8) -> (f32, f32, f32) {
+        let (hp, speed, bounty) = match self.season() {
+            0 => (1.0, 1.0, 1.0),
+            1 => (1.06, 0.97, 1.08),
+            2 => (0.94, 1.06, 1.12),
+            _ => (1.12, 0.92, 0.96),
+        };
+        let armor = if kind == 2 && self.season() == 3 { 1.15 } else { 1.0 };
+        (hp * armor, speed, bounty)
+    }
+
+    fn world_step(&mut self, dx: i32, dz: i32) -> i32 {
+        let x = self.world.x as i32 + dx.clamp(-1, 1);
+        let z = self.world.z as i32 + dz.clamp(-1, 1);
+        let bx = x.clamp(0, FACE_SIDE as i32 - 1) as u8;
+        let bz = z.clamp(0, FACE_SIDE as i32 - 1) as u8;
+        let outside = x != bx as i32 || z != bz as i32;
+        self.world.x = bx;
+        self.world.z = bz;
+        self.recompute_stream();
+        if outside { -2 } else { 0 }
+    }
+
+    fn world_field(&self, field: u32) -> f32 {
+        match field {
+            0 => self.world.face as f32,
+            1 => self.world.x as f32,
+            2 => self.world.z as f32,
+            3 => region_of(self.world.x, self.world.z) as f32,
+            4 => self.stream_count as f32,
+            5 => self.stream_epoch as f32,
+            6 => self.stream_sig as f32,
+            7 => self.season() as f32,
+            8 => season_fraction(self.world_ms),
+            9 => WORLD_KM_ENGINE as f32,
+            10 => FACE_CELL_KM as f32,
+            _ => 0.0,
+        }
     }
 
     fn terrain_at(&self, map: u8, gx: usize, gz: usize) -> bool {
@@ -834,11 +1109,13 @@ impl Sim {
         self.stored[from] = active;
         self.towers = std::mem::replace(&mut self.stored[to], Vec::new());
         self.map = map;
+        self.world = WorldPos::center(map);
         self.projectiles.clear();
         self.fx.clear();
         self.spawn_queue.clear();
         self.spawn_index = 0;
         self.recompute();
+        self.recompute_stream();
         self.fill_snapshot();
         0
     }
@@ -911,7 +1188,14 @@ impl Sim {
 
     fn expedition_leg(&mut self) {
         self.phase = 1;
-        self.spawn_queue = expedition_comp(self.exp_contract, self.exp_leg, self.wave + self.exp_leg as u32 * 3);
+        self.spawn_queue = expedition_comp(
+            self.exp_contract,
+            self.exp_leg,
+            self.wave + self.exp_leg as u32 * 3,
+        );
+        if self.wave >= 2 {
+            self.spawn_queue.push(self.season_unit());
+        }
         self.spawn_index = 0;
         self.spawn_interval = 0.55;
         self.spawn_timer = 0.1;
@@ -967,6 +1251,8 @@ impl Sim {
         if d <= 0.0 {
             return;
         }
+        let (soil_season, water_season, cover_season, prey_season, pred_season) =
+            season_eco(self.season());
         let e = &mut self.eco;
         e.cause_t += d;
         let water = (e.water / 100.0).clamp(0.0, 1.2);
@@ -976,17 +1262,18 @@ impl Sim {
         let capacity = (35.0 + e.veg * 0.9).max(20.0);
         e.veg += 0.055 * e.veg * (1.0 - e.veg / capacity).max(-0.4) * (0.4 + water * soil);
         e.veg = e.veg.clamp(4.0, 100.0);
-        e.water += (0.55 - e.veg * 0.004) * d;
+        e.water += (0.55 - e.veg * 0.004 + water_season) * d;
         e.water = e.water.clamp(2.0, 100.0);
-        e.soil += (0.05 - e.veg * 0.0007) * d;
+        e.soil += (0.05 - e.veg * 0.0007 + soil_season) * d;
         e.soil = e.soil.clamp(2.0, 100.0);
+        e.veg = (e.veg + cover_season * d * 10.0).clamp(4.0, 100.0);
         for p in e.prey.iter_mut() {
             let growth = 0.055 * *p * (1.0 - prey_sum / capacity) - pred_sum * 0.0022 * *p;
-            *p = (*p + growth * d).clamp(2.0, 120.0);
+            *p = (*p + growth * d + prey_season * d).clamp(2.0, 120.0);
         }
         for q in e.pred.iter_mut() {
             let growth = 0.035 * *q * (prey_sum / 110.0) - 0.012 * *q;
-            *q = (*q + growth * d).clamp(1.0, 60.0);
+            *q = (*q + growth * d + pred_season * d).clamp(1.0, 60.0);
         }
         e.scav += (0.016 * pred_sum - 0.018 * e.scav) * d;
         e.scav = e.scav.clamp(1.0, 40.0);
@@ -1056,6 +1343,8 @@ impl Sim {
             9 => e.cause as f32,
             10 => e.cause_t,
             11 => e.harvests as f32,
+            12 => self.season() as f32,
+            13 => season_fraction(self.world_ms),
             _ => 0.0,
         }
     }
@@ -1302,7 +1591,7 @@ impl Sim {
             }
         }
         self.phase = 1;
-        self.spawn_queue = composition(self.wave);
+        self.spawn_queue = self.seasonal_composition(self.wave);
         self.spawn_index = 0;
         self.spawn_interval = (0.62 - self.wave as f32 * 0.012).max(0.20);
         self.spawn_timer = 0.15;
@@ -1320,22 +1609,23 @@ impl Sim {
         self.spawn_index += 1;
         let (hp, speed, bounty, armor, leak, flying) = enemy_base(kind);
         let scale = 1.0 + 0.12 * self.wave.saturating_sub(1) as f32;
+        let (season_hp, season_speed, season_bounty) = self.season_stats(kind);
         let jitter = (self.rng_next() % 1000) as f32 / 1000.0 - 0.5;
         let id = self.next_id;
         self.next_id += 1;
         let speed_scale = (1.0 + 0.015 * self.wave.saturating_sub(1) as f32).min(1.3);
         self.enemies.push(Enemy {
             kind,
-            hp: hp * scale,
-            max_hp: hp * scale,
+            hp: hp * scale * season_hp,
+            max_hp: hp * scale * season_hp,
             x: wx(ENTRY_X) + 0.5,
             z: wz(ENTRY_Z) + jitter * 0.9,
-            speed: speed * speed_scale,
+            speed: speed * speed_scale * season_speed,
             slow: 0.0,
             slow_t: 0.0,
             flying,
             leaked: false,
-            bounty: bounty + (self.wave / 2) as f32,
+            bounty: (bounty + (self.wave / 2) as f32) * season_bounty,
             armor,
             leak,
             id,
@@ -1679,6 +1969,8 @@ impl Sim {
             1 => (self.world_ms / WORLD_DAY_MS).floor() + 1.0,
             2 => ((self.world_ms % WORLD_DAY_MS) / 3_600_000.0).floor(),
             3 => ((self.world_ms % 3_600_000.0) / 60_000.0).floor(),
+            4 => self.season() as f64,
+            5 => season_fraction(self.world_ms) as f64,
             _ => 0.0,
         }
     }
@@ -1751,6 +2043,9 @@ impl Sim {
         for f in self.snap.iter_mut() {
             *f = 0.0;
         }
+        let season = self.season();
+        let season_progress = season_fraction(self.world_ms);
+        let region = region_of(self.world.x, self.world.z);
         let s = &mut self.snap;
         s[H_VERSION] = 1.0;
         s[H_BRASS] = self.brass;
@@ -1784,6 +2079,15 @@ impl Sim {
         s[H_MAP] = self.map as f32;
         s[H_RAID] = self.threat as f32;
         s[H_PATH_COUNT] = self.path_pts.len() as f32;
+        s[H_WORLD_FACE] = self.world.face as f32;
+        s[H_WORLD_X] = self.world.x as f32;
+        s[H_WORLD_Z] = self.world.z as f32;
+        s[H_WORLD_REGION] = region as f32;
+        s[H_WORLD_REGIONS] = self.stream_count as f32;
+        s[H_SEASON] = season as f32;
+        s[H_SEASON_PROGRESS] = season_progress;
+        s[H_WORLD_KM] = WORLD_KM_ENGINE as f32;
+        s[H_STREAM_EPOCH] = self.stream_epoch as f32;
 
         for (i, t) in self.towers.iter().take(MAX_TOWERS).enumerate() {
             let b = TOWER_BASE + i * TOWER_STRIDE;
@@ -1852,7 +2156,7 @@ impl Sim {
     fn save_bytes(&mut self) -> &[u8] {
         let mut w = Vec::with_capacity(4608);
         w.extend_from_slice(b"BMG1");
-        w.push(7); // save format
+        w.push(8); // save format
         w.push(self.map);
         w.push(self.threat);
         w.extend_from_slice(&self.wave_bonus.to_le_bytes());
@@ -1968,6 +2272,10 @@ impl Sim {
             w.extend_from_slice(&bits.to_le_bytes());
         }
         w.extend_from_slice(&self.world_ms.to_le_bytes());
+        w.push(self.world.face);
+        w.push(self.world.x);
+        w.push(self.world.z);
+        w.extend_from_slice(&self.stream_epoch.to_le_bytes());
         self.save_buf = w;
         &self.save_buf
     }
@@ -1975,7 +2283,7 @@ impl Sim {
     fn load_bytes(&mut self, bytes: &[u8]) -> i32 {
         if bytes.len() < 6
             || &bytes[0..4] != b"BMG1"
-            || !(2..=7).contains(&bytes[4])
+            || !(2..=8).contains(&bytes[4])
         {
             return -1;
         }
@@ -2062,6 +2370,7 @@ impl Sim {
         let seed = if format >= 6 { r.u64() } else { r.u32() as u64 };
         let mut fresh = Sim::new(seed);
         fresh.map = map;
+        fresh.world = WorldPos::center(map);
         fresh.threat = if format >= 4 {
             threat.0.min((MAP_COUNT - 1) as u8)
         } else {
@@ -2127,14 +2436,16 @@ impl Sim {
             }
             Some(out)
         };
-        let set_count = if format >= 4 {
+        let set_count = if format >= 8 {
             MAP_COUNT
+        } else if format >= 4 {
+            3
         } else if format == 3 {
             2
         } else {
             1
         };
-        let mut sets: [Vec<Tower>; MAP_COUNT] = [Vec::new(), Vec::new(), Vec::new()];
+        let mut sets: [Vec<Tower>; MAP_COUNT] = std::array::from_fn(|_| Vec::new());
         for slot in 0..set_count {
             let count = r.u16() as usize;
             if count > MAX_TOWERS {
@@ -2255,6 +2566,7 @@ impl Sim {
                 width,
             });
         }
+        let mut saved_epoch: Option<u32> = None;
         if format >= 5 {
             fresh.shells = r.f32();
             fresh.exp_active = r.u8() != 0;
@@ -2302,6 +2614,13 @@ impl Sim {
             if format >= 7 {
                 fresh.world_ms = r.f64().max(0.0);
             }
+            if format >= 8 {
+                fresh.world.face = r.u8().min((FACE_COUNT - 1) as u8);
+                fresh.world.x = r.u8().min((FACE_SIDE - 1) as u8);
+                fresh.world.z = r.u8().min((FACE_SIDE - 1) as u8);
+                saved_epoch = Some(r.u32());
+                fresh.map = fresh.world.face;
+            }
             if fresh.core_max > 0.0 {
                 fresh.core_max = 20.0
                     + fresh.city[3] as f32 * 4.0
@@ -2313,13 +2632,17 @@ impl Sim {
             return -2;
         }
         fresh.recompute();
+        fresh.recompute_stream();
+        if let Some(epoch) = saved_epoch {
+            fresh.stream_epoch = epoch;
+        }
         fresh.fill_snapshot();
         *self = fresh;
         0
     }
 
     fn preview_count(&self, kind: u8) -> u32 {
-        composition(self.wave)
+        self.seasonal_composition(self.wave)
             .iter()
             .filter(|k| **k == kind)
             .count() as u32
@@ -2392,6 +2715,67 @@ pub extern "C" fn sim_sub_seed_hi(index: u32) -> u32 {
 #[no_mangle]
 pub extern "C" fn sim_clock(field: u32) -> f64 {
     with_sim(|s| s.clock_field(field))
+}
+
+#[no_mangle]
+pub extern "C" fn sim_world_travel(face: u32) -> i32 {
+    with_sim(|s| s.switch_map(face as u8))
+}
+
+#[no_mangle]
+pub extern "C" fn sim_world_step(dx: i32, dz: i32) -> i32 {
+    with_sim(|s| s.world_step(dx, dz))
+}
+
+#[no_mangle]
+pub extern "C" fn sim_world_field(field: u32) -> f32 {
+    with_sim(|s| s.world_field(field))
+}
+
+#[no_mangle]
+pub extern "C" fn sim_world_region_count() -> u32 {
+    with_sim(|s| s.stream_count as u32)
+}
+
+#[no_mangle]
+pub extern "C" fn sim_world_region(index: u32, field: u32) -> f32 {
+    with_sim(|s| {
+        let Some(id) = s.stream.get(index as usize).copied() else {
+            return 0.0;
+        };
+        let face = (id / 64) as u8;
+        let region = (id % 64) as u8;
+        match field {
+            0 => face as f32,
+            1 => region as f32,
+            2 => (region as u32 % REGIONS_PER_AXIS) as f32,
+            3 => (region as u32 / REGIONS_PER_AXIS) as f32,
+            _ => 0.0,
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn sim_world_point(face: u32, x: u32, z: u32, axis: u32) -> f32 {
+    with_sim(|_| {
+        let p = world_point(face as u8, x as u8, z as u8);
+        p[axis.min(2) as usize] as f32
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn sim_world_km() -> f64 {
+    WORLD_KM_ENGINE
+}
+
+#[no_mangle]
+pub extern "C" fn sim_world_cell_km() -> f64 {
+    FACE_CELL_KM
+}
+
+#[no_mangle]
+pub extern "C" fn sim_season() -> u32 {
+    with_sim(|s| s.season() as u32)
 }
 
 #[no_mangle]
@@ -3075,7 +3459,7 @@ mod tests {
         let seed = 9_418_646_105_956_113_635u64;
         let mut a = Sim::new(seed);
         let bytes = a.save_bytes().to_vec();
-        assert_eq!(bytes[4], 7);
+        assert_eq!(bytes[4], 8);
         let mut b = Sim::new(1);
         assert_eq!(b.load_bytes(&bytes), 0);
         assert_eq!(b.seed, seed);
@@ -3094,6 +3478,117 @@ mod tests {
         );
         assert_eq!(s.sub_seeds, Sim::new(7).sub_seeds);
         assert_ne!(s.sub_seeds, Sim::new(8).sub_seeds);
+    }
+
+    #[test]
+    fn six_cube_faces_bound_the_world() {
+        assert_eq!(FACE_NAMES[1], "Coldwater");
+        assert!((WORLD_KM_REAL - 40_075.0).abs() < 0.001);
+        assert!((WORLD_KM_ENGINE - 5_009.375).abs() < 0.001);
+        let mut s = Sim::new(7);
+        assert_eq!(s.world.face, 0);
+        assert_eq!(s.world.x, (FACE_SIDE / 2) as u8);
+        for face in 0..FACE_COUNT {
+            let p = world_point(face as u8, 16, 16);
+            let len = (p[0] * p[0] + p[1] * p[1] + p[2] * p[2]).sqrt();
+            assert!((len - 1.0).abs() < 0.0001);
+        }
+        for _ in 0..100 {
+            let _ = s.world_step(1, 0);
+            assert!(s.world.x < FACE_SIDE as u8);
+        }
+        assert_eq!(s.world.x, FACE_SIDE as u8 - 1);
+        assert_eq!(s.world_step(1, 0), -2);
+        assert_eq!(s.world.x, FACE_SIDE as u8 - 1);
+    }
+
+    #[test]
+    fn stream_regions_are_unique_and_cross_a_face_seam() {
+        let mut s = Sim::new(7);
+        s.world = WorldPos {
+            face: 0,
+            x: FACE_SIDE as u8 - 1,
+            z: 8,
+        };
+        s.recompute_stream();
+        let ids = s.stream[..s.stream_count].to_vec();
+        let mut unique = ids.clone();
+        unique.sort_unstable();
+        unique.dedup();
+        assert_eq!(unique.len(), ids.len());
+        assert!(ids.iter().any(|id| id / 64 != 0));
+        let sig = s.stream_sig;
+        assert_eq!(s.world_step(0, 1), 0);
+        assert_eq!(s.world_step(0, -1), 0);
+        assert_eq!(s.stream_sig, sig);
+        let before = s.stream_epoch;
+        s.world = WorldPos::center(1);
+        s.recompute_stream();
+        assert!(s.stream_epoch > before);
+        assert!(s.stream[..s.stream_count].iter().all(|id| id / 64 == 1));
+    }
+
+    #[test]
+    fn four_seasons_follow_the_world_clock() {
+        let mut s = Sim::new(7);
+        assert_eq!(s.season(), 0);
+        assert_eq!(s.clock_field(4), 0.0);
+        s.advance_clock(SEASON_MS / WORLD_MS_PER_REAL_MS);
+        assert_eq!(s.season(), 1);
+        s.advance_clock(SEASON_MS * 2.0 / WORLD_MS_PER_REAL_MS);
+        assert_eq!(s.season(), 3);
+        s.advance_clock(SEASON_MS / WORLD_MS_PER_REAL_MS);
+        assert_eq!(s.season(), 0);
+        assert!((0.0..1.0).contains(&s.clock_field(5)));
+    }
+
+    #[test]
+    fn seasons_change_spawn_tables_and_ecology() {
+        let mut s = Sim::new(7);
+        let spring = s.seasonal_composition(5);
+        let spring_hp = s.season_stats(0).0;
+        s.advance_clock(SEASON_MS / WORLD_MS_PER_REAL_MS);
+        let summer = s.seasonal_composition(5);
+        assert_eq!(spring.len(), summer.len());
+        assert_ne!(spring, summer);
+        assert_ne!(spring_hp, s.season_stats(0).0);
+        let water = s.eco.water;
+        s.eco_tick(30.0);
+        assert_ne!(s.eco.water, water);
+    }
+
+    #[test]
+    fn a_save_keeps_world_and_season_state() {
+        let mut a = Sim::new(41);
+        a.world = WorldPos {
+            face: 3,
+            x: 7,
+            z: 29,
+        };
+        a.map = 3;
+        a.recompute_stream();
+        a.advance_clock(SEASON_MS * 2.5 / WORLD_MS_PER_REAL_MS);
+        let bytes = a.save_bytes().to_vec();
+        assert_eq!(bytes[4], 8);
+        let mut b = Sim::new(1);
+        assert_eq!(b.load_bytes(&bytes), 0);
+        assert_eq!(b.world.face, 3);
+        assert_eq!(b.world.x, 7);
+        assert_eq!(b.world.z, 29);
+        assert_eq!(b.season(), a.season());
+        assert_eq!(b.stream_count, a.stream_count);
+        assert_eq!(b.stream_sig, a.stream_sig);
+    }
+
+    #[test]
+    fn a_format_seven_save_still_loads() {
+        let bytes = include_bytes!("../../tests/fixtures/save-v7.bin");
+        let mut s = Sim::new(1);
+        assert_eq!(s.load_bytes(bytes), 0);
+        assert_eq!(s.world.face, 0);
+        assert_eq!(s.world.x, (FACE_SIDE / 2) as u8);
+        assert_eq!(s.clock_field(0), 8000.0);
+        assert_eq!(s.season(), 0);
     }
 
     #[test]

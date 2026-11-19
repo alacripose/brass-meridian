@@ -107,9 +107,19 @@ export const AUTO_LOGS = [
 ];
 
 export const DISTRICTS = [
-  { name: "Switchyard", role: "The home gate." },
-  { name: "Coldwater", role: "A wider flank." },
-  { name: "Ashfall", role: "The far foundry." },
+  { name: "Switchyard", role: "The home gate.", face: 0 },
+  { name: "Coldwater", role: "Marsh and wet flank.", face: 1 },
+  { name: "Ashfall", role: "The far foundry.", face: 2 },
+  { name: "Verdant", role: "Canopy and reed beds.", face: 3 },
+  { name: "Aurora", role: "Ice shelf and long light.", face: 4 },
+  { name: "Umbral", role: "Night quarry and deep shade.", face: 5 },
+] as const;
+
+export const SEASONS = [
+  { name: "Greenwake", note: "New growth. Herds return." },
+  { name: "Highsun", note: "Dry heat. Fast hounds." },
+  { name: "Emberfall", note: "Ash wind. Hard shells." },
+  { name: "Longdark", note: "Cold rain. Slow swarms." },
 ] as const;
 
 export const COPY = {
@@ -190,7 +200,16 @@ export const COPY = {
   surveyBy: "By",
   here: "Here",
   travel: "Travel",
-  mapFoot: "Tracks cost brass and build time. Meet the raid for a clear bonus.",
+  world: "World",
+  worldFace: "Face",
+  worldSeat: "Seat",
+  worldRegions: "Regions",
+  worldBound: "Bound",
+  season: "Season",
+  seasonWheel: "Season wheel",
+  worldEdge: "The world ends at the face edge.",
+  worldMoved: "Seat moved.",
+  mapFoot: "Six faces bound the world. Tracks cost brass and time.",
   mapLocked: "Finish the wave first.",
   trackMissing: "No track to that district.",
   noTrack: "No track",

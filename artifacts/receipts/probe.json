@@ -1,13 +1,13 @@
 {
   "ok": true,
   "kind": "headless-probe",
-  "at": "2026-11-19T22:26:30.452Z",
-  "sha256": "73f05a972dc8a4c81ec76f9082a957b0347600b641a979cac9cbfb43de510738",
+  "at": "2026-11-19T22:50:25.678Z",
+  "sha256": "f4a32e9297d6ba45c89e8f4fbc6bb973d70e7dcefe568c0c7ae92c27c55a0d68",
   "checks": [
     {
       "name": "snapshot length",
       "ok": true,
-      "detail": "8480"
+      "detail": "8489"
     },
     {
       "name": "version",
@@ -380,9 +380,9 @@
       "detail": "2192949435"
     },
     {
-      "name": "save format is 7",
+      "name": "save format is 8",
       "ok": true,
-      "detail": "7"
+      "detail": "8"
     },
     {
       "name": "exact seed image loads",
@@ -398,6 +398,86 @@
       "name": "exact seed high half survives",
       "ok": true,
       "detail": "2192949435"
+    },
+    {
+      "name": "world starts on face zero",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "world starts at the centre",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "world bound is 5,009 km",
+      "ok": true,
+      "detail": "5009.375"
+    },
+    {
+      "name": "cell is a real distance",
+      "ok": true,
+      "detail": "39.1357421875"
+    },
+    {
+      "name": "centre streams a region block",
+      "ok": true,
+      "detail": "9"
+    },
+    {
+      "name": "stream ids are unique",
+      "ok": true,
+      "detail": "9/9"
+    },
+    {
+      "name": "world clamps at the face edge",
+      "ok": true,
+      "detail": "31"
+    },
+    {
+      "name": "world refuses to leave the face",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "edge stays at 31",
+      "ok": true,
+      "detail": "31"
+    },
+    {
+      "name": "edge streams a neighbour face",
+      "ok": true,
+      "detail": "4"
+    },
+    {
+      "name": "cube point sits on the sphere",
+      "ok": true,
+      "detail": "1.000000002326603"
+    },
+    {
+      "name": "world travels to six faces",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "season zero at the start",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "season save images load",
+      "ok": true,
+      "detail": "0,0,0,0"
+    },
+    {
+      "name": "four seasons follow the world clock",
+      "ok": true,
+      "detail": "0,1,2,3"
+    },
+    {
+      "name": "season progress is a fraction",
+      "ok": true,
+      "detail": "0.00,0.00,0.00,0.00"
     },
     {
       "name": "terrain sub-seed low",
@@ -452,12 +532,12 @@
     {
       "name": "save length is stable",
       "ok": true,
-      "detail": "482/482"
+      "detail": "495/495"
     },
     {
       "name": "same seed is deterministic",
       "ok": true,
-      "detail": "482 bytes"
+      "detail": "495 bytes"
     },
     {
       "name": "save loads",
@@ -500,5 +580,5 @@
       "detail": "1"
     }
   ],
-  "bytes": 71067
+  "bytes": 78437
 }

@@ -21,6 +21,9 @@ export const REFUSALS = {
   lineEmpty: "line-empty",
   lineBlocked: "line-blocked",
   offlineCap: "offline-capped",
+  seasonMs: "season-real-ms",
+  streamEpoch: "stream-epoch-load",
+  idleClock: "idle-clock-stop",
   release: "release-unverified",
 } as const;
 

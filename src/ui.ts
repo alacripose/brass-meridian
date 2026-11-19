@@ -11,6 +11,7 @@ import {
   PREDATORS,
   PREY,
   SCAVENGER,
+  SEASONS,
   TOWERS,
 } from "./copy";
 import { exampleMap, loadMapMeta, MAP_BUDGET } from "./map";
@@ -42,6 +43,7 @@ export type HudActions = {
   onSell: () => void;
   onCity: (kind: number) => void;
   onMap: (map: number) => void;
+  onWorldStep: (dx: number, dz: number) => void;
   onRepair: () => void;
   onCall: () => void;
   onPause: () => void;
@@ -263,6 +265,12 @@ export class Hud {
       case "travel":
         this.actions.onMap(kind);
         break;
+      case "seat":
+        this.actions.onWorldStep(
+          Number(el.dataset.dx ?? 0),
+          Number(el.dataset.dz ?? 0),
+        );
+        break;
       case "repair":
         this.actions.onRepair();
         break;
@@ -398,9 +406,10 @@ export class Hud {
     if (bar) bar.style.width = `${Math.max(0, Math.min(100, (snap.core / Math.max(1, snap.coreMax)) * 100))}%`;
     set("wave", `${snap.wave}`);
     const clock = this.model.clock();
+    const season = SEASONS[Math.max(0, Math.min(SEASONS.length - 1, clock.season))];
     set(
       "clock",
-      `DAY ${clock.day} ${String(clock.hour).padStart(2, "0")}:${String(clock.minute).padStart(2, "0")}`,
+      `DAY ${clock.day} ${String(clock.hour).padStart(2, "0")}:${String(clock.minute).padStart(2, "0")} · ${season.name}`,
     );
 
     let stateText: string = COPY.buildPhase;
@@ -614,27 +623,33 @@ export class Hud {
 
   private mapSheet(snap: Snapshot): string {
     const spots: Array<[number, number]> = [
-      [48, 86],
-      [158, 46],
-      [272, 86],
+      [160, 90],
+      [300, 90],
+      [160, 32],
+      [160, 148],
+      [230, 90],
+      [90, 90],
     ];
     const threat = Math.max(0, Math.min(DISTRICTS.length - 1, Math.round(snap.threatDistrict)));
     const [tx, ty] = spots[threat];
     const lines = [
-      [0, 1, 14],
-      [1, 2, 22],
+      [5, 0, 20],
+      [0, 4, 20],
+      [4, 1, 14],
+      [2, 0, 16],
+      [3, 0, 18],
     ]
       .map(([a, b, cost]) => {
         const [x1, y1] = spots[a];
         const [x2, y2] = spots[b];
         return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="track-line"/>
-          <text x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 - 7}" class="track-cost">${cost}</text>`;
+          <text x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 - 6}" class="track-cost">${cost}</text>`;
       })
       .join("");
     const nodes = DISTRICTS.map((district, id) => {
       const [x, y] = spots[id];
       const cls = id === snap.map ? "here" : id === threat ? "raid" : "";
-      return `<circle cx="${x}" cy="${y}" r="9" class="track-node ${cls}"/>
+      return `<circle cx="${x}" cy="${y}" r="11" class="track-node ${cls}"/>
         <text x="${x}" y="${y + 24}" class="track-name">${district.name}</text>`;
     }).join("");
     const cards = DISTRICTS.map((district, id) => {
@@ -650,19 +665,37 @@ export class Hud {
         <div class="city-main">
           <div class="city-title"><h3>${district.name}</h3><span class="tag${raid ? " danger" : ""}">${tag}</span></div>
           <p>${district.role}</p>
-          <div class="city-facts"><span>${COPY.towers} <b>${towers}</b></span><span>${COPY.track} <b>${linked ? money(cost) : "—"}</b></span></div>
+          <div class="city-facts"><span>${COPY.worldFace} <b>${id + 1}</b></span><span>${COPY.towers} <b>${towers}</b></span><span>${COPY.track} <b>${linked ? money(cost) : "—"}</b></span></div>
         </div>
         <button type="button" class="primary compact" data-act="travel" data-kind="${id}" ${disabled ? "disabled" : ""}>
           ${label}
         </button>
       </article>`;
     }).join("");
-    return `<div class="track-map" aria-hidden="true">
-        <svg viewBox="0 0 320 120" class="track-svg">
+    const face = Math.max(0, Math.min(DISTRICTS.length - 1, Math.round(snap.world.face)));
+    const season = SEASONS[Math.max(0, Math.min(SEASONS.length - 1, Math.round(snap.world.season)))];
+    const seasonChips = SEASONS.map((item, id) => `<span class="season-chip${id === snap.world.season ? " on" : ""}">${item.name}</span>`).join("");
+    return `<section class="world-strip">
+        <div><span>${COPY.worldFace}</span><b>${face + 1} · ${DISTRICTS[face].name}</b></div>
+        <div><span>${COPY.worldSeat}</span><b>${Math.round(snap.world.x)}, ${Math.round(snap.world.z)}</b></div>
+        <div><span>${COPY.worldRegions}</span><b>${Math.round(snap.world.regions)}</b></div>
+        <div><span>${COPY.worldBound}</span><b>${Math.round(snap.world.km).toLocaleString("en-US")} km</b></div>
+        <div><span>${COPY.season}</span><b>${season.name} ${Math.round(snap.world.seasonProgress * 100)}%</b></div>
+      </section>
+      <div class="season-wheel">${seasonChips}</div>
+      <div class="seat-pad" aria-label="${COPY.worldSeat}">
+        <button type="button" class="seat-btn up" data-act="seat" data-dx="0" data-dz="-1">↑</button>
+        <button type="button" class="seat-btn left" data-act="seat" data-dx="-1" data-dz="0">←</button>
+        <button type="button" class="seat-btn right" data-act="seat" data-dx="1" data-dz="0">→</button>
+        <button type="button" class="seat-btn down" data-act="seat" data-dx="0" data-dz="1">↓</button>
+      </div>
+      <p class="micro">${COPY.worldEdge}</p>
+      <div class="track-map" aria-hidden="true">
+        <svg viewBox="0 0 340 180" class="track-svg">
           <defs><marker id="raid-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" class="raid-mark"/></marker></defs>
-          <line x1="300" y1="12" x2="${tx}" y2="${ty}" class="threat-line" marker-end="url(#raid-arrow)"/>
+          <line x1="330" y1="12" x2="${tx}" y2="${ty}" class="threat-line" marker-end="url(#raid-arrow)"/>
           ${lines}${nodes}
-          <text x="300" y="8" class="track-source">RAID</text>
+          <text x="325" y="8" class="track-source">RAID</text>
         </svg>
       </div>
       <p class="raid-note">${COPY.raid}: <b>${DISTRICTS[threat].name}</b>. ${COPY.raidNote}</p>

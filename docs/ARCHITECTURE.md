@@ -23,7 +23,10 @@ The core exposes a small C ABI.
 | `sim_step(ms)` | Advance, with internal 33 ms substeps. |
 | `sim_place`, `sim_upgrade`, `sim_sell` | Tower commands. |
 | `sim_city`, `sim_repair`, `sim_call_wave` | City and wave commands. |
-| `sim_switch_map`, `sim_map_tower_count`, `sim_track_cost` | District travel and track facts. |
+| `sim_switch_map`, `sim_map_tower_count`, `sim_track_cost` | Face travel and track facts. |
+| `sim_world_travel`, `sim_world_step`, `sim_world_field` | Face seat, bounded step, and world facts. |
+| `sim_world_region_count`, `sim_world_region` | Deterministic streamed region ids. |
+| `sim_world_point`, `sim_world_km`, `sim_world_cell_km` | Unit cube-sphere point and real bound. |
 | `sim_expedition`, `sim_expedition_start`, `sim_expedition_contract` | Contract state, launch, fee, pay, and relics. |
 | `sim_eco`, `sim_eco_action` | Marsh state and one habitat action. |
 | `sim_automation`, `sim_automation_toggle`, `sim_convoy`, `sim_offline` | Shell line, rule, convoy, and catch-up. |
@@ -37,28 +40,30 @@ Commands return an integer code. Placement codes are named in `src/sim.ts` and `
 
 ## Snapshot
 
-The snapshot is a flat `f32` buffer. It is 8,480 floats, about 34 KB.
+The snapshot is a flat `f32` buffer. It is 8,489 floats, about 34 KB.
 
 | Range | Content |
 | ---: | --- |
-| 0–31 | Header: resources, wave, phase, counts, rates, route. |
-| 32–1,567 | 96 towers, stride 16. |
-| 1,568–5,407 | 320 enemies, stride 12. |
-| 5,408–7,327 | 192 projectiles, stride 10. |
-| 7,328–8,351 | 128 effects, stride 8. |
-| 8,352–8,479 | Up to 64 route points. |
+| 0–40 | Header: resources, wave, phase, counts, route, world and season. |
+| 41–1,576 | 96 towers, stride 16. |
+| 1,577–5,416 | 320 enemies, stride 12. |
+| 5,417–7,336 | 192 projectiles, stride 10. |
+| 7,337–8,360 | 128 effects, stride 8. |
+| 8,361–8,488 | Up to 64 route points. |
 
 The header carries the tower, enemy, projectile, and effect counts. The renderer reads only those counts.
 
-Header slot 29 holds the active district id. Header slot 30 holds the raid district id. Both replaced unused core-base values, so the total stays 8,480 floats.
+Header slot 29 holds the active face id. Header slot 30 holds the raid face id. Slots 32–40 hold the face seat, region, stream epoch, season and bound.
 
-The raid is the district the next wave targets. The client counts live enemies from the enemy count and spawn-left header slots; it does not store a second count.
+The raid is the face the next wave targets. The client counts live enemies from the enemy count and spawn-left header slots; it does not store a second count.
 
-Travel uses `sim_switch_map`. A return of `-2` means a wave is live, `-3` means no track, and `-4` means not enough brass.
+Travel uses `sim_switch_map`. A return of `-2` means a wave is live, `-3` means no track, and `-4` means not enough brass. Travel resets the seat to that face centre.
 
-The track graph is a chain: Switchyard to Coldwater costs 14 brass, Coldwater to Ashfall costs 22. Far hops have no edge (`sim_track_cost` returns `-1`).
+The track graph is a cube net. Neighbour edges cost 14 to 22 brass, and far hops have no edge (`sim_track_cost` returns `-1`).
 
-New systems use extra exports, not new snapshot slots. The 8,480 float ABI stays fixed.
+The world has six 32 by 32 faces at 1:8 scale. The engine bound is 5,009.375 km against a 40,075 km real planet. A seat steps one cell at a time and clamps at the face edge.
+
+Regions are 4 by 4 cells. The stream is the 3 by 3 block around the seat plus seam-neighbour regions. Ids are deduped, sorted, and hashed into a stream epoch.
 
 Expedition state lives in `sim_expedition`: active, contract, leg, result, three relic counts, discoveries, and spawn left.
 
@@ -84,17 +89,21 @@ Time is passed in from the browser. The core clamps one call to one second and s
 
 One real second is eight world seconds. The clock stops on defeat and resumes from the save.
 
-A world day is 24 hours. The HUD shows the day and minute from the live clock.
+A world day is 24 hours. The HUD shows the day, minute, and season from the live clock.
+
+Four seasons split the day into equal blocks. Each season shifts spawn composition, enemy stats, and ecology drift. The visible tint follows the same index.
 
 ## Save
 
-The save starts with `BMG1` and format byte 7. It stores the 64 bit seed, economy, wave state, city levels, and three tower lists.
+The save starts with `BMG1` and format byte 8. It stores the 64 bit seed, economy, wave state, city levels, and six tower lists.
 
 It also keeps the raid district, wave bonus, enemies, projectiles, effects, spawn queue, and the shell count.
 
 Format 5 appends expedition state, the marsh, the shell line, and a 4 by 64 bit survey mask. Format 6 widens the seed from 32 to 64 bits. Format 7 appends the world clock as a little-endian f64.
 
-Formats 2 through 6 still load. Older saves open with an empty survey, a balanced marsh, and a stopped line. Their raid derives from the seed and wave.
+Format 8 appends the face, seat, and stream epoch, and widens the tower lists to six.
+
+Formats 2 through 7 still load. Older saves open at the Switchyard centre with an empty survey, a balanced marsh and a stopped line. Their raid derives from the seed and wave.
 
 The probe loads `tests/fixtures/save-v4.bin`, a real image from the 0.3 wasm.
 
@@ -152,7 +161,7 @@ The build is one JavaScript chunk of about 648 KB, or 167 KB gzipped. It is not 
 
 ## Verification
 
-- `cargo test` covers the core with 23 tests.
-- `npm test` loads the real wasm and runs 27 bridge tests.
-- `npm run probe` runs 99 checks for routes, waves, contracts, marsh, line, survey, seeds, clock, determinism, and saves.
+- `cargo test` covers the core with 34 tests.
+- `npm test` loads the real wasm and runs 33 bridge tests.
+- `npm run probe` runs 115 checks for routes, waves, contracts, marsh, line, survey, seeds, clock, seasons, world streaming, determinism, and saves.
 - `npm run gate` checks prose, ledgers, tickets, progress, ABI, receipts, and secrets.
