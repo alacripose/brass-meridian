@@ -40,6 +40,7 @@ const model: HudModel = {
   previewCount: (kind) => sim.previewCount(kind),
   repairCost: () => sim.repairCost(),
   mapTowerCount: (map) => sim.mapTowerCount(map),
+  trackCost: (map) => sim.trackCost(sim.snapshot().map, map),
 };
 
 function cancelBuild() {
@@ -165,6 +166,10 @@ function buildHud(hasSaved: boolean) {
         refreshHover();
       } else if (code === -2) {
         hud.showToast(COPY.mapLocked, "bad");
+      } else if (code === -3) {
+        hud.showToast(COPY.trackMissing, "bad");
+      } else if (code === -4) {
+        hud.showToast(COPY.noBrass, "bad");
       }
     },
     onRepair: () => {
@@ -234,6 +239,11 @@ function frame(now: number) {
 
   if (snap.core < previous.core - 0.001) audio.leak();
   if (previous.phase === 0 && snap.phase === 1) audio.wave();
+  if (snap.phase === 1 && previous.phase !== 1 && snap.wave !== lastRaidWave) {
+    lastRaidWave = snap.wave;
+    if (snap.map === snap.threatDistrict) hud.showToast(COPY.raidHeld, "good");
+    else hud.showToast(`${COPY.raidHit} ${DISTRICTS[snap.threatDistrict].name}.`, "bad");
+  }
   if (previous.phase === 1 && snap.phase === 0) {
     audio.clear();
     hud.showToast(`${COPY.wave} ${previous.wave} held.`, "good");
@@ -270,6 +280,7 @@ function frame(now: number) {
 
 let lastSnapshot: Snapshot;
 let lastTime = 0;
+let lastRaidWave = 0;
 
 async function main() {
   try {

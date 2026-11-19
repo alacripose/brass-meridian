@@ -6,32 +6,34 @@ This file is the resume point after a Freebuff pause. Update it before a long br
 
 Last update: 2026-11-19.
 
-The vertical slice is built, published, and tagged. The public repository is live and CI is green.
+The vertical slice and both frontier cuts are built and tagged. The public repository is live and CI is green.
 
 Pages serves the build at https://alacripose.github.io/brass-meridian/.
 
 The `v0.1.0` release carries the built game and the changelog section.
 
-The 0.2 frontier cut is published. Two districts keep separate tower sets and travel only between waves.
+The 0.3 frontier cut is published. Three districts sit on a paid track chain, and each wave raids one district.
 
 ## What is proved
 
-- 13 Rust tests pass.
-- 14 client tests pass against the real wasm.
-- The headless probe passes 32 checks.
+- 15 Rust tests pass.
+- 18 client tests pass against the real wasm.
+- The headless probe passes 46 checks.
 - The production build succeeds.
 - The gate checks prose, ledgers, tickets, progress, ABI, receipts, and secrets.
 - CI passes both jobs. Pages returns 200 and the wasm is `application/wasm`.
-- The release zip has 6 files, the page, and the wasm.
+- The release zip has the page and the wasm.
+- The preview DOM showed three track nodes, costs 14 and 22, a raid arrow, and a live raid note.
+- A travel click charged 14 brass and moved the active node to Coldwater.
+- A wave click showed the raid HUD and the clear-bonus toast.
 
 ## Next 120 minutes
 
-1. Start T-0014: tracks, threat edges, and a region zoom.
-2. Then T-0009 expeditions.
+1. Start T-0009 expeditions.
+2. Keep save migration and probe coverage with each cut.
 
 ## After that
 
-- T-0014 frontier tracks and threat edges.
 - T-0009 expeditions.
 - T-0010 ecology.
 - T-0011 automation.
@@ -42,8 +44,8 @@ Order matters. Each phase needs save migration and a proof before the next one s
 ## Known limits
 
 - No physical phone test.
-- The preview page was backgrounded, so no live wave was visually reviewed.
-- The frontier is two districts, not a track graph with threat edges.
+- Canvas motion was not visually reviewed; the browser proof is DOM and state only.
+- The track graph is one chain, not a region zoom yet.
 - No expeditions, ecology, or automation.
 - The renderer is one bundle and not code-split.
 

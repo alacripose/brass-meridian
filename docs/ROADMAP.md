@@ -17,15 +17,15 @@ The vertical slice is complete. The wider game is ordered by dependency, not by 
 
 ## Next: frontier graph
 
-- [ ] A world map with districts, tracks, and connections.
+- [x] A world map with districts, tracks, and connections.
 - [ ] A zoom from region to track without losing state.
-- [x] Two connected maps with separate build state.
-- [ ] Threat direction visible on the map.
+- [x] Three connected maps with separate build state.
+- [x] Threat direction visible on the map.
 - [x] Save migration for district state.
 
-The first cut ships the district list, travel, and both builds. Tracks and threat edges are next.
+The 0.3 cut ships a paid track chain, a raid edge, and all three builds. Region zoom is still open.
 
-**Exit:** a player can move between two maps and keep both builds.
+**Exit:** a player can pay a track hop and meet a marked raid.
 
 ## Then: city depth
 

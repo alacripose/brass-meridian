@@ -800,6 +800,94 @@ button:disabled {
 
 /* ---------- city ---------- */
 
+.track-map {
+  margin: 2px 0 8px;
+  padding: 6px 4px 0;
+  border: 1px solid var(--line-soft);
+  background: linear-gradient(180deg, rgba(217, 168, 95, 0.05), rgba(7, 17, 19, 0.2));
+}
+
+.track-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.track-line {
+  stroke: var(--brass);
+  stroke-width: 2;
+  opacity: 0.55;
+}
+
+.threat-line {
+  stroke: var(--danger);
+  stroke-width: 1.6;
+  stroke-dasharray: 4 4;
+  color: var(--danger);
+}
+
+.raid-mark {
+  fill: var(--danger);
+}
+
+.track-node {
+  fill: var(--ink);
+  stroke: var(--brass);
+  stroke-width: 2;
+}
+
+.track-node.here {
+  fill: var(--brass);
+}
+
+.track-node.raid {
+  stroke: var(--danger);
+  stroke-width: 2.5;
+}
+
+.track-name {
+  fill: var(--muted);
+  font-family: var(--sans);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-anchor: middle;
+  text-transform: uppercase;
+}
+
+.track-cost {
+  fill: var(--brass-hi);
+  font-family: var(--sans);
+  font-size: 9px;
+  text-anchor: middle;
+}
+
+.track-source {
+  fill: var(--danger);
+  font-family: var(--sans);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-anchor: end;
+}
+
+.raid-note {
+  margin: 6px 2px 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.raid-note b {
+  color: var(--danger);
+}
+
+.city-row.raid .city-title h3 {
+  color: var(--danger);
+}
+
+.tag.danger {
+  color: var(--danger);
+  border-color: rgba(226, 102, 79, 0.45);
+}
+
 .city-list {
   display: flex;
   flex-direction: column;

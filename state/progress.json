@@ -61,7 +61,7 @@
       "id": "P9",
       "name": "Endless frontier",
       "weight": 8,
-      "done": 0.35,
+      "done": 0.55,
       "evidence": "artifacts/receipts/test.json"
     },
     {
@@ -76,17 +76,12 @@
     {
       "id": "T-0014",
       "title": "Draw frontier tracks and threat edges",
-      "state": "open"
-    },
-    {
-      "id": "T-0008",
-      "title": "Connect districts on a frontier map",
-      "state": "active"
+      "state": "done"
     },
     {
       "id": "T-0009",
       "title": "Add expedition rewards and contracts",
-      "state": "open"
+      "state": "active"
     },
     {
       "id": "T-0010",
@@ -106,7 +101,8 @@
   ],
   "limits": [
     "No accounts, server, or multiplayer.",
-    "The frontier, expeditions, ecology, and automation are not built.",
+    "The frontier has one track chain, not a region zoom.",
+    "Expeditions, ecology, and automation are not built.",
     "Touch play was not checked on a physical phone."
   ]
 }

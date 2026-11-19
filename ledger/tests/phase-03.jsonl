@@ -1,0 +1,3 @@
+{"seq":1,"at":"2026-11-19T16:02:44.000Z","ticket":"T-0014","claim":"A version 3 save from the 0.2 wasm still loads.","ev":"tests/fixtures/save-v3.bin","ok":true}
+{"seq":2,"at":"2026-11-19T16:02:44.000Z","ticket":"T-0014","claim":"Track brass and adjacency refuse a far hop.","ev":"tests/sim.test.ts","ok":true}
+{"seq":3,"at":"2026-11-19T16:02:44.000Z","ticket":"T-0014","claim":"Save format 4 keeps three builds and the raid.","ev":"tests/sim.test.ts","ok":true}

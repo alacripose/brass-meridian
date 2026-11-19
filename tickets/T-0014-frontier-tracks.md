@@ -1,19 +1,22 @@
 ---
 id: T-0014
 title: Draw frontier tracks and threat edges
-status: open
+status: done
 owner: unassigned
 created: 2026-11-19
-evidence: docs/ROADMAP.md
+evidence: artifacts/receipts/probe.json
 ---
 
 # Draw frontier tracks and threat edges
 
-The two districts share a save and a travel rule. The map still needs a graph.
+The three districts now sit on a paid track chain with a raid edge.
 
 ## Checks
 
-- [ ] Node and edge schema with a version.
-- [ ] A region zoom that returns to the tactical view.
-- [ ] Threat direction on each edge.
-- [ ] Edge state saved with the district state.
+- [x] Three nodes joined by two paid track edges.
+- [x] A raid edge that names the next target district.
+- [x] Raid leak and defended clear bonus in the core.
+- [x] Active district and raid district in header slots 29 and 30.
+- [x] Save format 4 keeps all three builds, the raid, and its bonus.
+
+Region zoom is deferred. The chain is readable at the current map scale.

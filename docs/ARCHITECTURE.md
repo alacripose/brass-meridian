@@ -6,7 +6,7 @@ The Rust core owns the game. The browser draws it. That split is the main design
 
 The battlefield is a deterministic simulation. Pathfinding, wave timing, damage, and economy run in one place.
 
-The core has no dependencies and no browser access. It compiles to a 50 KB wasm module with `wasm32-unknown-unknown`.
+The core has no dependencies and no browser access. It compiles to a 54 KB wasm module with `wasm32-unknown-unknown`.
 
 A native test run exercises the same code with `cargo test`.
 
@@ -20,6 +20,7 @@ The core exposes a small C ABI.
 | `sim_step(ms)` | Advance, with internal 33 ms substeps. |
 | `sim_place`, `sim_upgrade`, `sim_sell` | Tower commands. |
 | `sim_city`, `sim_repair`, `sim_call_wave` | City and wave commands. |
+| `sim_switch_map`, `sim_map_tower_count`, `sim_track_cost` | District travel and track facts. |
 | `sim_snapshot_ptr`, `sim_snapshot_len` | Read the render snapshot. |
 | `sim_save_ptr`, `sim_save_len`, `sim_load` | Byte image save and load. |
 | `sim_tower_info`, `sim_enemy_info`, `sim_preview_count` | Read-only UI facts. |
@@ -41,7 +42,13 @@ The snapshot is a flat `f32` buffer. It is 8,480 floats, about 34 KB.
 
 The header carries the tower, enemy, projectile, and effect counts. The renderer reads only those counts.
 
-Header slot 29 holds the active district id. It replaced an unused core-base value, so the total stays 8,480 floats.
+Header slot 29 holds the active district id. Header slot 30 holds the raid district id. Both replaced unused core-base values, so the total stays 8,480 floats.
+
+The raid is the district the next wave targets. The client counts live enemies from the enemy count and spawn-left header slots; it does not store a second count.
+
+Travel uses `sim_switch_map`. A return of `-2` means a wave is live, `-3` means no track, and `-4` means not enough brass.
+
+The track graph is a chain: Switchyard to Coldwater costs 14 brass, Coldwater to Ashfall costs 22. Far hops have no edge (`sim_track_cost` returns `-1`).
 
 The TypeScript constants mirror the Rust constants. The gate confirms the wasm length and the stride values. The client test pins the total.
 
@@ -55,9 +62,11 @@ Time is passed in from the browser. The core clamps one call to one second and s
 
 ## Save
 
-The save starts with `BMG1` and format byte 3. It stores the seed, economy, wave state, city levels, both district tower lists, enemies, projectiles, effects, and the spawn queue.
+The save starts with `BMG1` and format byte 4. It stores the seed, economy, wave state, city levels, and three tower lists.
 
-Format 2 saves still load. They open on the Switchyard with an empty Coldwater build.
+It also keeps the raid district, wave bonus, enemies, projectiles, effects, and spawn queue.
+
+Format 3 saves still load with both older districts. Format 2 saves open on the Switchyard with an empty Coldwater build. Old formats derive their raid from the seed and wave.
 
 Loading validates the magic, version, counts, and cell bounds. A bad image returns a negative code and leaves the current run alone.
 
@@ -97,7 +106,7 @@ The scene keeps under 400 drawable objects in normal play. Tower meshes are cach
 
 The wasm step is cheap. The render loop is the cost. Shadows use one 1024 map and a tight camera.
 
-The build is one JavaScript chunk of about 630 KB, or 162 KB gzipped. It is not split yet.
+The build is one JavaScript chunk of about 634 KB, or 163 KB gzipped. It is not split yet.
 
 ## Verification
 

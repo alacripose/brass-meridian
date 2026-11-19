@@ -9,6 +9,7 @@ export type HudModel = {
   previewCount: (kind: number) => number;
   repairCost: () => number;
   mapTowerCount: (map: number) => number;
+  trackCost: (map: number) => number;
 };
 
 export type HudActions = {
@@ -345,14 +346,19 @@ export class Hud {
     set("wave", `${snap.wave}`);
 
     let stateText: string = COPY.buildPhase;
-    if (snap.phase === 1) stateText = `${COPY.waveLive} · ${snap.threat}`;
+    if (snap.phase === 1) stateText = `${COPY.raid}: ${DISTRICTS[snap.threatDistrict].name}`;
     if (snap.phase === 2) stateText = COPY.broken;
     if (!state.started) stateText = COPY.mode;
     set("waveState", stateText);
 
     const call = this.root.querySelector<HTMLButtonElement>('[data-act="call"]');
     if (call) call.disabled = !snap.canCall || !state.started;
-    set("bonus", snap.canCall ? `+${Math.ceil(Math.max(0, snap.countdown) * 2)}` : `${snap.threat} left`);
+    set(
+      "bonus",
+      snap.canCall
+        ? `+${Math.ceil(Math.max(0, snap.countdown) * 2)}`
+        : `${snap.enemiesAlive + snap.spawnLeft} left`,
+    );
 
     const fill = this.root.querySelector<HTMLElement>('[data-k="wavefill"]');
     if (fill) {
@@ -492,22 +498,61 @@ export class Hud {
   }
 
   private mapSheet(snap: Snapshot): string {
+    const spots: Array<[number, number]> = [
+      [48, 86],
+      [158, 46],
+      [272, 86],
+    ];
+    const threat = Math.max(0, Math.min(DISTRICTS.length - 1, Math.round(snap.threatDistrict)));
+    const [tx, ty] = spots[threat];
+    const lines = [
+      [0, 1, 14],
+      [1, 2, 22],
+    ]
+      .map(([a, b, cost]) => {
+        const [x1, y1] = spots[a];
+        const [x2, y2] = spots[b];
+        return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="track-line"/>
+          <text x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 - 7}" class="track-cost">${cost}</text>`;
+      })
+      .join("");
+    const nodes = DISTRICTS.map((district, id) => {
+      const [x, y] = spots[id];
+      const cls = id === snap.map ? "here" : id === threat ? "raid" : "";
+      return `<circle cx="${x}" cy="${y}" r="9" class="track-node ${cls}"/>
+        <text x="${x}" y="${y + 24}" class="track-name">${district.name}</text>`;
+    }).join("");
     const cards = DISTRICTS.map((district, id) => {
       const here = snap.map === id;
+      const raid = threat === id;
       const towers = Math.round(this.model.mapTowerCount(id));
-      const disabled = here || snap.phase !== 0 ? "disabled" : "";
-      return `<article class="city-row${here ? " here" : ""}">
+      const cost = Math.round(this.model.trackCost(id));
+      const linked = cost >= 0;
+      const disabled = here || snap.phase !== 0 || !linked || snap.brass < cost;
+      const tag = here ? COPY.here : raid ? COPY.raid : COPY.open;
+      const label = here ? COPY.here : linked ? `${COPY.travel} · ${money(cost)}` : COPY.noTrack;
+      return `<article class="city-row${here ? " here" : ""}${raid ? " raid" : ""}">
         <div class="city-main">
-          <div class="city-title"><h3>${district.name}</h3><span class="tag">${here ? COPY.here : COPY.open}</span></div>
+          <div class="city-title"><h3>${district.name}</h3><span class="tag${raid ? " danger" : ""}">${tag}</span></div>
           <p>${district.role}</p>
-          <div class="city-facts"><span>${COPY.towers} <b>${towers}</b></span><span>${COPY.route} <b>${here ? snap.pathSteps : "—"}</b></span></div>
+          <div class="city-facts"><span>${COPY.towers} <b>${towers}</b></span><span>${COPY.track} <b>${linked ? money(cost) : "—"}</b></span></div>
         </div>
-        <button type="button" class="primary compact" data-act="travel" data-kind="${id}" ${disabled}>
-          ${here ? COPY.here : COPY.travel}
+        <button type="button" class="primary compact" data-act="travel" data-kind="${id}" ${disabled ? "disabled" : ""}>
+          ${label}
         </button>
       </article>`;
     }).join("");
-    return `<p class="foot">${COPY.mapFoot}</p><div class="city-list">${cards}</div>`;
+    return `<div class="track-map" aria-hidden="true">
+        <svg viewBox="0 0 320 120" class="track-svg">
+          <defs><marker id="raid-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" class="raid-mark"/></marker></defs>
+          <line x1="300" y1="12" x2="${tx}" y2="${ty}" class="threat-line" marker-end="url(#raid-arrow)"/>
+          ${lines}${nodes}
+          <text x="300" y="8" class="track-source">RAID</text>
+        </svg>
+      </div>
+      <p class="raid-note">${COPY.raid}: <b>${DISTRICTS[threat].name}</b>. ${COPY.raidNote}</p>
+      <p class="foot">${COPY.mapFoot}</p>
+      <div class="city-list">${cards}</div>`;
   }
 
   private intelSheet(snap: Snapshot): string {

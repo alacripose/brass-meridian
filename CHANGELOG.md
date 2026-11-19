@@ -3,6 +3,27 @@
 All notable changes to Brass Meridian are recorded here.
 The format follows Keep a Changelog, and versions use semantic numbering.
 
+## [0.3.0] - 2026-11-19
+
+### Added
+
+- Ashfall, a third district at the far end of the line.
+- Paid track hops between neighboring districts.
+- A raid district that moves each wave and marks the map edge.
+- A clear bonus for meeting the raid and a core leak for missing it.
+- A version 3 save fixture from the 0.2 wasm.
+
+### Changed
+
+- The Map tab draws the track network, costs, and raid arrow.
+- Save format 4 keeps three district builds, the raid, and its bonus.
+- The HUD names the raid and reports its outcome.
+
+### Limits
+
+- The track graph is one chain, not a region zoom yet.
+- Expeditions, ecology, and automation are still on the roadmap.
+
 ## [0.2.0] - 2026-11-19
 
 ### Added
