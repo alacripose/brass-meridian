@@ -139,6 +139,19 @@ describe("waves and city", () => {
 });
 
 describe("save image", () => {
+  it("keeps the exact 64-bit family seed", () => {
+    const exact = 9_418_646_105_956_113_635n;
+    const sim = Sim.fromBytes(wasm);
+    sim.init(exact);
+    expect(sim.seedLo()).toBe(849435875);
+    expect(sim.seedHi()).toBe(2192949435);
+    const bytes = sim.saveBytes();
+    const loaded = Sim.fromBytes(wasm);
+    expect(loaded.loadBytes(bytes)).toBe(0);
+    expect(loaded.seedLo()).toBe(849435875);
+    expect(loaded.seedHi()).toBe(2192949435);
+  });
+
   it("round-trips a live wave through a new wasm instance", () => {
     const sim = fresh(88);
     sim.place(8, 6, 3);

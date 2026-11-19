@@ -1,8 +1,8 @@
 {
   "ok": true,
   "kind": "headless-probe",
-  "at": "2026-11-19T20:56:28.758Z",
-  "sha256": "e685126b718545bc7bc65c93f3d7fac5e4ee99f1fad6cf8d216d7cbc9beb9f04",
+  "at": "2026-11-19T22:13:10.955Z",
+  "sha256": "6ae9dd0f6606180180fc1f5bc4c554242d238d3093594bf632dd0da101f4bb5c",
   "checks": [
     {
       "name": "snapshot length",
@@ -370,14 +370,44 @@
       "detail": ""
     },
     {
+      "name": "exact seed low half",
+      "ok": true,
+      "detail": "849435875"
+    },
+    {
+      "name": "exact seed high half",
+      "ok": true,
+      "detail": "2192949435"
+    },
+    {
+      "name": "save format is 6",
+      "ok": true,
+      "detail": "6"
+    },
+    {
+      "name": "exact seed image loads",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "exact seed low half survives",
+      "ok": true,
+      "detail": "849435875"
+    },
+    {
+      "name": "exact seed high half survives",
+      "ok": true,
+      "detail": "2192949435"
+    },
+    {
       "name": "save length is stable",
       "ok": true,
-      "detail": "470/470"
+      "detail": "474/474"
     },
     {
       "name": "same seed is deterministic",
       "ok": true,
-      "detail": "470 bytes"
+      "detail": "474 bytes"
     },
     {
       "name": "save loads",
@@ -420,5 +450,5 @@
       "detail": "1"
     }
   ],
-  "bytes": 66261
+  "bytes": 66882
 }

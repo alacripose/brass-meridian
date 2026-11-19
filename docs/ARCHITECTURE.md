@@ -16,7 +16,8 @@ The core exposes a small C ABI.
 
 | Export | Purpose |
 | --- | --- |
-| `sim_init(seed)` | Start a run. |
+| `sim_init(seed)`, `sim_init64(lo, hi)` | Start a run from a 32 or 64 bit seed. |
+| `sim_seed_lo`, `sim_seed_hi` | Read the stored 64 bit seed. |
 | `sim_step(ms)` | Advance, with internal 33 ms substeps. |
 | `sim_place`, `sim_upgrade`, `sim_sell` | Tower commands. |
 | `sim_city`, `sim_repair`, `sim_call_wave` | City and wave commands. |
@@ -69,7 +70,7 @@ The TypeScript constants mirror the Rust constants. The gate confirms the wasm l
 
 ## Determinism
 
-The core uses a 32 bit xorshift random source. The seed is part of the save.
+The core stores a 64 bit seed. Combat variety uses the low 32 bits in a xorshift source.
 
 The same seed and the same command order produce the same save bytes. The probe checks this directly.
 
@@ -77,13 +78,13 @@ Time is passed in from the browser. The core clamps one call to one second and s
 
 ## Save
 
-The save starts with `BMG1` and format byte 5. It stores the seed, economy, wave state, city levels, and three tower lists.
+The save starts with `BMG1` and format byte 6. It stores the 64 bit seed, economy, wave state, city levels, and three tower lists.
 
 It also keeps the raid district, wave bonus, enemies, projectiles, effects, spawn queue, and the shell count.
 
-Format 5 appends expedition state, the marsh, the shell line, and a 4 by 64 bit survey mask. The older block stays byte-for-byte format 4.
+Format 5 appends expedition state, the marsh, the shell line, and a 4 by 64 bit survey mask. Format 6 widens the seed from 32 to 64 bits. The rest of the block stays byte-for-byte format 5.
 
-Formats 2, 3, and 4 still load. Older saves open with an empty survey, a balanced marsh, and a stopped line. Their raid derives from the seed and wave.
+Formats 2 through 5 still load. Older saves open with an empty survey, a balanced marsh, and a stopped line. Their raid derives from the seed and wave.
 
 The probe loads `tests/fixtures/save-v4.bin`, a real image from the 0.3 wasm.
 
@@ -143,5 +144,5 @@ The build is one JavaScript chunk of about 648 KB, or 167 KB gzipped. It is not 
 
 - `cargo test` covers the core with 23 tests.
 - `npm test` loads the real wasm and runs 27 bridge tests.
-- `npm run probe` runs 83 checks for routes, waves, contracts, marsh, line, survey, determinism, and saves.
+- `npm run probe` runs 89 checks for routes, waves, contracts, marsh, line, survey, seeds, determinism, and saves.
 - `npm run gate` checks prose, ledgers, tickets, progress, ABI, receipts, and secrets.

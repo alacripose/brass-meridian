@@ -35,7 +35,9 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm run probe
+      - run: npm run scope
       - run: npm run status
+      - run: npm run scan
       - run: npm run gate
       - uses: actions/upload-pages-artifact@v3
         with:

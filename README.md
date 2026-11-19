@@ -40,7 +40,7 @@ A contract win adds one relic, up to three. Expedition waves do not advance the 
 
 ## Play
 
-Play at `https://alacripose.github.io/brass-meridian/`. The current release is `https://github.com/alacripose/brass-meridian/releases/tag/v0.3.0`.
+Play at `https://alacripose.github.io/brass-meridian/`. The current release is `https://github.com/alacripose/brass-meridian/releases/tag/v0.4.0`.
 
 Tap **Build**, choose a tower, then tap a plot. Tap a tower to upgrade or sell.
 
@@ -105,16 +105,16 @@ The wasm step needs a Rust toolchain with `wasm32-unknown-unknown`.
 
 | Check | Evidence |
 | --- | --- |
-| 27 client tests | `artifacts/receipts/test.json` |
-| 23 core tests | `artifacts/receipts/rust-test.json` |
-| 83 headless probes | `artifacts/receipts/probe.json` |
+| 28 client tests | `artifacts/receipts/test.json` |
+| 25 core tests | `artifacts/receipts/rust-test.json` |
+| 89 headless probes | `artifacts/receipts/probe.json` |
 | Production build | `artifacts/receipts/build.json` |
 | Repository gate | `artifacts/receipts/gate.json` |
-| Release v0.3.0 | `artifacts/receipts/release-0.3.0.json` |
+| 6.0 interview | `docs/QUESTIONS-6.0.md` |
 
 The probe covers route legality, contracts, the marsh, the shell line, survey maps, deterministic bytes, and save recovery.
 
-`STATUS.md` is generated from weighted phases. It carries the project percentage and the open limits.
+`STATUS.md` shows the measured 6.0 inventory. The roadmap is `docs/ROADMAP.md`.
 
 ## Layout
 
@@ -135,10 +135,10 @@ The loop follows the owner's design analysis: Desktop Tower Defense maze pressur
 
 The surface follows the Popit audit. Rounded panels, a page grammar, brass on dark teal, and short labels.
 
-Sources live outside this repo:
+The Popit reference set lives outside this repo.
 
-- `<home>/Documents/popit_base/references/POPIT-AUDIT.md`
-- `<home>/Documents/popit_base/references/OPENLOCK-CONFLUENT-DREAMS-INTERLINE-REV06.md`
+- `POPIT-AUDIT.md`
+- `OPENLOCK-CONFLUENT-DREAMS-INTERLINE-REV06.md`
 - `persistent_city_builder_tower_defense_design_analysis_v9.md` (owner-supplied, 2026)
 
 The name Brass Meridian is a working game name. It does not rename the OpenLock platform, Confluent Dreams, or any family project.

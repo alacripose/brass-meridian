@@ -67,11 +67,17 @@ try {
   const ledger = verifyLedger();
   check("ledger schema and evidence", ledger.problems.length === 0, ledger.problems.slice(0, 4).join(" | "));
   check("ledger has rows", ledger.rows > 0, `${ledger.rows} rows`);
-  for (const type of ["failures", "health", "probes", "tests", "improvements"]) {
+  for (const type of ["failures", "health", "probes", "tests", "improvements", "reconciliation"]) {
     const dir = resolve(root, "ledger", type);
     const files = existsSync(dir) ? readdirSync(dir).filter((n) => n.endsWith(".jsonl")) : [];
     check(`ledger ${type}`, files.length > 0, files.join(","));
   }
+  const rows = readFileSync(resolve(root, "ledger/reconciliation/phase-06.jsonl"), "utf8")
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+  const ids = new Set(rows.map((row) => row.q));
+  check("reconciliation covers every answer", rows.length === 100 && ids.size === 100 && rows.every((row) => ["consistent", "contradicts", "taste"].includes(row.verdict) && Boolean(row.source)), `${rows.length} rows`);
 } catch (error) {
   check("ledger schema", false, String(error));
 }
@@ -106,14 +112,35 @@ try {
 let percent = 0;
 try {
   const progress = json("state/progress.json");
-  const phases = progress?.phases ?? [];
-  const weight = phases.reduce((sum, phase) => sum + phase.weight, 0);
-  percent = Math.round(phases.reduce((sum, phase) => sum + phase.weight * phase.done, 0) * 10) / 10;
-  check("progress weights sum to 100", Math.abs(weight - 100) < 0.001, `${weight}`);
-  check("progress marks are in range", phases.every((p) => p.done >= 0 && p.done <= 1));
-  check("status percentage is current", read("STATUS.md").includes(`Project ${percent}%`), `expected ${percent}%`);
+  const totals = progress?.totals ?? {};
+  percent = totals.percent ?? 0;
+  check("progress is labelled 6.0", progress?.label === "6.0" && totals.have > 0 && totals.need > 0, `${totals.have}/${totals.need}`);
+  check("status percentage is current", read("STATUS.md").includes(`6.0 inventory ${percent}%`), `expected ${percent}%`);
+  check("status rejects the legacy label", !read("STATUS.md").includes("Legacy inventory") && !read("STATUS.md").includes("Project 5.5%"), "legacy label");
 } catch (error) {
   check("progress file", false, String(error));
+}
+
+// --- measured 6.0 inventory ------------------------------------------------
+try {
+  const scope = json("state/scope.json");
+  const progress = json("state/progress.json");
+  const areas = scope?.areas ?? [];
+  const need = areas.reduce((sum, area) => sum + (area.need ?? 0), 0);
+  const have = areas.reduce((sum, area) => sum + (area.have ?? 0), 0);
+  const scopePercent = need ? Math.round((have / need) * 1000) / 10 : 0;
+  const countsOk = areas.every((area) => Number.isInteger(area.have) && Number.isInteger(area.need) && area.need > 0 && area.have >= 0 && area.have <= area.need);
+  const evidenceOk = areas.every((area) => Array.isArray(area.evidence) && area.evidence.length > 0 && area.evidence.every((path) => existsSync(resolve(root, path))));
+  const gapOk = areas.every((area) => Array.isArray(area.missing) && area.missing.length > 0 && area.missing.length <= Math.max(1, area.need - area.have));
+  check("scope label is 6.0", scope?.label === "6.0");
+  check("scope has measured counts", areas.length >= 18 && countsOk, `${areas.length} areas`);
+  check("scope evidence exists", evidenceOk);
+  check("scope names a gap and a next step", gapOk && areas.every((area) => Boolean(area.next)));
+  check("scope percentage is single digit", scopePercent > 0 && scopePercent < 10, `${scopePercent}%`);
+  check("progress mirrors scope", progress?.totals?.have === have && progress?.totals?.need === need && progress?.totals?.percent === scopePercent, `${progress?.totals?.have}/${progress?.totals?.need}`);
+  check("scope drops the old figure", !read("README.md").includes("5.5%") && !read("STATUS.md").includes("5.5%"), "old figure");
+} catch (error) {
+  check("scope inventory", false, String(error));
 }
 
 // --- snapshot ABI ----------------------------------------------------------
@@ -123,6 +150,8 @@ try {
   const ex = instance.exports;
   check("wasm snapshot length", ex.sim_snapshot_len() === 8480, `${ex.sim_snapshot_len()}`);
   check("wasm ABI version", ex.sim_version() === 1, `${ex.sim_version()}`);
+  check("64-bit seed ABI", typeof ex.sim_init64 === "function" && typeof ex.sim_seed_lo === "function" && typeof ex.sim_seed_hi === "function");
+  check("save format 6 is declared", read("core/src/lib.rs").includes("w.push(6)"));
   const ts = read("src/sim.ts");
   check("TS stride mirrors the core", ts.includes("TOWER_STRIDE = 16") && ts.includes("ENEMY_STRIDE = 12"));
   check("TS path base mirrors the core", ts.includes("PROJ_STRIDE = 10") && ts.includes("FX_STRIDE = 8"));
@@ -185,7 +214,7 @@ for (const file of ["README.md", "AGENTS.md", "LICENSE", "CONTRIBUTING.md", ".gi
 }
 try {
   const ci = read(".github/workflows/ci.yml");
-  check("CI runs tests, probe, gate", ["npm test", "npm run test:rust", "npm run probe", "npm run gate"].every((line) => ci.includes(line)));
+  check("CI runs tests, probe, scope, scan, gate", ["npm test", "npm run test:rust", "npm run probe", "npm run scope", "npm run scan", "npm run gate"].every((line) => ci.includes(line)));
   check("PWA shell exists", read("index.html").includes("viewport-fit=cover"));
 } catch (error) {
   check("CI shape", false, String(error));

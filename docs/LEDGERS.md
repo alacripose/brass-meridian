@@ -11,6 +11,7 @@ The ledgers are append-only proof. They answer a narrow question: what was claim
 | `probes` | Headless behavioral checks. |
 | `tests` | Unit and integration results. |
 | `improvements` | A refusal or guard added after a failure. |
+| `reconciliation` | One interview answer checked against evidence. |
 
 ## Row shape
 

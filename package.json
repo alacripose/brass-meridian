@@ -19,10 +19,12 @@
     "test": "node tools/run-tests.mjs",
     "test:rust": "node tools/run-rust-tests.mjs",
     "gate": "node tools/gate.mjs",
+    "scan": "node tools/delivery-scan.mjs",
     "status": "node tools/status.mjs",
     "probe": "node tools/probe.mjs",
     "ledger": "node tools/ledger.mjs verify",
-    "check": "npm run wasm && npm run test:rust && npm run test && npm run build && npm run probe && npm run status && npm run gate"
+    "check": "npm run wasm && npm run test:rust && npm run test && npm run build && npm run probe && npm run scope && npm run status && npm run scan && npm run gate",
+    "scope": "node tools/scope.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

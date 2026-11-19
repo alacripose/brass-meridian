@@ -21,6 +21,7 @@ export const REFUSALS = {
   lineEmpty: "line-empty",
   lineBlocked: "line-blocked",
   offlineCap: "offline-capped",
+  release: "release-unverified",
 } as const;
 
 export type RefusalId = (typeof REFUSALS)[keyof typeof REFUSALS];

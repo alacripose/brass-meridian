@@ -118,6 +118,30 @@ Offline catch-up is requested for more than four hours.
 
 Production stops at 1,200 cycles and at the stock on hand.
 
+## `legacy-scope`
+
+A status line quotes the retired inventory as 6.0 completion.
+
+The figure measured the old field, three districts and 120 waves. The gate now requires the 6.0 label and a measured count.
+
+## `delivery-scan`
+
+A tracked file carries a secret, key, env file, or machine-local path.
+
+`npm run scan` refuses the push and names the file, never the value. The same scan runs in CI before the gate.
+
+## `seed-width`
+
+A save or ABI path stores fewer than 64 bits of the master seed.
+
+Format 6 and the wasm probe refuse it. The seed is the world identity, not a cosmetic number.
+
+## `release-unverified`
+
+A tag is pushed without a green CI run on the same commit.
+
+The tag waits. The release workflow reruns the full chain before it uploads an asset.
+
 ## How to add one
 
 1. Name the failure in `ledger/failures/`.

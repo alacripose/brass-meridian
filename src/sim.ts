@@ -70,6 +70,9 @@ type Exports = {
   memory: WebAssembly.Memory;
   sim_version(): number;
   sim_init(seed: number): void;
+  sim_init64(lo: number, hi: number): void;
+  sim_seed_lo(): number;
+  sim_seed_hi(): number;
   sim_step(ms: number): void;
   sim_place(gx: number, gz: number, kind: number): number;
   sim_can_place(gx: number, gz: number, kind: number): number;
@@ -222,8 +225,21 @@ export class Sim {
     return new Sim(instance.exports as unknown as Exports);
   }
 
-  init(seed: number): void {
+  init(seed: number | bigint): void {
+    if (typeof seed === "bigint") {
+      const value = BigInt.asUintN(64, seed);
+      this.ex.sim_init64(Number(value & 0xffffffffn), Number(value >> 32n));
+      return;
+    }
     this.ex.sim_init(seed >>> 0);
+  }
+
+  seedLo(): number {
+    return this.ex.sim_seed_lo() >>> 0;
+  }
+
+  seedHi(): number {
+    return this.ex.sim_seed_hi() >>> 0;
   }
 
   step(ms: number): void {
