@@ -68,7 +68,7 @@
       "id": "P10",
       "name": "Later systems",
       "weight": 9,
-      "done": 0,
+      "done": 0.25,
       "evidence": "docs/ROADMAP.md"
     }
   ],
@@ -76,7 +76,7 @@
     {
       "id": "T-0008",
       "title": "Connect districts on a frontier map",
-      "state": "open"
+      "state": "active"
     },
     {
       "id": "T-0009",

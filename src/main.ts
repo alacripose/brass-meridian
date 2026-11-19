@@ -1,6 +1,6 @@
 import "./styles.css";
 import { GameAudio } from "./audio";
-import { COPY, TOWERS } from "./copy";
+import { COPY, DISTRICTS, TOWERS } from "./copy";
 import { hasSave, clearSave, loadGame, saveGame } from "./save";
 import { Sim, placeError, type Snapshot } from "./sim";
 import { Hud, type HudModel } from "./ui";
@@ -39,6 +39,7 @@ const model: HudModel = {
   cityCost: (kind, level, ingots) => sim.cityCost(kind, level, ingots),
   previewCount: (kind) => sim.previewCount(kind),
   repairCost: () => sim.repairCost(),
+  mapTowerCount: (map) => sim.mapTowerCount(map),
 };
 
 function cancelBuild() {
@@ -150,6 +151,20 @@ function buildHud(hasSaved: boolean) {
         hud.openSheet("city");
       } else {
         hud.showToast(code === -2 ? COPY.maxLevel : code === -3 ? COPY.noBrass : COPY.noIngots, "bad");
+      }
+    },
+    onMap: (map) => {
+      const code = sim.switchMap(map);
+      if (code === 0) {
+        state.selected = -1;
+        state.buildKind = null;
+        state.hover = null;
+        hud.hidePlacement();
+        hud.closeSheet();
+        hud.showToast(`${COPY.traveled} ${DISTRICTS[map].name}.`, "good");
+        refreshHover();
+      } else if (code === -2) {
+        hud.showToast(COPY.mapLocked, "bad");
       }
     },
     onRepair: () => {

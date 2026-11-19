@@ -1,9 +1,9 @@
 {
   "ok": true,
-  "at": "2026-11-19T15:28:29.613Z",
+  "at": "2026-11-19T15:41:13.277Z",
   "passed": 35,
   "total": 35,
-  "percent": 81.3,
+  "percent": 83.6,
   "checks": [
     {
       "name": "package is MIT",
@@ -13,7 +13,7 @@
     {
       "name": "changelog names this version",
       "ok": true,
-      "detail": "looking for 0.1.0"
+      "detail": "looking for 0.2.0"
     },
     {
       "name": "two-second prose",
@@ -28,7 +28,7 @@
     {
       "name": "ledger has rows",
       "ok": true,
-      "detail": "21 rows"
+      "detail": "29 rows"
     },
     {
       "name": "ledger failures",
@@ -38,22 +38,22 @@
     {
       "name": "ledger health",
       "ok": true,
-      "detail": "phase-01.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl"
     },
     {
       "name": "ledger probes",
       "ok": true,
-      "detail": "phase-01.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl"
     },
     {
       "name": "ledger tests",
       "ok": true,
-      "detail": "phase-01.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl"
     },
     {
       "name": "ledger improvements",
       "ok": true,
-      "detail": "phase-01.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl"
     },
     {
       "name": "ticket front matter",
@@ -73,7 +73,7 @@
     {
       "name": "status percentage is current",
       "ok": true,
-      "detail": "expected 81.3%"
+      "detail": "expected 83.6%"
     },
     {
       "name": "wasm snapshot length",
@@ -98,7 +98,7 @@
     {
       "name": "wasm receipt matches artifact",
       "ok": true,
-      "detail": "5b7bbf4933433748f4926d2322b1a3b462b2b7c7618f6749566116b8ee240937"
+      "detail": "5027776d65cd30f76f418f0c34743a3c5b2c726d8b15c5f4f76c13c1212516e5"
     },
     {
       "name": "typescript tests passed",

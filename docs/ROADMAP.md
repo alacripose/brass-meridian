@@ -19,9 +19,11 @@ The vertical slice is complete. The wider game is ordered by dependency, not by 
 
 - [ ] A world map with districts, tracks, and connections.
 - [ ] A zoom from region to track without losing state.
-- [ ] Two connected maps with separate build state.
+- [x] Two connected maps with separate build state.
 - [ ] Threat direction visible on the map.
-- [ ] Save migration for map nodes.
+- [x] Save migration for district state.
+
+The first cut ships the district list, travel, and both builds. Tracks and threat edges are next.
 
 **Exit:** a player can move between two maps and keep both builds.
 

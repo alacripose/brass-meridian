@@ -3,6 +3,24 @@
 All notable changes to Brass Meridian are recorded here.
 The format follows Keep a Changelog, and versions use semantic numbering.
 
+## [0.2.0] - 2026-11-19
+
+### Added
+
+- Coldwater, a second district with its own rubble, route, and tower set.
+- A Map tab that travels between districts only between waves.
+- Save format 3, which keeps both district builds and migrates version 2 saves.
+
+### Changed
+
+- The snapshot map field replaces the unused core-base header slot.
+- The dock has four tabs; the mobile width was reduced for the new tab.
+
+### Limits
+
+- The frontier is two districts, not a graph of tracks and threat edges yet.
+- Expeditions, ecology, and automation are still on the roadmap.
+
 ## [0.1.0] - 2026-11-19
 
 ### Added

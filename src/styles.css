@@ -433,9 +433,9 @@ button:disabled {
 }
 
 .dock-btn {
-  min-width: 84px;
+  min-width: 72px;
   height: 42px;
-  padding: 0 14px;
+  padding: 0 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -500,6 +500,29 @@ button:disabled {
   inset: 4px;
   border-radius: 50%;
   background: currentColor;
+}
+
+.dock-mark.map {
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+}
+
+.dock-mark.map::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 5px;
+  border-left: 1.5px solid currentColor;
+}
+
+.dock-mark.map::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 5px;
+  border-top: 1.5px solid currentColor;
 }
 
 /* ---------- sheet ---------- */

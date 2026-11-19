@@ -20,6 +20,14 @@ Enemies follow a flow field toward the core. Towers block cells. A placement is 
 
 Six rubble cells are unbuildable. The gate and core cells are reserved. The route is redrawn after every build or sale.
 
+## Frontier
+
+Two districts share one core and one city. The Switchyard has the tight home approach. Coldwater opens a wider flank with its own rubble.
+
+Travel is allowed only between waves. Each district keeps its towers, so the player can build both lines.
+
+The district sheet is a list, not a track graph yet. Threat edges and a zoomed map belong to the next frontier step.
+
 ## Towers
 
 | Tower | Cost | Base damage | Range | Shot | Air | Special |
