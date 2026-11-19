@@ -18,15 +18,67 @@ The core sits at the west centre.
 
 Enemies follow a flow field toward the core. Towers block cells. A placement is refused when no route remains or the route exceeds 40 steps.
 
-Six rubble cells are unbuildable. The gate and core cells are reserved. The route is redrawn after every build or sale.
+Six rubble cells are unbuildable. A survey map can replace Ashfall rubble with up to twenty-four plots.
+
+The gate and core cells are reserved. The route is redrawn after every build or sale.
 
 ## Frontier
 
-Two districts share one core and one city. The Switchyard has the tight home approach. Coldwater opens a wider flank with its own rubble.
+Three districts share one core and one city. The Switchyard has the tight home approach.
 
-Travel is allowed only between waves. Each district keeps its towers, so the player can build both lines.
+Coldwater opens a wider flank. Ashfall is the far foundry.
 
-The district sheet is a list, not a track graph yet. Threat edges and a zoomed map belong to the next frontier step.
+Travel is allowed only between waves. Each district keeps its towers, so the player can build all three lines.
+
+A paid chain joins the districts. The next wave raids one district, and the Map sheet marks it.
+
+The district sheet is a list, not a region zoom yet. A zoomed track graph belongs to a later frontier step.
+
+## Expeditions
+
+A contract runs three short waves on the current district. The player pays a fee before launch.
+
+Contract fees are 30, 45, and 60 brass. Base pay is 55, 75, and 110. The third contract holds a boss on its second leg.
+
+A win grants one relic for that contract. Relics stack to three and grant a fixed boon.
+
+- Cinder Survey: plus 6% tower damage per relic.
+- Drowned Line: plus 8% bounty per relic.
+- Glass Vigil: plus 1 core capacity per relic.
+
+Discoveries are permanent and cap at three. Expedition waves do not advance the normal wave count.
+
+## Coldwater marsh
+
+One marsh tracks soil, water, and vegetation. Three prey, two predators, and one scavenger feed on it.
+
+Actions trade one habitat for another. Open sluice raises water and lowers soil.
+
+Plant cover raises vegetation and lowers water. Reed harvest pays brass and lowers cover.
+
+The panel names the cause of the current shift. The marsh moves at a quarter rate outside Coldwater.
+
+## Shell line
+
+The shell line turns stock into a tower buff. It consumes one ingot every three seconds and makes four shells.
+
+The buffer holds six shells. A convoy carries the buffer to the magazine in three seconds.
+
+Shells add up to 40% tower damage. A wave clear spends shells for that wave.
+
+The repair rule keeps a 100 brass reserve. It acts below eight core and logs every action.
+
+Offline catch-up stops at four hours, 1,200 cycles, and the stock on hand.
+
+## Survey maps
+
+A community map is JSON with schema `brass-meridian.map/1` and generator 1.
+
+The file carries a name, author, MIT license, optional seed, and four to twenty-four rubble plots.
+
+The client checks the schema, budget, bounds, and route. The core repeats the connectivity check with no towers.
+
+The map replaces Ashfall rubble only. Towers there must be cleared first. Restore returns the authored field.
 
 ## Towers
 
@@ -59,7 +111,7 @@ Flying enemies ignore the maze and fly straight at the core. Mortar cannot targe
 
 ## Waves
 
-Waves one to ten are authored. Wave ten adds the first Cathedral. Later waves mix all types and add a boss every fifth wave.
+Waves one to ten are authored. Wave ten adds the first Cathedral, and later waves add a boss every fifth wave. Health scales 12% per wave, and speed caps at 1.3 times base.
 
 A build phase lasts 15 seconds at the start and 12 seconds after a clear. Calling early pays two brass per remaining second.
 
@@ -76,11 +128,11 @@ A clear pays 18 brass plus 5 per wave, and 2 ingots plus one per three waves.
 
 Upgrades cost more and some need ingots. The City panel names the rate and the state.
 
-The city does not simulate workers, power, or transport yet. Those belong to the logistics phase.
+The shell line adds one automated consumer and one rule. Workers, power, and a second transport chain remain open.
 
 ## Economy
 
-Brass is the build currency. Ingots are the tier-three currency. Both are visible at all times.
+Brass is the build currency. Ingots are the tier-three currency. Shells are the line buffer and damage bonus.
 
 The opening purse is 150 brass. The core starts at 20 health.
 
@@ -92,7 +144,7 @@ The palette follows the Popit audit: brass, dark teal, warm ivory, and a small l
 
 Panels are rounded and translucent. Rules are dashed. Labels are short.
 
-The dock uses three tabs, not a nested menu.
+The dock uses four tabs, not a nested menu. City and Map each hold folding sub-sections.
 
 The surface is a game HUD, not a desktop window manager. It does not claim Dreams-style canvas pinning.
 
@@ -108,12 +160,12 @@ The camera is top-down at a fixed angle. Drag pans, pinch zooms, and a tap selec
 
 ## What is not here
 
-- A connected frontier map.
-- Expeditions, boons, or relics.
-- Ecology, habitats, or weather.
-- Conveyors, power, or logistics.
+- A region zoom over the track chain.
+- Seeded expedition tracks and extraction loadouts.
+- The full tower and enemy rosters.
+- Music, localization, or gamepad parity.
 - Accounts, cloud saves, or multiplayer.
-- Community maps.
+- A measured performance budget for survey maps.
 
 These are scoped in `ROADMAP.md`.
 

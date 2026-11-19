@@ -1,0 +1,7 @@
+{"seq":1,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0009","claim":"Save format 5 keeps the expedition, marsh, and line state.","ev":"tests/sim.test.ts","ok":true}
+{"seq":2,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0009","claim":"A contract charges its fee and pays its reward once.","ev":"tests/sim.test.ts","ok":true}
+{"seq":3,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0010","claim":"Marsh ground is slower only outside Coldwater.","ev":"tests/sim.test.ts","ok":true}
+{"seq":4,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0011","claim":"The repair rule keeps a 100 brass reserve.","ev":"tests/sim.test.ts","ok":true}
+{"seq":5,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0012","claim":"A survey with 25 plots is refused.","ev":"tests/sim.test.ts","ok":true}
+{"seq":6,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0013","claim":"Wave eleven is not a copy of wave ten.","ev":"tests/sim.test.ts","ok":true}
+{"seq":7,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0009","claim":"A version 4 fixture still loads through the bridge.","ev":"tests/fixtures/save-v4.bin","ok":true}

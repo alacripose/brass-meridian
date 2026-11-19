@@ -6,7 +6,7 @@ The Rust core owns the game. The browser draws it. That split is the main design
 
 The battlefield is a deterministic simulation. Pathfinding, wave timing, damage, and economy run in one place.
 
-The core has no dependencies and no browser access. It compiles to a 54 KB wasm module with `wasm32-unknown-unknown`.
+The core has no dependencies and no browser access. It compiles to a wasm module of about 65 KB with `wasm32-unknown-unknown`.
 
 A native test run exercises the same code with `cargo test`.
 
@@ -21,6 +21,11 @@ The core exposes a small C ABI.
 | `sim_place`, `sim_upgrade`, `sim_sell` | Tower commands. |
 | `sim_city`, `sim_repair`, `sim_call_wave` | City and wave commands. |
 | `sim_switch_map`, `sim_map_tower_count`, `sim_track_cost` | District travel and track facts. |
+| `sim_expedition`, `sim_expedition_start`, `sim_expedition_contract` | Contract state, launch, fee, pay, and relics. |
+| `sim_eco`, `sim_eco_action` | Marsh state and one habitat action. |
+| `sim_automation`, `sim_automation_toggle`, `sim_convoy`, `sim_offline` | Shell line, rule, convoy, and catch-up. |
+| `sim_import_map`, `sim_clear_map`, `sim_custom` | Survey validation and rollback. |
+| `sim_wave_curve` | Read the endless pressure curve. |
 | `sim_snapshot_ptr`, `sim_snapshot_len` | Read the render snapshot. |
 | `sim_save_ptr`, `sim_save_len`, `sim_load` | Byte image save and load. |
 | `sim_tower_info`, `sim_enemy_info`, `sim_preview_count` | Read-only UI facts. |
@@ -50,6 +55,16 @@ Travel uses `sim_switch_map`. A return of `-2` means a wave is live, `-3` means 
 
 The track graph is a chain: Switchyard to Coldwater costs 14 brass, Coldwater to Ashfall costs 22. Far hops have no edge (`sim_track_cost` returns `-1`).
 
+New systems use extra exports, not new snapshot slots. The 8,480 float ABI stays fixed.
+
+Expedition state lives in `sim_expedition`: active, contract, leg, result, three relic counts, discoveries, and spawn left.
+
+Ecology uses `sim_eco` with soil, water, cover, six species, cause, cause age, and harvests.
+
+Automation uses `sim_automation` with state, buffer, shells, convoy, rule, log, and produced.
+
+Survey state uses `sim_custom`: ready flag and cell count. The core repeats the route check with no towers.
+
 The TypeScript constants mirror the Rust constants. The gate confirms the wasm length and the stride values. The client test pins the total.
 
 ## Determinism
@@ -62,15 +77,21 @@ Time is passed in from the browser. The core clamps one call to one second and s
 
 ## Save
 
-The save starts with `BMG1` and format byte 4. It stores the seed, economy, wave state, city levels, and three tower lists.
+The save starts with `BMG1` and format byte 5. It stores the seed, economy, wave state, city levels, and three tower lists.
 
-It also keeps the raid district, wave bonus, enemies, projectiles, effects, and spawn queue.
+It also keeps the raid district, wave bonus, enemies, projectiles, effects, spawn queue, and the shell count.
 
-Format 3 saves still load with both older districts. Format 2 saves open on the Switchyard with an empty Coldwater build. Old formats derive their raid from the seed and wave.
+Format 5 appends expedition state, the marsh, the shell line, and a 4 by 64 bit survey mask. The older block stays byte-for-byte format 4.
+
+Formats 2, 3, and 4 still load. Older saves open with an empty survey, a balanced marsh, and a stopped line. Their raid derives from the seed and wave.
+
+The probe loads `tests/fixtures/save-v4.bin`, a real image from the 0.3 wasm.
 
 Loading validates the magic, version, counts, and cell bounds. A bad image returns a negative code and leaves the current run alone.
 
-The browser stores the image as base64 in localStorage under `brass-meridian.save.v2`. Autosave runs every ten seconds and when the tab hides.
+The browser stores the image as base64 in localStorage under `brass-meridian.save.v2`. A second key stores the last save time for offline catch-up.
+
+Autosave runs every ten seconds and when the tab hides. The offline call caps at four hours and at the stock on hand.
 
 ## Renderer
 
@@ -86,6 +107,10 @@ A tap raycasts a ground plane and rounds to a cell.
 
 `src/ui.ts` is plain DOM. It has no framework and no state of its own beyond the open sheet. The dock holds Build, City, Map, and Intel.
 
+The City sheet holds works, the marsh card, and the shell line card. The Map sheet holds districts, contracts, and the survey importer.
+
+`src/map.ts` validates survey JSON before the core sees a byte. It checks schema, generator, author, license, cell count, bounds, and route.
+
 All player-facing text is in `src/copy.ts`. That makes the prose checker meaningful.
 
 The HUD updates from a snapshot each frame. The sheet re-renders when a command changes the facts.
@@ -96,6 +121,12 @@ The HUD updates from a snapshot each frame. The sheet re-renders when a command 
 - Sealed route: placement returns `place-sealed`.
 - Over-budget route: placement returns `place-budget`.
 - Corrupt save: `save-rejected`, current run kept.
+- Sealed survey: `map-sealed`, current field kept.
+- Over-budget survey: `map-budget`, current field kept.
+- Contract during a wave: `contract-busy`, fee not charged.
+- Empty convoy: `line-empty`, shells kept.
+- Full buffer or starved stock: `line-blocked`, state named.
+- Offline past four hours: `offline-capped`, stock preserved.
 - Maxed button: the refresh respects `data-maxed`.
 - Prose drift: the gate fails with the line.
 - Secret in the tree: the gate fails with the path.
@@ -106,11 +137,11 @@ The scene keeps under 400 drawable objects in normal play. Tower meshes are cach
 
 The wasm step is cheap. The render loop is the cost. Shadows use one 1024 map and a tight camera.
 
-The build is one JavaScript chunk of about 634 KB, or 163 KB gzipped. It is not split yet.
+The build is one JavaScript chunk of about 648 KB, or 167 KB gzipped. It is not split yet.
 
 ## Verification
 
-- `cargo test` covers the core.
-- `npm test` loads the real wasm and checks the bridge.
-- `npm run probe` checks routes, waves, income, determinism, and saves.
+- `cargo test` covers the core with 23 tests.
+- `npm test` loads the real wasm and runs 27 bridge tests.
+- `npm run probe` runs 83 checks for routes, waves, contracts, marsh, line, survey, determinism, and saves.
 - `npm run gate` checks prose, ledgers, tickets, progress, ABI, receipts, and secrets.

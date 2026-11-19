@@ -1,8 +1,8 @@
 {
   "ok": true,
   "kind": "headless-probe",
-  "at": "2026-11-19T16:08:29.938Z",
-  "sha256": "8ebfd3ba7312128f9cdf9e394963fcad5ac5e4b04173ef7be8d032cc35e08c42",
+  "at": "2026-11-19T20:56:28.758Z",
+  "sha256": "e685126b718545bc7bc65c93f3d7fac5e4ee99f1fad6cf8d216d7cbc9beb9f04",
   "checks": [
     {
       "name": "snapshot length",
@@ -185,14 +185,199 @@
       "detail": "0.900"
     },
     {
+      "name": "contract fee is 30",
+      "ok": true,
+      "detail": "30"
+    },
+    {
+      "name": "contract pay is 55",
+      "ok": true,
+      "detail": "55"
+    },
+    {
+      "name": "contract starts",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "contract is live",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "contract paid the fee",
+      "ok": true,
+      "detail": "120"
+    },
+    {
+      "name": "second contract refuses",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "contract leg is zero",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "marsh starts balanced",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "sluice opens",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "sluice raises water",
+      "ok": true,
+      "detail": "76"
+    },
+    {
+      "name": "sluice becomes the cause",
+      "ok": true,
+      "detail": "5"
+    },
+    {
+      "name": "reed harvest pays",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reed harvest credits brass",
+      "ok": true,
+      "detail": "155.55999755859375"
+    },
+    {
+      "name": "line starts off",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "foundry stands",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "line starts",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "line is on",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "line buffered shells",
+      "ok": true,
+      "detail": "4"
+    },
+    {
+      "name": "convoy leaves",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "convoy delivers shells",
+      "ok": true,
+      "detail": "4"
+    },
+    {
+      "name": "offline gain is capped",
+      "ok": true,
+      "detail": "8"
+    },
+    {
+      "name": "rule toggles",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "survey imports",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "survey is ready",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "survey keeps six cells",
+      "ok": true,
+      "detail": "6"
+    },
+    {
+      "name": "survey cell turns to rubble",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "survey save loads",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "survey survives a save",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "survey restores",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "sealed survey refuses",
+      "ok": true,
+      "detail": "-5"
+    },
+    {
+      "name": "survey refuses a built district",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "wave 1 health is one",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "wave 30 health is capped",
+      "ok": true,
+      "detail": "1.2999999523162842"
+    },
+    {
+      "name": "wave 10 holds a boss",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "wave 30 fields 73 enemies",
+      "ok": true,
+      "detail": "73"
+    },
+    {
+      "name": "v4 save loads",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "v4 save keeps three districts",
+      "ok": true,
+      "detail": ""
+    },
+    {
       "name": "save length is stable",
       "ok": true,
-      "detail": "347/347"
+      "detail": "470/470"
     },
     {
       "name": "same seed is deterministic",
       "ok": true,
-      "detail": "347 bytes"
+      "detail": "470 bytes"
     },
     {
       "name": "save loads",
@@ -235,5 +420,5 @@
       "detail": "1"
     }
   ],
-  "bytes": 53940
+  "bytes": 66261
 }

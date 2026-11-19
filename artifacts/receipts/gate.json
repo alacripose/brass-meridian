@@ -1,9 +1,9 @@
 {
   "ok": true,
-  "at": "2026-11-19T16:08:31.401Z",
+  "at": "2026-11-19T20:56:30.184Z",
   "passed": 35,
   "total": 35,
-  "percent": 85.2,
+  "percent": 5.4,
   "checks": [
     {
       "name": "package is MIT",
@@ -13,7 +13,7 @@
     {
       "name": "changelog names this version",
       "ok": true,
-      "detail": "looking for 0.3.0"
+      "detail": "looking for 0.4.0"
     },
     {
       "name": "two-second prose",
@@ -28,32 +28,32 @@
     {
       "name": "ledger has rows",
       "ok": true,
-      "detail": "49 rows"
+      "detail": "69 rows"
     },
     {
       "name": "ledger failures",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-03.jsonl"
+      "detail": "phase-01.jsonl,phase-03.jsonl,phase-04.jsonl"
     },
     {
       "name": "ledger health",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl"
     },
     {
       "name": "ledger probes",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl"
     },
     {
       "name": "ledger tests",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl"
     },
     {
       "name": "ledger improvements",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl"
     },
     {
       "name": "ticket front matter",
@@ -73,7 +73,7 @@
     {
       "name": "status percentage is current",
       "ok": true,
-      "detail": "expected 85.2%"
+      "detail": "expected 5.4%"
     },
     {
       "name": "wasm snapshot length",
@@ -98,7 +98,7 @@
     {
       "name": "wasm receipt matches artifact",
       "ok": true,
-      "detail": "8ebfd3ba7312128f9cdf9e394963fcad5ac5e4b04173ef7be8d032cc35e08c42"
+      "detail": "e685126b718545bc7bc65c93f3d7fac5e4ee99f1fad6cf8d216d7cbc9beb9f04"
     },
     {
       "name": "typescript tests passed",
@@ -123,7 +123,7 @@
     {
       "name": "refusal ids are documented",
       "ok": true,
-      "detail": "9 ids"
+      "detail": "19 ids"
     },
     {
       "name": "no committed secrets",

@@ -1,108 +1,217 @@
 {
   "updated": "2026-11-19",
+  "note": "Baseline for the full game, not the vertical slice. Content, art, audio, platform, and live work carry most of the weight.",
   "phases": [
     {
       "id": "P1",
       "name": "Defense loop",
-      "weight": 22,
+      "weight": 1,
       "done": 1,
       "evidence": "artifacts/receipts/test.json"
     },
     {
       "id": "P2",
       "name": "Maze placement",
-      "weight": 10,
+      "weight": 1,
       "done": 1,
       "evidence": "artifacts/receipts/probe.json"
     },
     {
       "id": "P3",
-      "name": "City production",
-      "weight": 10,
-      "done": 0.85,
+      "name": "City economy",
+      "weight": 1,
+      "done": 0.7,
       "evidence": "artifacts/receipts/test.json"
     },
     {
       "id": "P4",
       "name": "Tower roster",
-      "weight": 10,
-      "done": 0.8,
+      "weight": 2,
+      "done": 0.1,
       "evidence": "artifacts/receipts/probe.json"
     },
     {
       "id": "P5",
-      "name": "Mobile shell",
-      "weight": 10,
-      "done": 0.9,
-      "evidence": "artifacts/receipts/build.json"
+      "name": "Enemy roster",
+      "weight": 2,
+      "done": 0.05,
+      "evidence": "artifacts/receipts/rust-test.json"
     },
     {
       "id": "P6",
-      "name": "Save and resume",
-      "weight": 5,
-      "done": 1,
+      "name": "Frontier travel",
+      "weight": 1,
+      "done": 0.7,
       "evidence": "artifacts/receipts/probe.json"
     },
     {
       "id": "P7",
-      "name": "Proof gate",
-      "weight": 10,
-      "done": 1,
-      "evidence": "artifacts/receipts/gate.json"
+      "name": "Expeditions",
+      "weight": 1,
+      "done": 0.25,
+      "evidence": "artifacts/receipts/test.json"
     },
     {
       "id": "P8",
-      "name": "Public CI and release",
-      "weight": 6,
-      "done": 1,
-      "evidence": "artifacts/receipts/public-runtime.json"
+      "name": "Ecology",
+      "weight": 1,
+      "done": 0.25,
+      "evidence": "artifacts/receipts/test.json"
     },
     {
       "id": "P9",
-      "name": "Endless frontier",
-      "weight": 8,
-      "done": 0.55,
+      "name": "Automation",
+      "weight": 1,
+      "done": 0.25,
       "evidence": "artifacts/receipts/test.json"
     },
     {
       "id": "P10",
-      "name": "Later systems",
-      "weight": 9,
+      "name": "Community maps",
+      "weight": 1,
       "done": 0.25,
+      "evidence": "artifacts/receipts/probe.json"
+    },
+    {
+      "id": "P11",
+      "name": "Art and animation",
+      "weight": 18,
+      "done": 0.02,
+      "evidence": "artifacts/receipts/build.json"
+    },
+    {
+      "id": "P12",
+      "name": "Music and mix",
+      "weight": 8,
+      "done": 0,
+      "evidence": "docs/ROADMAP.md"
+    },
+    {
+      "id": "P13",
+      "name": "Narrative and onboarding",
+      "weight": 10,
+      "done": 0,
+      "evidence": "docs/ROADMAP.md"
+    },
+    {
+      "id": "P14",
+      "name": "Meta progression",
+      "weight": 10,
+      "done": 0,
+      "evidence": "docs/ROADMAP.md"
+    },
+    {
+      "id": "P15",
+      "name": "Platform and input",
+      "weight": 9,
+      "done": 0.02,
+      "evidence": "artifacts/receipts/build.json"
+    },
+    {
+      "id": "P16",
+      "name": "Content volume",
+      "weight": 18,
+      "done": 0.01,
+      "evidence": "docs/ROADMAP.md"
+    },
+    {
+      "id": "P17",
+      "name": "Live operations",
+      "weight": 8,
+      "done": 0,
+      "evidence": "docs/ROADMAP.md"
+    },
+    {
+      "id": "P18",
+      "name": "Localization",
+      "weight": 7,
+      "done": 0,
       "evidence": "docs/ROADMAP.md"
     }
   ],
   "todo": [
+    {
+      "id": "T-0009",
+      "title": "Finish seeded expedition tracks and extraction loadouts",
+      "state": "active"
+    },
+    {
+      "id": "T-0010",
+      "title": "Add one ecology with visible cause and effect",
+      "state": "done"
+    },
+    {
+      "id": "T-0011",
+      "title": "Add one inspectable automation line",
+      "state": "done"
+    },
+    {
+      "id": "T-0012",
+      "title": "Add a measured performance budget per community map",
+      "state": "active"
+    },
+    {
+      "id": "T-0013",
+      "title": "Extend pressure past wave ten",
+      "state": "done"
+    },
     {
       "id": "T-0014",
       "title": "Draw frontier tracks and threat edges",
       "state": "done"
     },
     {
-      "id": "T-0009",
-      "title": "Add expedition rewards and contracts",
-      "state": "active"
-    },
-    {
-      "id": "T-0010",
-      "title": "Add one ecology with visible cause and effect",
+      "id": "T-0015",
+      "title": "Add the full tower roster and upgrade branches",
       "state": "open"
     },
     {
-      "id": "T-0011",
-      "title": "Add one automated production line with fault reasons",
+      "id": "T-0016",
+      "title": "Add enemy roles, resistances, and boss modifiers",
       "state": "open"
     },
     {
-      "id": "T-0012",
-      "title": "Validate community maps before play",
+      "id": "T-0017",
+      "title": "Add the authored campaign and first-run teaching",
+      "state": "open"
+    },
+    {
+      "id": "T-0018",
+      "title": "Add meta progression and daily seeds",
+      "state": "open"
+    },
+    {
+      "id": "T-0019",
+      "title": "Add music, mix states, and a mute path",
+      "state": "open"
+    },
+    {
+      "id": "T-0020",
+      "title": "Add accessibility settings and input rebinding",
+      "state": "open"
+    },
+    {
+      "id": "T-0021",
+      "title": "Add a localization pipeline and second language",
+      "state": "open"
+    },
+    {
+      "id": "T-0022",
+      "title": "Add more districts, biomes, and authored waves",
+      "state": "open"
+    },
+    {
+      "id": "T-0023",
+      "title": "Add gamepad and keyboard parity",
       "state": "open"
     }
   ],
   "limits": [
     "No accounts, server, or multiplayer.",
-    "The frontier has one track chain, not a region zoom.",
-    "Expeditions, ecology, and automation are not built.",
-    "Touch play was not checked on a physical phone."
+    "The frontier is one track chain, not a region zoom.",
+    "Expeditions use the current district, not seeded tracks yet.",
+    "Survey maps have a cell budget, not a measured performance budget.",
+    "No music, localization, or physical-phone check yet.",
+    "The percentage is a scope estimate, not a delivery promise."
   ]
 }

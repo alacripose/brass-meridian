@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { parseMap, validateMap } from "../src/map";
 import { GRID_H, GRID_W, PLACE, SNAPSHOT_FLOATS, Sim } from "../src/sim";
 
 const wasm = new Uint8Array(readFileSync(resolve(process.cwd(), "public/brass_core.wasm")));
@@ -191,6 +192,17 @@ describe("save image", () => {
     expect(snap.towerCount).toBe(1);
   });
 
+  it("loads a version 4 save with the frontier cut", () => {
+    const image = new Uint8Array(readFileSync(resolve(process.cwd(), "tests/fixtures/save-v4.bin")));
+    const sim = Sim.fromBytes(wasm);
+    expect(sim.loadBytes(image)).toBe(0);
+    const snap = sim.snapshot();
+    expect(snap.map).toBe(2);
+    expect(sim.mapTowerCount(0)).toBe(1);
+    expect(sim.mapTowerCount(1)).toBe(1);
+    expect(sim.mapTowerCount(2)).toBe(1);
+  });
+
   it("loads a version 3 save with both frontier districts", () => {
     const image = new Uint8Array(readFileSync(resolve(process.cwd(), "tests/fixtures/save-v3.bin")));
     const sim = Sim.fromBytes(wasm);
@@ -201,5 +213,110 @@ describe("save image", () => {
     expect(sim.mapTowerCount(1)).toBe(1);
     expect(sim.switchMap(1)).toBe(0);
     expect(sim.snapshot().towers[0].kind).toBe(1);
+  });
+});
+
+describe("expeditions", () => {
+  it("charges the fee and blocks a second contract", () => {
+    const sim = fresh(31);
+    expect(sim.expeditionContract(0, 0)).toBe(30);
+    expect(sim.expeditionContract(1, 0)).toBe(45);
+    expect(sim.expeditionContract(2, 0)).toBe(60);
+    expect(sim.startExpedition(0)).toBe(0);
+    expect(sim.expedition(0)).toBe(1);
+    expect(sim.snapshot().brass).toBe(120);
+    expect(sim.startExpedition(1)).toBe(-1);
+  });
+
+  it("refuses a contract during a live wave", () => {
+    const sim = fresh(32);
+    expect(sim.callWave()).toBe(0);
+    expect(sim.startExpedition(0)).toBe(-1);
+  });
+
+  it("reports the permanent boon and discovery slots", () => {
+    const sim = fresh(33);
+    expect(sim.expeditionContract(0, 3)).toBe(0);
+    expect(sim.expeditionContract(0, 4)).toBe(0);
+    expect(sim.expedition(7)).toBe(0);
+  });
+});
+
+describe("marsh and line", () => {
+  it("moves habitat and pays for reeds", () => {
+    const sim = fresh(41);
+    const water = sim.eco(1);
+    expect(sim.ecoAction(0)).toBe(0);
+    expect(sim.eco(1)).toBeGreaterThan(water);
+    expect(sim.eco(9)).toBe(5);
+    const brass = sim.snapshot().brass;
+    expect(sim.ecoAction(2)).toBeGreaterThan(0);
+    expect(sim.snapshot().brass).toBeGreaterThan(brass);
+    expect(sim.eco(9)).toBe(4);
+  });
+
+  it("runs the line, sends a convoy, and caps offline gain", () => {
+    const sim = fresh(42);
+    expect(sim.buildCity(0)).toBe(0);
+    for (let i = 0; i < 140; i++) sim.step(33);
+    expect(sim.autoToggle(0)).toBe(0);
+    expect(sim.automation(5)).toBe(1);
+    for (let i = 0; i < 140; i++) sim.step(33);
+    expect(sim.automation(1)).toBeGreaterThanOrEqual(4);
+    expect(sim.convoy()).toBe(0);
+    for (let i = 0; i < 120; i++) sim.step(33);
+    expect(sim.automation(2)).toBeGreaterThanOrEqual(4);
+  });
+
+  it("caps offline production at the stock on hand", () => {
+    const sim = fresh(43);
+    sim.autoToggle(0);
+    expect(sim.offline(3600)).toBe(0);
+  });
+});
+
+describe("community survey maps", () => {
+  const sample = {
+    schema: "brass-meridian.map/1",
+    generator: 1,
+    name: "Lantern Cut",
+    author: "Switchyard Survey",
+    license: "MIT",
+    rubble: [
+      [5, 2],
+      [5, 3],
+      [6, 2],
+      [11, 9],
+      [12, 9],
+      [11, 10],
+    ],
+  };
+
+  it("validates, imports, and restores a survey", () => {
+    const check = validateMap(sample);
+    expect(check.ok).toBe(true);
+    expect(check.count).toBe(6);
+    expect(check.binary?.length).toBe(19);
+    const sim = fresh(51);
+    expect(sim.importMap(check.binary!)).toBe(0);
+    expect(sim.custom(0)).toBe(1);
+    expect(sim.custom(1)).toBe(6);
+    expect(sim.switchMap(1)).toBe(0);
+    expect(sim.switchMap(2)).toBe(0);
+    expect(sim.cellState(5, 2)).toBe(1);
+    expect(sim.clearMap()).toBe(0);
+    expect(sim.custom(0)).toBe(0);
+  });
+
+  it("refuses a sealed or malformed survey", () => {
+    const sealed = validateMap({
+      ...sample,
+      rubble: Array.from({ length: 13 }, (_, gz) => [8, gz]),
+    });
+    expect(sealed.ok).toBe(false);
+    expect(sealed.code).toBe("map-sealed");
+    expect(parseMap("nope").code).toBe("map-json");
+    expect(validateMap({ ...sample, generator: 2 }).code).toBe("map-generator");
+    expect(validateMap({ ...sample, author: "" }).code).toBe("map-author");
   });
 });

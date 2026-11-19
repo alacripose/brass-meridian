@@ -61,6 +61,51 @@ export const ENEMIES: EnemyCopy[] = [
   { name: "Cathedral", note: "Boss. Breaks six core." },
 ];
 
+export type ContractCopy = {
+  name: string;
+  role: string;
+  boon: string;
+};
+
+export const CONTRACTS: ContractCopy[] = [
+  { name: "Cinder Survey", role: "Hounds and armor in the ash.", boon: "Ash Grit: +6% tower damage a stack." },
+  { name: "Drowned Line", role: "Air and hulls over wet ground.", boon: "Brine Coil: +8% bounty a stack." },
+  { name: "Glass Vigil", role: "A far boss holds the line.", boon: "Glass Tithe: +1 core capacity a stack." },
+];
+
+export const PREY = ["Reed hare", "Mud fowl", "Glass eel"];
+export const PREDATORS = ["Mire cat", "Bog owl"];
+export const SCAVENGER = "Ash crow";
+
+export const ECO_CAUSES = [
+  "Balanced.",
+  "Water is low.",
+  "Vegetation is low.",
+  "Predators outnumber prey.",
+  "Reed harvest opened light.",
+  "Sluice raised the water.",
+  "Cover planting held the soil.",
+];
+
+export const ECO_ACTIONS = [
+  { name: "Open sluice", note: "Water up, soil down." },
+  { name: "Plant cover", note: "Vegetation up, water down." },
+  { name: "Harvest reed", note: "Brass now, cover later." },
+];
+
+export const AUTO_STATES = ["Idle", "Running", "Starved", "Blocked"];
+export const AUTO_LOGS = [
+  "No event yet.",
+  "Line cast four shells.",
+  "No ingots in stock.",
+  "Output buffer is full.",
+  "Rule repaired the core.",
+  "Convoy delivered shells.",
+  "Offline catch-up finished.",
+  "Convoy left the line.",
+  "Rule permission changed.",
+];
+
 export const DISTRICTS = [
   { name: "Switchyard", role: "The home gate." },
   { name: "Coldwater", role: "A wider flank." },
@@ -91,6 +136,58 @@ export const COPY = {
   intel: "Intel",
   map: "Map",
   frontier: "Frontier",
+  contracts: "Expeditions",
+  contractFee: "Fee",
+  contractPay: "Pays",
+  contractRelic: "Relics",
+  contractStart: "Launch",
+  contractActive: "Run live",
+  contractLeg: "Leg",
+  contractDone: "Surveyed",
+  contractNew: "New ground",
+  contractNeed: "Need brass for the fee.",
+  contractBusy: "Finish the wave first.",
+  contractRun: "Expedition launched.",
+  contractWon: "Expedition paid out.",
+  contractLost: "Expedition lost. No pay.",
+  boonStack: "Stacks to three.",
+  marsh: "Coldwater marsh",
+  marshHabitat: "Habitat",
+  marshLife: "Life",
+  marshCause: "Cause",
+  marshDormant: "Dormant regions change at a quarter rate.",
+  marshPay: "Reed sold.",
+  marshDry: "Reed cover is too thin.",
+  marshDone: "Marsh changed.",
+  marshNeed: "Need brass for that work.",
+  line: "Shell line",
+  lineState: "Line",
+  lineBuffer: "Buffer",
+  lineMagazine: "Magazine",
+  lineRule: "Core rule",
+  lineRuleNote: "Repairs below 8 core. Keeps 100 brass.",
+  lineDispatch: "Send convoy",
+  lineOn: "Line on",
+  lineOff: "Line off",
+  lineRuleOn: "Rule on",
+  lineRuleOff: "Rule off",
+  lineSent: "Convoy left the line.",
+  lineEmpty: "The buffer is empty.",
+  lineMoving: "A convoy is already moving.",
+  lineShells: "Shells add tower damage.",
+  lineLog: "Last event",
+  survey: "Survey map",
+  surveyLead: "Paste a survey file. It is checked before play.",
+  surveyLoad: "Validate and load",
+  surveyExample: "Load example",
+  surveyRestore: "Restore Ashfall",
+  surveyNone: "Authored Ashfall.",
+  surveyCustom: "Survey loaded",
+  surveyRestored: "Ashfall restored.",
+  surveyBad: "Survey refused",
+  surveyNeedEmpty: "Clear Ashfall towers first.",
+  surveyBudget: "Rubble budget",
+  surveyBy: "By",
   here: "Here",
   travel: "Travel",
   mapFoot: "Tracks cost brass and build time. Meet the raid for a clear bonus.",

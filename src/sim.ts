@@ -96,6 +96,19 @@ type Exports = {
   sim_save_ptr(): number;
   sim_load(ptr: number, len: number): number;
   sim_path_steps(): number;
+  sim_expedition(field: number): number;
+  sim_expedition_start(contract: number): number;
+  sim_expedition_contract(contract: number, field: number): number;
+  sim_eco(field: number): number;
+  sim_eco_action(kind: number): number;
+  sim_automation(field: number): number;
+  sim_automation_toggle(kind: number): number;
+  sim_convoy(): number;
+  sim_offline(seconds: number): number;
+  sim_import_map(ptr: number, len: number): number;
+  sim_clear_map(): number;
+  sim_custom(field: number): number;
+  sim_wave_curve(wave: number, field: number): number;
 };
 
 export type TowerView = {
@@ -295,6 +308,61 @@ export class Sim {
 
   pathSteps(): number {
     return this.ex.sim_path_steps();
+  }
+
+  expedition(field: number): number {
+    return this.ex.sim_expedition(field);
+  }
+
+  startExpedition(contract: number): number {
+    return this.ex.sim_expedition_start(contract);
+  }
+
+  expeditionContract(contract: number, field: number): number {
+    return this.ex.sim_expedition_contract(contract, field);
+  }
+
+  eco(field: number): number {
+    return this.ex.sim_eco(field);
+  }
+
+  ecoAction(kind: number): number {
+    return this.ex.sim_eco_action(kind);
+  }
+
+  automation(field: number): number {
+    return this.ex.sim_automation(field);
+  }
+
+  autoToggle(kind: number): number {
+    return this.ex.sim_automation_toggle(kind);
+  }
+
+  convoy(): number {
+    return this.ex.sim_convoy();
+  }
+
+  offline(seconds: number): number {
+    return this.ex.sim_offline(Math.max(0, Math.min(14_400, Math.floor(seconds))));
+  }
+
+  importMap(bytes: Uint8Array): number {
+    if (bytes.length > 1024) return -1;
+    const ptr = this.ex.sim_snapshot_ptr();
+    new Uint8Array(this.ex.memory.buffer).set(bytes, ptr);
+    return this.ex.sim_import_map(ptr, bytes.length);
+  }
+
+  clearMap(): number {
+    return this.ex.sim_clear_map();
+  }
+
+  custom(field: number): number {
+    return this.ex.sim_custom(field);
+  }
+
+  waveCurve(wave: number, field: number): number {
+    return this.ex.sim_wave_curve(wave, field);
   }
 
   snapshot(): Snapshot {

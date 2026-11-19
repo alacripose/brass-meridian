@@ -58,6 +58,66 @@ A failing check was made green by deleting an assertion, skipping a test, or cat
 
 This is a review refusal, not a runtime one. The gate keeps the receipts, so a missing result is visible.
 
+## `map-sealed`
+
+A survey map leaves no route from the gate to the core.
+
+The client says the route is sealed. The core repeats the check with no towers.
+
+## `map-budget`
+
+A survey has fewer than four or more than twenty-four rubble plots.
+
+The budget keeps one file from turning the field into a wall.
+
+## `map-author`
+
+A survey is missing an author, a name, or an MIT license.
+
+Provenance is part of the file. Anonymous files are refused.
+
+## `map-generator`
+
+A survey names a generator version this build does not support.
+
+The version is checked before any cell is read.
+
+## `map-json`
+
+The pasted survey is not valid JSON.
+
+The client refuses it and keeps the current field. No state changes.
+
+## `contract-busy`
+
+A contract is requested during a live wave or during another contract.
+
+The button disables. The core returns a negative code if the UI is stale.
+
+## `contract-fee`
+
+The player cannot pay the contract fee.
+
+The fee is charged before the first leg. A failed launch keeps the brass.
+
+## `line-empty`
+
+A convoy is requested with an empty buffer.
+
+The line keeps state and logs nothing. The button stays disabled.
+
+## `line-blocked`
+
+The line buffer is full, the stock is empty, or a convoy is already out.
+
+The line names the fault. It does not discard ingots or shells.
+
+## `offline-capped`
+
+Offline catch-up is requested for more than four hours.
+
+Production stops at 1,200 cycles and at the stock on hand.
+
 ## How to add one
 
 1. Name the failure in `ledger/failures/`.

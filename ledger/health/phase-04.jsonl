@@ -1,0 +1,2 @@
+{"seq":1,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0014","claim":"The production build, Rust tests, client tests, and probe pass.","ev":"artifacts/receipts/build.json","ok":true}
+{"seq":2,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0014","claim":"The gate passes and reports the full-scope baseline.","ev":"artifacts/receipts/gate.json","ok":true}

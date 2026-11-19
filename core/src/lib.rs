@@ -21,6 +21,7 @@ const MAX_PROJ: usize = 192;
 const MAX_FX: usize = 128;
 const MAX_PATH_PTS: usize = 64;
 const MAP_COUNT: usize = 3;
+const EXP_LEGS: u8 = 3;
 const TRACK_COST: [[i32; MAP_COUNT]; MAP_COUNT] = [[0, 14, -1], [14, 0, 22], [-1, 22, 0]];
 const TRACK_TIME: [[f32; MAP_COUNT]; MAP_COUNT] =
     [[0.0, 1.5, 0.0], [1.5, 0.0, 2.5], [0.0, 2.5, 0.0]];
@@ -98,7 +99,7 @@ fn cell_of(x: f32, z: f32) -> (usize, usize) {
     (gx, gz)
 }
 
-fn terrain(map: u8, gx: usize, gz: usize) -> bool {
+fn base_terrain(map: u8, gx: usize, gz: usize) -> bool {
     match map {
         0 => matches!(
             (gx, gz),
@@ -213,6 +214,35 @@ fn enemy_base(kind: u8) -> (f32, f32, f32, f32, u8, bool) {
         3 => (48.0, 2.10, 8.0, 0.0, 1, true),       // Mote
         _ => (1100.0, 0.65, 140.0, 12.0, 6, false), // Cathedral
     }
+}
+
+/// A contract run is three short waves on the same district. The far contract
+/// carries the boss on its last leg.
+fn expedition_comp(contract: u8, leg: u8, wave: u32) -> Vec<u8> {
+    let mut v = Vec::new();
+    let l = leg as usize;
+    match contract 
+    {
+        0 => {
+            v.extend(std::iter::repeat(1u8).take(6 + l * 2));
+            v.extend(std::iter::repeat(2u8).take(2 + l));
+        }
+        1 => {
+            v.extend(std::iter::repeat(3u8).take(5 + l * 2));
+            v.extend(std::iter::repeat(0u8).take(4 + l));
+        }
+        _ => {
+            v.extend(std::iter::repeat(2u8).take(5 + l * 2));
+            v.extend(std::iter::repeat(1u8).take(5 + l));
+            if leg == 2 {
+                v.push(4);
+            }
+        }
+    }
+    // The wave number still scales health and bounty, so early contracts stay
+    // readable and late ones keep pace with the city.
+    let _ = wave;
+    v
 }
 
 fn composition(wave: u32) -> Vec<u8> {
@@ -337,11 +367,41 @@ struct Fx {
     width: f32,
 }
 
+#[derive(Clone, Copy)]
+struct Eco {
+    soil: f32,
+    water: f32,
+    veg: f32,
+    prey: [f32; 3],
+    pred: [f32; 2],
+    scav: f32,
+    acc: f32,
+    cause: u8,
+    cause_t: f32,
+    harvests: u32,
+}
+
+#[derive(Clone, Copy)]
+struct Auto {
+    enabled: bool,
+    state: u8,
+    buffer: f32,
+    progress: f32,
+    convoy: u8,
+    convoy_t: f32,
+    convoy_load: f32,
+    rule: bool,
+    log: u8,
+    log_t: f32,
+    produced: u32,
+}
+
 struct Sim {
     seed: u32,
     rng: u32,
     brass: f32,
     ingots: f32,
+    shells: f32,
     core: f32,
     core_max: f32,
     wave: u32,
@@ -354,6 +414,16 @@ struct Sim {
     map: u8,
     threat: u8,
     wave_bonus: f32,
+    exp_active: bool,
+    exp_contract: u8,
+    exp_leg: u8,
+    exp_relics: [u8; 3],
+    discoveries: u8,
+    exp_result: u8,
+    eco: Eco,
+    auto: Auto,
+    custom_ready: bool,
+    custom_cells: [bool; NCELL],
     towers: Vec<Tower>,
     stored: [Vec<Tower>; MAP_COUNT],
     enemies: Vec<Enemy>,
@@ -380,6 +450,7 @@ impl Sim {
             rng: if seed == 0 { 0x9E37_79B9 } else { seed },
             brass: 150.0,
             ingots: 0.0,
+            shells: 0.0,
             core: 20.0,
             core_max: 20.0,
             wave: 1,
@@ -392,6 +463,39 @@ impl Sim {
             map: 0,
             threat: threat_for(1, seed),
             wave_bonus: 1.0,
+            exp_active: false,
+            exp_contract: 0,
+            exp_leg: 0,
+            exp_relics: [0; 3],
+            discoveries: 0,
+            exp_result: 0,
+            eco: Eco {
+                soil: 62.0,
+                water: 58.0,
+                veg: 54.0,
+                prey: [38.0, 30.0, 24.0],
+                pred: [11.0, 8.0],
+                scav: 9.0,
+                acc: 0.0,
+                cause: 0,
+                cause_t: 0.0,
+                harvests: 0,
+            },
+            auto: Auto {
+                enabled: false,
+                state: 0,
+                buffer: 0.0,
+                progress: 0.0,
+                convoy: 0,
+                convoy_t: 0.0,
+                convoy_load: 0.0,
+                rule: false,
+                log: 0,
+                log_t: 0.0,
+                produced: 0,
+            },
+            custom_ready: false,
+            custom_cells: [false; NCELL],
             towers: Vec::new(),
             stored: [Vec::new(), Vec::new(), Vec::new()],
             enemies: Vec::new(),
@@ -415,8 +519,15 @@ impl Sim {
         sim
     }
 
+    fn terrain_at(&self, map: u8, gx: usize, gz: usize) -> bool {
+        if map == 2 && self.custom_ready {
+            return self.custom_cells[idx(gx, gz)];
+        }
+        base_terrain(map, gx, gz)
+    }
+
     fn blocked(&self, gx: usize, gz: usize) -> bool {
-        terrain(self.map, gx, gz) || self.towers.iter().any(|t| t.gx == gx && t.gz == gz)
+        self.terrain_at(self.map, gx, gz) || self.towers.iter().any(|t| t.gx == gx && t.gz == gz)
     }
 
     fn tower_index(&self, gx: usize, gz: usize) -> Option<usize> {
@@ -528,7 +639,7 @@ impl Sim {
         if (gx == ENTRY_X && gz == ENTRY_Z) || (gx == CORE_X && gz == CORE_Z) {
             return -4;
         }
-        if terrain(self.map, gx, gz) {
+        if self.terrain_at(self.map, gx, gz) {
             return -3;
         }
         if self.tower_index(gx, gz).is_some() {
@@ -590,7 +701,7 @@ impl Sim {
         if (gx == ENTRY_X && gz == ENTRY_Z) || (gx == CORE_X && gz == CORE_Z) {
             return -4;
         }
-        if terrain(self.map, gx, gz) {
+        if self.terrain_at(self.map, gx, gz) {
             return -3;
         }
         if self.tower_index(gx, gz).is_some() {
@@ -712,7 +823,7 @@ impl Sim {
         self.ingots -= ingots;
         self.city[kind as usize] += 1;
         if kind == 3 {
-            self.core_max = 20.0 + self.city[3] as f32 * 4.0;
+            self.core_max = 20.0 + self.city[3] as f32 * 4.0 + self.exp_relics[2] as f32;
             self.core = (self.core + 4.0).min(self.core_max);
         }
         self.fill_snapshot();
@@ -732,9 +843,406 @@ impl Sim {
         0
     }
 
+    // --- expeditions -----------------------------------------------------
+
+    fn exp_fee(contract: u8) -> f32 {
+        [30.0, 45.0, 60.0][contract.min(2) as usize]
+    }
+
+    fn start_expedition(&mut self, contract: u8) -> i32 {
+        if contract > 2 {
+            return -2;
+        }
+        if self.exp_active || self.phase != 0 {
+            return -1;
+        }
+        let fee = Self::exp_fee(contract);
+        if self.brass < fee {
+            return -4;
+        }
+        self.brass -= fee;
+        self.exp_active = true;
+        self.exp_contract = contract;
+        self.exp_leg = 0;
+        self.exp_result = 0;
+        self.expedition_leg();
+        0
+    }
+
+    fn expedition_leg(&mut self) {
+        self.phase = 1;
+        self.spawn_queue = expedition_comp(self.exp_contract, self.exp_leg, self.wave + self.exp_leg as u32 * 3);
+        self.spawn_index = 0;
+        self.spawn_interval = 0.55;
+        self.spawn_timer = 0.1;
+        self.boss_wave = self.spawn_queue.contains(&4);
+        self.countdown = 0.0;
+        self.wave_bonus = 1.0;
+        self.fill_snapshot();
+    }
+
+    fn finish_expedition(&mut self) {
+        let c = self.exp_contract;
+        if self.exp_relics[c as usize] < 3 {
+            self.exp_relics[c as usize] += 1;
+            if c == 2 {
+                self.core_max += 1.0;
+                self.core = (self.core + 1.0).min(self.core_max);
+            }
+        }
+        self.discoveries |= 1 << c;
+        self.brass += [55.0, 75.0, 110.0][c as usize];
+        self.ingots += [3.0, 5.0, 8.0][c as usize];
+        self.score += 150 * (c as u32 + 1);
+        self.exp_active = false;
+        self.exp_result = 1;
+        self.exp_leg = 0;
+        self.phase = 0;
+        self.countdown = 10.0;
+        self.spawn_queue.clear();
+        self.spawn_index = 0;
+        self.boss_wave = false;
+    }
+
+    fn expedition_field(&self, field: u32) -> f32 {
+        match field {
+            0 => self.exp_active as u8 as f32,
+            1 => self.exp_contract as f32,
+            2 => self.exp_leg as f32,
+            3 => self.exp_result as f32,
+            4 => self.exp_relics[0] as f32,
+            5 => self.exp_relics[1] as f32,
+            6 => self.exp_relics[2] as f32,
+            7 => self.discoveries as f32,
+            8 => self.spawn_queue.len().saturating_sub(self.spawn_index) as f32,
+            _ => 0.0,
+        }
+    }
+
+    // --- ecology ---------------------------------------------------------
+
+    fn eco_tick(&mut self, dt: f32) {
+        let scale = if self.map == 1 { 1.0 } else { 0.25 };
+        let d = dt * scale;
+        if d <= 0.0 {
+            return;
+        }
+        let e = &mut self.eco;
+        e.cause_t += d;
+        let water = (e.water / 100.0).clamp(0.0, 1.2);
+        let soil = (e.soil / 100.0).clamp(0.0, 1.2);
+        let prey_sum: f32 = e.prey.iter().sum();
+        let pred_sum: f32 = e.pred.iter().sum();
+        let capacity = (35.0 + e.veg * 0.9).max(20.0);
+        e.veg += 0.055 * e.veg * (1.0 - e.veg / capacity).max(-0.4) * (0.4 + water * soil);
+        e.veg = e.veg.clamp(4.0, 100.0);
+        e.water += (0.55 - e.veg * 0.004) * d;
+        e.water = e.water.clamp(2.0, 100.0);
+        e.soil += (0.05 - e.veg * 0.0007) * d;
+        e.soil = e.soil.clamp(2.0, 100.0);
+        for p in e.prey.iter_mut() {
+            let growth = 0.055 * *p * (1.0 - prey_sum / capacity) - pred_sum * 0.0022 * *p;
+            *p = (*p + growth * d).clamp(2.0, 120.0);
+        }
+        for q in e.pred.iter_mut() {
+            let growth = 0.035 * *q * (prey_sum / 110.0) - 0.012 * *q;
+            *q = (*q + growth * d).clamp(1.0, 60.0);
+        }
+        e.scav += (0.016 * pred_sum - 0.018 * e.scav) * d;
+        e.scav = e.scav.clamp(1.0, 40.0);
+        if e.water < 18.0 {
+            e.cause = 1;
+        } else if e.veg < 18.0 {
+            e.cause = 2;
+        } else if pred_sum > prey_sum * 0.65 {
+            e.cause = 3;
+        } else if e.cause <= 3 {
+            e.cause = 0;
+        }
+    }
+
+    fn eco_action(&mut self, kind: u8) -> i32 {
+        match kind {
+            0 => {
+                if self.brass < 10.0 {
+                    return -4;
+                }
+                self.brass -= 10.0;
+                self.eco.water = (self.eco.water + 18.0).min(100.0);
+                self.eco.soil = (self.eco.soil - 5.0).max(2.0);
+                self.eco.cause = 5;
+                self.eco.cause_t = 0.0;
+                0
+            }
+            1 => {
+                if self.brass < 12.0 {
+                    return -4;
+                }
+                self.brass -= 12.0;
+                self.eco.veg = (self.eco.veg + 14.0).min(100.0);
+                self.eco.water = (self.eco.water - 8.0).max(2.0);
+                self.eco.cause = 6;
+                self.eco.cause_t = 0.0;
+                0
+            }
+            2 => {
+                if self.eco.veg < 25.0 {
+                    return -5;
+                }
+                let pay = 8.0 + self.eco.veg * 0.14;
+                self.brass += pay;
+                self.eco.veg = (self.eco.veg - 10.0).max(4.0);
+                self.eco.harvests += 1;
+                self.eco.cause = 4;
+                self.eco.cause_t = 0.0;
+                pay as i32
+            }
+            _ => -1,
+        }
+    }
+
+    fn eco_field(&self, field: u32) -> f32 {
+        let e = &self.eco;
+        match field {
+            0 => e.soil,
+            1 => e.water,
+            2 => e.veg,
+            3 => e.prey[0],
+            4 => e.prey[1],
+            5 => e.prey[2],
+            6 => e.pred[0],
+            7 => e.pred[1],
+            8 => e.scav,
+            9 => e.cause as f32,
+            10 => e.cause_t,
+            11 => e.harvests as f32,
+            _ => 0.0,
+        }
+    }
+
+    // --- automation ------------------------------------------------------
+
+    fn auto_tick(&mut self, dt: f32) {
+        self.auto.log_t += dt;
+        if self.auto.convoy == 1 {
+            self.auto.convoy_t -= dt;
+            if self.auto.convoy_t <= 0.0 {
+                self.shells = (self.shells + self.auto.convoy_load).min(80.0);
+                self.auto.convoy = 0;
+                self.auto.convoy_load = 0.0;
+                self.auto.log = 5;
+                self.auto.log_t = 0.0;
+            }
+        }
+        if !self.auto.enabled {
+            self.auto.state = 0;
+            return;
+        }
+        if self.auto.buffer >= 6.0 || self.auto.convoy == 1 {
+            self.auto.state = 3;
+            if self.auto.buffer > 0.0 && self.auto.convoy == 0 && self.auto.rule {
+                let _ = self.auto_dispatch();
+            }
+            return;
+        }
+        if self.ingots < 1.0 {
+            self.auto.state = 2;
+            return;
+        }
+        self.auto.progress += dt;
+        self.auto.state = 1;
+        if self.auto.progress >= 3.0 {
+            self.auto.progress = 0.0;
+            self.ingots -= 1.0;
+            self.auto.buffer = (self.auto.buffer + 4.0).min(6.0);
+            self.auto.produced += 4;
+            self.auto.log = 1;
+            self.auto.log_t = 0.0;
+        }
+    }
+
+    fn auto_dispatch(&mut self) -> i32 {
+        if self.auto.convoy == 1 {
+            return -3;
+        }
+        if self.auto.buffer < 1.0 {
+            return -2;
+        }
+        self.auto.convoy = 1;
+        self.auto.convoy_load = self.auto.buffer;
+        self.auto.buffer = 0.0;
+        self.auto.convoy_t = 3.0;
+        self.auto.log = 7;
+        self.auto.log_t = 0.0;
+        0
+    }
+
+    fn auto_toggle(&mut self, kind: u8) -> i32 {
+        match kind {
+            0 => {
+                self.auto.enabled = !self.auto.enabled;
+                if !self.auto.enabled {
+                    self.auto.state = 0;
+                }
+                0
+            }
+            1 => {
+                self.auto.rule = !self.auto.rule;
+                self.auto.log = 8;
+                self.auto.log_t = 0.0;
+                0
+            }
+            _ => -1,
+        }
+    }
+
+    fn auto_repair_rule(&mut self) {
+        if !self.auto.rule || self.core >= self.core_max || self.core >= 8.0 {
+            return;
+        }
+        let cost = repair_cost();
+        if self.brass >= cost + 100.0 {
+            self.brass -= cost;
+            self.core = (self.core + 4.0).min(self.core_max);
+            self.auto.log = 4;
+            self.auto.log_t = 0.0;
+        }
+    }
+
+    fn offline(&mut self, seconds: u32) -> u32 {
+        if !self.auto.enabled {
+            return 0;
+        }
+        let cycles = ((seconds as f32 / 3.0).floor() as u32).min(1200);
+        let room = ((80.0 - self.shells) / 4.0).floor().max(0.0) as u32;
+        let have = self.ingots.floor().max(0.0) as u32;
+        let n = cycles.min(room).min(have);
+        if n == 0 {
+            return 0;
+        }
+        self.ingots -= n as f32;
+        self.shells += n as f32 * 4.0;
+        self.auto.produced += n * 4;
+        self.auto.log = 6;
+        self.auto.log_t = 0.0;
+        n * 4
+    }
+
+    fn auto_field(&self, field: u32) -> f32 {
+        let a = &self.auto;
+        match field {
+            0 => a.state as f32,
+            1 => a.buffer,
+            2 => self.shells,
+            3 => a.convoy as f32,
+            4 => a.convoy_t,
+            5 => a.enabled as u8 as f32,
+            6 => a.rule as u8 as f32,
+            7 => a.log as f32,
+            8 => a.log_t,
+            9 => a.produced as f32,
+            _ => 0.0,
+        }
+    }
+
+    // --- community survey map -------------------------------------------
+
+    fn import_map(&mut self, bytes: &[u8]) -> i32 {
+        if bytes.len() < 8 || &bytes[0..4] != b"BMMP" || bytes[4] != 1 || bytes[5] != 1 {
+            return -1;
+        }
+        let count = bytes[6] as usize;
+        if !(4..=24).contains(&count) {
+            return -2;
+        }
+        if bytes.len() < 7 + count * 2 {
+            return -1;
+        }
+        if !self.stored[2].is_empty() || (!self.towers.is_empty() && self.map == 2) {
+            return -4;
+        }
+        let mut cells = [false; NCELL];
+        for i in 0..count {
+            let gx = bytes[7 + i * 2] as usize;
+            let gz = bytes[8 + i * 2] as usize;
+            if gx >= GW || gz >= GH {
+                return -2;
+            }
+            if (gx == ENTRY_X && gz == ENTRY_Z) || (gx == CORE_X && gz == CORE_Z) {
+                return -2;
+            }
+            cells[idx(gx, gz)] = true;
+        }
+        // Connectivity is checked without towers. A valid layout must keep a
+        // route from the gate to the core before the player builds anything.
+        let mut seen = [false; NCELL];
+        let mut queue = vec![idx(ENTRY_X, ENTRY_Z)];
+        seen[idx(ENTRY_X, ENTRY_Z)] = true;
+        let mut head = 0;
+        while head < queue.len() {
+            let at = queue[head];
+            head += 1;
+            let gx = at % GW;
+            let gz = at / GW;
+            for (dx, dz) in DIRS {
+                let nx = gx as i32 + dx;
+                let nz = gz as i32 + dz;
+                if nx < 0 || nz < 0 || nx >= GW as i32 || nz >= GH as i32 {
+                    continue;
+                }
+                let ni = idx(nx as usize, nz as usize);
+                if !seen[ni] && !cells[ni] {
+                    seen[ni] = true;
+                    queue.push(ni);
+                }
+            }
+        }
+        if !seen[idx(CORE_X, CORE_Z)] {
+            return -5;
+        }
+        self.custom_cells = cells;
+        self.custom_ready = true;
+        self.recompute();
+        self.fill_snapshot();
+        0
+    }
+
+    fn clear_map(&mut self) -> i32 {
+        if !self.custom_ready {
+            return -2;
+        }
+        self.custom_ready = false;
+        self.recompute();
+        self.fill_snapshot();
+        0
+    }
+
+    fn custom_field(&self, field: u32) -> f32 {
+        match field {
+            0 => self.custom_ready as u8 as f32,
+            1 => self.custom_cells.iter().filter(|c| **c).count() as f32,
+            _ => 0.0,
+        }
+    }
+
+    fn wave_curve(&self, wave: u32, field: u32) -> f32 {
+        let w = wave.max(1);
+        match field {
+            0 => 1.0 + 0.12 * (w - 1) as f32,
+            1 => (1.0 + 0.015 * (w - 1) as f32).min(1.3),
+            2 => composition(w).len() as f32,
+            3 => composition(w).contains(&4) as u8 as f32,
+            _ => 0.0,
+        }
+    }
+
     fn start_wave(&mut self) -> i32 {
         if self.phase != 0 {
             return -1;
+        }
+        if self.exp_active {
+            self.expedition_leg();
+            return 0;
         }
         let bonus = (self.countdown.max(0.0) * 2.0).round();
         self.brass += bonus;
@@ -874,7 +1382,10 @@ impl Sim {
     }
 
     fn tick_towers(&mut self, dt: f32) {
-        let workshop = 1.0 + self.city[2] as f32 * 0.07;
+        let workshop = 1.0
+            + self.city[2] as f32 * 0.07
+            + self.exp_relics[0] as f32 * 0.06
+            + self.shells.min(40.0) * 0.01;
         for i in 0..self.towers.len() {
             let kind = self.towers[i].kind;
             let level = self.towers[i].level;
@@ -1091,7 +1602,7 @@ impl Sim {
                 self.core -= self.enemies[i].leak as f32;
                 self.enemies.swap_remove(i);
             } else if self.enemies[i].hp <= 0.0 {
-                let bounty = self.enemies[i].bounty;
+                let bounty = self.enemies[i].bounty * (1.0 + self.exp_relics[1] as f32 * 0.08);
                 self.brass += bounty;
                 self.kills += 1;
                 self.score += bounty.max(0.0) as u32;
@@ -1103,6 +1614,11 @@ impl Sim {
         if self.core <= 0.0 {
             self.core = 0.0;
             self.phase = 2;
+            if self.exp_active {
+                self.exp_active = false;
+                self.exp_result = 2;
+                self.exp_leg = 0;
+            }
             self.spawn_queue.clear();
             self.spawn_index = 0;
             self.enemies.clear();
@@ -1133,6 +1649,9 @@ impl Sim {
                 }
             }
         }
+        self.eco_tick(dt);
+        self.auto_tick(dt);
+        self.auto_repair_rule();
         self.tick_towers(dt);
         self.tick_projectiles(dt);
         self.move_enemies(dt);
@@ -1141,17 +1660,32 @@ impl Sim {
 
         if self.phase == 1 && self.spawn_index >= self.spawn_queue.len() && self.enemies.is_empty()
         {
-            self.brass += (18.0 + self.wave as f32 * 5.0) * self.wave_bonus;
-            self.ingots += 2.0 + (self.wave / 3) as f32;
-            self.score += (100.0 * self.wave as f32 * self.wave_bonus) as u32;
-            self.wave += 1;
-            self.phase = 0;
-            self.countdown = 12.0;
-            self.spawn_queue.clear();
-            self.spawn_index = 0;
-            self.boss_wave = false;
-            self.wave_bonus = 1.0;
-            self.threat = threat_for(self.wave, self.seed);
+            if self.exp_active {
+                if self.exp_leg >= EXP_LEGS - 1 {
+                    self.finish_expedition();
+                } else {
+                    self.exp_leg += 1;
+                    self.phase = 0;
+                    self.countdown = 6.0;
+                    self.spawn_queue.clear();
+                    self.spawn_index = 0;
+                    self.boss_wave = false;
+                }
+            } else {
+                let pay = (18.0 + self.wave as f32 * 5.0) * self.wave_bonus;
+                self.brass += pay;
+                self.ingots += 2.0 + (self.wave / 3) as f32;
+                self.score += (100.0 * self.wave as f32 * self.wave_bonus) as u32;
+                self.shells = (self.shells - (8.0 + self.wave as f32 * 0.5)).max(0.0);
+                self.wave += 1;
+                self.phase = 0;
+                self.countdown = 12.0;
+                self.spawn_queue.clear();
+                self.spawn_index = 0;
+                self.boss_wave = false;
+                self.wave_bonus = 1.0;
+                self.threat = threat_for(self.wave, self.seed);
+            }
         }
         self.fill_snapshot();
     }
@@ -1197,13 +1731,18 @@ impl Sim {
         for (i, t) in self.towers.iter().take(MAX_TOWERS).enumerate() {
             let b = TOWER_BASE + i * TOWER_STRIDE;
             let (dmg, range, rate, _) = tower_stats(t.kind, t.level);
+            let dmg = dmg
+                * (1.0
+                    + self.city[2] as f32 * 0.07
+                    + self.exp_relics[0] as f32 * 0.06
+                    + self.shells.min(40.0) * 0.01);
             s[b] = wx(t.gx);
             s[b + 1] = wz(t.gz);
             s[b + 2] = t.kind as f32;
             s[b + 3] = t.level as f32;
             s[b + 4] = t.cd;
             s[b + 5] = range;
-            s[b + 6] = dmg * (1.0 + self.city[2] as f32 * 0.07);
+            s[b + 6] = dmg;
             s[b + 7] = rate;
             s[b + 8] = t.angle;
             s[b + 9] = t.id as f32;
@@ -1254,9 +1793,9 @@ impl Sim {
     }
 
     fn save_bytes(&mut self) -> &[u8] {
-        let mut w = Vec::with_capacity(4096);
+        let mut w = Vec::with_capacity(4608);
         w.extend_from_slice(b"BMG1");
-        w.push(4); // save format
+        w.push(5); // save format
         w.push(self.map);
         w.push(self.threat);
         w.extend_from_slice(&self.wave_bonus.to_le_bytes());
@@ -1321,6 +1860,56 @@ impl Sim {
                 w.extend_from_slice(&v.to_le_bytes());
             }
         }
+        // Format 5 block. Everything above is byte-for-byte format 4, so an
+        // older reader can still open the economy and battle state.
+        w.extend_from_slice(&self.shells.to_le_bytes());
+        w.push(self.exp_active as u8);
+        w.push(self.exp_contract);
+        w.push(self.exp_leg);
+        w.push(self.exp_relics[0]);
+        w.push(self.exp_relics[1]);
+        w.push(self.exp_relics[2]);
+        w.push(self.discoveries);
+        w.push(self.exp_result);
+        for v in [
+            self.eco.soil,
+            self.eco.water,
+            self.eco.veg,
+            self.eco.prey[0],
+            self.eco.prey[1],
+            self.eco.prey[2],
+            self.eco.pred[0],
+            self.eco.pred[1],
+            self.eco.scav,
+            self.eco.acc,
+            self.eco.cause_t,
+        ] {
+            w.extend_from_slice(&v.to_le_bytes());
+        }
+        w.push(self.eco.cause);
+        w.extend_from_slice(&self.eco.harvests.to_le_bytes());
+        w.push(self.auto.enabled as u8);
+        w.push(self.auto.state);
+        w.extend_from_slice(&self.auto.buffer.to_le_bytes());
+        w.extend_from_slice(&self.auto.progress.to_le_bytes());
+        w.push(self.auto.convoy);
+        w.extend_from_slice(&self.auto.convoy_t.to_le_bytes());
+        w.extend_from_slice(&self.auto.convoy_load.to_le_bytes());
+        w.push(self.auto.rule as u8);
+        w.push(self.auto.log);
+        w.extend_from_slice(&self.auto.log_t.to_le_bytes());
+        w.extend_from_slice(&self.auto.produced.to_le_bytes());
+        w.push(self.custom_ready as u8);
+        for word in 0..4 {
+            let mut bits = 0u64;
+            for bit in 0..64 {
+                let at = word * 64 + bit;
+                if at < NCELL && self.custom_cells[at] {
+                    bits |= 1u64 << bit;
+                }
+            }
+            w.extend_from_slice(&bits.to_le_bytes());
+        }
         self.save_buf = w;
         &self.save_buf
     }
@@ -1328,7 +1917,7 @@ impl Sim {
     fn load_bytes(&mut self, bytes: &[u8]) -> i32 {
         if bytes.len() < 6
             || &bytes[0..4] != b"BMG1"
-            || (bytes[4] != 2 && bytes[4] != 3 && bytes[4] != 4)
+            || !(2..=5).contains(&bytes[4])
         {
             return -1;
         }
@@ -1603,6 +2192,57 @@ impl Sim {
                 width,
             });
         }
+        if format >= 5 {
+            fresh.shells = r.f32();
+            fresh.exp_active = r.u8() != 0;
+            fresh.exp_contract = r.u8().min(2);
+            fresh.exp_leg = r.u8().min(EXP_LEGS);
+            fresh.exp_relics[0] = r.u8().min(3);
+            fresh.exp_relics[1] = r.u8().min(3);
+            fresh.exp_relics[2] = r.u8().min(3);
+            fresh.discoveries = r.u8();
+            fresh.exp_result = r.u8().min(2);
+            fresh.eco.soil = r.f32();
+            fresh.eco.water = r.f32();
+            fresh.eco.veg = r.f32();
+            fresh.eco.prey[0] = r.f32();
+            fresh.eco.prey[1] = r.f32();
+            fresh.eco.prey[2] = r.f32();
+            fresh.eco.pred[0] = r.f32();
+            fresh.eco.pred[1] = r.f32();
+            fresh.eco.scav = r.f32();
+            fresh.eco.acc = r.f32();
+            fresh.eco.cause_t = r.f32();
+            fresh.eco.cause = r.u8().min(6);
+            fresh.eco.harvests = r.u32();
+            fresh.auto.enabled = r.u8() != 0;
+            fresh.auto.state = r.u8().min(3);
+            fresh.auto.buffer = r.f32();
+            fresh.auto.progress = r.f32();
+            fresh.auto.convoy = r.u8().min(1);
+            fresh.auto.convoy_t = r.f32();
+            fresh.auto.convoy_load = r.f32();
+            fresh.auto.rule = r.u8() != 0;
+            fresh.auto.log = r.u8().min(8);
+            fresh.auto.log_t = r.f32();
+            fresh.auto.produced = r.u32();
+            fresh.custom_ready = r.u8() != 0;
+            for word in 0..4 {
+                let bits = r.u32() as u64 | (r.u32() as u64) << 32;
+                for bit in 0..64 {
+                    let at = word * 64 + bit;
+                    if at < NCELL {
+                        fresh.custom_cells[at] = bits & (1u64 << bit) != 0;
+                    }
+                }
+            }
+            if fresh.core_max > 0.0 {
+                fresh.core_max = 20.0
+                    + fresh.city[3] as f32 * 4.0
+                    + fresh.exp_relics[2] as f32;
+                fresh.core = fresh.core.min(fresh.core_max).max(0.0);
+            }
+        }
         if !r.ok {
             return -2;
         }
@@ -1728,7 +2368,7 @@ pub extern "C" fn sim_cell_state(gx: u32, gz: u32) -> i32 {
         if gx == CORE_X && gz == CORE_Z {
             return 3;
         }
-        if terrain(s.map, gx, gz) {
+        if s.terrain_at(s.map, gx, gz) {
             return 1;
         }
         if s.tower_index(gx, gz).is_some() {
@@ -1875,6 +2515,90 @@ pub extern "C" fn sim_load(ptr: *const u8, len: u32) -> i32 {
 #[no_mangle]
 pub extern "C" fn sim_path_steps() -> i32 {
     with_sim(|s| s.path_len)
+}
+
+#[no_mangle]
+pub extern "C" fn sim_expedition(field: u32) -> f32 {
+    with_sim(|s| s.expedition_field(field))
+}
+
+#[no_mangle]
+pub extern "C" fn sim_expedition_start(contract: u32) -> i32 {
+    with_sim(|s| s.start_expedition(contract as u8))
+}
+
+#[no_mangle]
+pub extern "C" fn sim_expedition_contract(contract: u32, field: u32) -> f32 {
+    with_sim(|s| {
+        let c = contract.min(2) as usize;
+        match field {
+            0 => [30.0, 45.0, 60.0][c],
+            1 => [55.0, 75.0, 110.0][c],
+            2 => [3.0, 5.0, 8.0][c],
+            3 => s.exp_relics[c] as f32,
+            4 => ((s.discoveries >> c) & 1) as f32,
+            5 => expedition_comp(c as u8, 2, 1).len() as f32,
+            _ => 0.0,
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn sim_eco(field: u32) -> f32 {
+    with_sim(|s| s.eco_field(field))
+}
+
+#[no_mangle]
+pub extern "C" fn sim_eco_action(kind: u32) -> i32 {
+    with_sim(|s| s.eco_action(kind as u8))
+}
+
+#[no_mangle]
+pub extern "C" fn sim_automation(field: u32) -> f32 {
+    with_sim(|s| s.auto_field(field))
+}
+
+#[no_mangle]
+pub extern "C" fn sim_automation_toggle(kind: u32) -> i32 {
+    with_sim(|s| s.auto_toggle(kind as u8))
+}
+
+#[no_mangle]
+pub extern "C" fn sim_convoy() -> i32 {
+    with_sim(|s| s.auto_dispatch())
+}
+
+/// Bounded catch-up for a line that was already running when the tab closed.
+/// Four hours is the ceiling; stock limits the rest.
+#[no_mangle]
+pub extern "C" fn sim_offline(seconds: u32) -> u32 {
+    with_sim(|s| s.offline(seconds))
+}
+
+#[no_mangle]
+pub extern "C" fn sim_import_map(ptr: *const u8, len: u32) -> i32 {
+    with_sim(|s| {
+        if len > 1024 {
+            return -1;
+        }
+        let bytes = unsafe { std::slice::from_raw_parts(ptr, len as usize) };
+        s.import_map(bytes)
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn sim_clear_map() -> i32 {
+    with_sim(|s| s.clear_map())
+}
+
+#[no_mangle]
+pub extern "C" fn sim_custom(field: u32) -> f32 {
+    with_sim(|s| s.custom_field(field))
+}
+
+#[no_mangle]
+pub extern "C" fn sim_wave_curve(wave: u32, field: u32) -> f32 {
+    with_sim(|s| s.wave_curve(wave, field))
 }
 
 #[cfg(test)]
@@ -2116,5 +2840,172 @@ mod tests {
         assert!(w15.contains(&4));
         let w16 = composition(16);
         assert!(!w16.is_empty());
+    }
+
+    #[test]
+    fn an_expedition_pays_a_relic_after_three_legs() {
+        let mut s = fresh();
+        s.brass = 200.0;
+        assert_eq!(s.start_expedition(0), 0);
+        assert!(s.exp_active);
+        assert_eq!(s.brass, 170.0);
+        for leg in 0..3 {
+            s.spawn_index = s.spawn_queue.len();
+            s.enemies.clear();
+            s.tick(0.033);
+            if leg < 2 {
+                assert_eq!(s.phase, 0);
+                assert_eq!(s.start_wave(), 0);
+            }
+        }
+        assert!(!s.exp_active);
+        assert_eq!(s.exp_result, 1);
+        assert_eq!(s.exp_relics[0], 1);
+        assert_eq!(s.discoveries & 1, 1);
+        assert!(s.brass > 170.0);
+    }
+
+    #[test]
+    fn an_expedition_keeps_the_normal_wave_count() {
+        let mut s = fresh();
+        s.brass = 200.0;
+        let wave = s.wave;
+        assert_eq!(s.start_expedition(1), 0);
+        s.spawn_index = s.spawn_queue.len();
+        s.enemies.clear();
+        s.tick(0.033);
+        assert_eq!(s.wave, wave);
+        assert!(s.exp_active);
+        assert_eq!(s.phase, 0);
+    }
+
+    #[test]
+    fn ecology_moves_and_keeps_a_cause() {
+        let mut s = fresh();
+        s.map = 1;
+        let veg = s.eco.veg;
+        for _ in 0..300 {
+            s.tick(0.1);
+        }
+        assert!(s.eco.veg > 0.0 && s.eco.veg <= 100.0);
+        assert!(s.eco.prey.iter().all(|p| *p >= 2.0));
+        assert!(s.eco.pred.iter().all(|p| *p >= 1.0));
+        assert!(s.eco.veg != veg);
+        let before = s.brass;
+        let pay = (8.0 + s.eco.veg * 0.14) as i32;
+        assert_eq!(s.eco_action(2), pay);
+        assert!(s.brass > before);
+        assert_eq!(s.eco.cause, 4);
+    }
+
+    #[test]
+    fn the_line_runs_blocks_and_delivers() {
+        let mut s = fresh();
+        s.ingots = 20.0;
+        s.auto.enabled = true;
+        for _ in 0..300 {
+            s.tick(0.033);
+        }
+        assert!((1..=3).contains(&s.auto.state));
+        assert!(s.auto.produced >= 4);
+        if s.auto.buffer >= 1.0 && s.auto.convoy == 0 {
+            assert_eq!(s.auto_dispatch(), 0);
+            for _ in 0..120 {
+                s.tick(0.033);
+            }
+            assert!(s.shells >= 4.0);
+        }
+    }
+
+    #[test]
+    fn offline_production_is_capped_by_stock() {
+        let mut s = fresh();
+        s.ingots = 3.0;
+        s.auto.enabled = true;
+        assert_eq!(s.offline(3600), 12);
+        assert!(s.shells >= 12.0);
+        assert_eq!(s.offline(3600), 0);
+    }
+
+    #[test]
+    fn a_community_map_is_checked_before_it_plays() {
+        let mut s = fresh();
+        let mut map = vec![b'B', b'M', b'M', b'P', 1, 1, 6];
+        for (gx, gz) in [(4, 2), (4, 3), (5, 2), (12, 10), (13, 10), (12, 9)] {
+            map.push(gx);
+            map.push(gz);
+        }
+        assert_eq!(s.import_map(&map), 0);
+        assert!(s.custom_ready);
+        assert_eq!(s.terrain_at(2, 4, 2), true);
+        assert_eq!(s.clear_map(), 0);
+        assert!(!s.custom_ready);
+        let mut bad = vec![b'B', b'M', b'M', b'P', 1, 1, 13];
+        for gz in 0..13 {
+            bad.push(8);
+            bad.push(gz);
+        }
+        assert_eq!(s.import_map(&bad), -5);
+        assert!(!s.custom_ready);
+    }
+
+    #[test]
+    fn a_save_keeps_the_new_frontier_state() {
+        let mut a = fresh();
+        a.brass = 500.0;
+        a.ingots = 20.0;
+        a.eco.veg = 71.0;
+        a.auto.enabled = true;
+        a.auto.buffer = 4.0;
+        a.exp_relics[1] = 2;
+        a.discoveries = 0b101;
+        let bytes = a.save_bytes().to_vec();
+        let mut b = Sim::new(1);
+        assert_eq!(b.load_bytes(&bytes), 0);
+        assert!((b.eco.veg - 71.0).abs() < 0.001);
+        assert!(b.auto.enabled);
+        assert_eq!(b.auto.buffer, 4.0);
+        assert_eq!(b.exp_relics[1], 2);
+        assert_eq!(b.discoveries, 0b101);
+    }
+
+    #[test]
+    fn snapshot_damage_counts_each_bonus_once() {
+        let mut s = fresh();
+        assert_eq!(s.place(8, 6, 0), 0);
+        s.city[2] = 1;
+        s.exp_relics[0] = 1;
+        s.shells = 10.0;
+        s.fill_snapshot();
+        let expected = 9.0 * (1.0 + 0.07 + 0.06 + 0.10);
+        assert!((s.snap[TOWER_BASE + 6] - expected).abs() < 0.001);
+    }
+
+    #[test]
+    fn the_pressure_curve_is_monotonic_and_a_bare_core_falls() {
+        let s = fresh();
+        let mut last = 0.0;
+        let mut bosses = 0;
+        for wave in 1..=30 {
+            let hp = s.wave_curve(wave, 0);
+            assert!(hp > last);
+            last = hp;
+            if s.wave_curve(wave, 3) > 0.5 {
+                bosses += 1;
+            }
+        }
+        assert!(bosses >= 4);
+        let mut bare = fresh();
+        while bare.phase != 2 && bare.wave <= 10 {
+            bare.start_wave();
+            for _ in 0..200 {
+                bare.tick(0.033);
+                if bare.phase == 2 {
+                    break;
+                }
+            }
+        }
+        assert_eq!(bare.phase, 2);
+        assert!(bare.wave <= 10);
     }
 }

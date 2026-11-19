@@ -1,7 +1,8 @@
 import "./styles.css";
 import { GameAudio } from "./audio";
 import { COPY, DISTRICTS, TOWERS } from "./copy";
-import { hasSave, clearSave, loadGame, saveGame } from "./save";
+import { clearMapMeta, parseMap, saveMapMeta } from "./map";
+import { hasSave, clearSave, loadGame, saveGame, secondsSinceSave } from "./save";
 import { Sim, placeError, type Snapshot } from "./sim";
 import { Hud, type HudModel } from "./ui";
 import { Battlefield, type Cell } from "./view";
@@ -41,6 +42,11 @@ const model: HudModel = {
   repairCost: () => sim.repairCost(),
   mapTowerCount: (map) => sim.mapTowerCount(map),
   trackCost: (map) => sim.trackCost(sim.snapshot().map, map),
+  expedition: (field) => sim.expedition(field),
+  expeditionContract: (contract, field) => sim.expeditionContract(contract, field),
+  eco: (field) => sim.eco(field),
+  automation: (field) => sim.automation(field),
+  custom: (field) => sim.custom(field),
 };
 
 function cancelBuild() {
@@ -213,6 +219,64 @@ function buildHud(hasSaved: boolean) {
       state.selected = -1;
     },
     onCancelBuild: cancelBuild,
+    onStartExpedition: (contract) => {
+      const code = sim.startExpedition(contract);
+      if (code === 0) {
+        audio.wave();
+        hud.showToast(COPY.contractRun, "good");
+        hud.openSheet("map");
+      } else {
+        hud.showToast(code === -4 ? COPY.contractNeed : COPY.contractBusy, "bad");
+      }
+    },
+    onEco: (kind) => {
+      const code = sim.ecoAction(kind);
+      if (code >= 0) {
+        if (kind === 2) hud.showToast(`${COPY.marshPay} +${code}`, "good");
+        else hud.showToast(COPY.marshDone, "good");
+      } else if (code === -5) {
+        hud.showToast(COPY.marshDry, "bad");
+      } else {
+        hud.showToast(COPY.marshNeed, "bad");
+      }
+      hud.openSheet("city");
+    },
+    onAutoToggle: (kind) => {
+      sim.autoToggle(kind);
+      hud.showToast(kind === 0 ? COPY.line : COPY.lineRule, "good");
+      hud.openSheet("city");
+    },
+    onConvoy: () => {
+      const code = sim.convoy();
+      if (code === 0) hud.showToast(COPY.lineSent, "good");
+      else hud.showToast(code === -3 ? COPY.lineMoving : COPY.lineEmpty, "bad");
+      hud.openSheet("city");
+    },
+    onImportMap: (text) => {
+      const check = parseMap(text);
+      if (!check.ok || !check.binary || !check.map) {
+        hud.showToast(`${COPY.surveyBad}: ${check.message}`, "bad");
+        return;
+      }
+      const code = sim.importMap(check.binary);
+      if (code === 0) {
+        saveMapMeta(check.map);
+        hud.showToast(check.message, "good");
+        hud.openSheet("map");
+      } else if (code === -4) {
+        hud.showToast(COPY.surveyNeedEmpty, "bad");
+      } else {
+        hud.showToast(`${COPY.surveyBad}: ${code}`, "bad");
+      }
+    },
+    onRestoreMap: () => {
+      const code = sim.clearMap();
+      if (code === 0) {
+        clearMapMeta();
+        hud.showToast(COPY.surveyRestored, "good");
+      }
+      hud.openSheet("map");
+    },
   });
   hud.showStart(hasSaved);
 }
@@ -248,6 +312,11 @@ function frame(now: number) {
     audio.clear();
     hud.showToast(`${COPY.wave} ${previous.wave} held.`, "good");
   }
+  const expeditionLive = sim.expedition(0) > 0.5;
+  if (lastExpedition && !expeditionLive) {
+    hud.showToast(sim.expedition(3) === 1 ? COPY.contractWon : COPY.contractLost, sim.expedition(3) === 1 ? "good" : "bad");
+  }
+  lastExpedition = expeditionLive;
   if (snap.phase === 2 && previous.phase !== 2) {
     audio.defeat();
     cancelBuild();
@@ -281,6 +350,7 @@ function frame(now: number) {
 let lastSnapshot: Snapshot;
 let lastTime = 0;
 let lastRaidWave = 0;
+let lastExpedition = false;
 
 async function main() {
   try {
@@ -295,12 +365,15 @@ async function main() {
 
   const offered = hasSave();
   const resumed = offered && loadGame(sim);
+  let offlineGain = 0;
+  if (resumed) offlineGain = sim.offline(secondsSinceSave());
   if (!resumed) {
     sim.init(newSeed());
     if (offered) clearSave();
   }
   installWorld();
   buildHud(offered && resumed);
+  if (offlineGain > 0) hud.showToast(`${COPY.lineLog}: +${Math.round(offlineGain)} shells.`, "good");
   lastSnapshot = sim.snapshot();
   hud.update(lastSnapshot, { started: false, sound: false, speed: 1, paused: false });
 

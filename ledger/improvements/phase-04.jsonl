@@ -1,0 +1,3 @@
+{"seq":1,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0012","claim":"The sheet label names the open sheet for screen readers.","ev":"src/ui.ts","ok":true}
+{"seq":2,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0009","claim":"New systems ride extra exports, so the snapshot ABI stays fixed.","ev":"docs/ARCHITECTURE.md","ok":true}
+{"seq":3,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0012","claim":"The example survey names its author and seed.","ev":"src/map.ts","ok":true}

@@ -41,6 +41,22 @@ function save(ex) {
   return Buffer.from(new Uint8Array(ex.memory.buffer, ptr, len));
 }
 
+function mapBytes(cells) {
+  const bytes = new Uint8Array(7 + cells.length * 2);
+  bytes.set([0x42, 0x4d, 0x4d, 0x50, 1, 1, cells.length]);
+  cells.forEach(([gx, gz], i) => {
+    bytes[7 + i * 2] = gx;
+    bytes[8 + i * 2] = gz;
+  });
+  return bytes;
+}
+
+function importMap(ex, bytes) {
+  const ptr = ex.sim_snapshot_ptr();
+  new Uint8Array(ex.memory.buffer).set(bytes, ptr);
+  return ex.sim_import_map(ptr, bytes.length);
+}
+
 const checks = [];
 function check(name, ok, detail) {
   checks.push({ name, ok: Boolean(ok), detail: detail ?? "" });
@@ -107,6 +123,89 @@ check("foundry built", cityEx.sim_city(0) === 0);
 for (let i = 0; i < 100; i++) cityEx.sim_step(30);
 const made = snap(cityEx);
 check("foundry makes ingots", made[H.ingots] > 0.5, `${made[H.ingots].toFixed(3)}`);
+
+// Expeditions: a paid, three-leg contract on the current district.
+const expEx = boot(81);
+check("contract fee is 30", expEx.sim_expedition_contract(0, 0) === 30, `${expEx.sim_expedition_contract(0, 0)}`);
+check("contract pay is 55", expEx.sim_expedition_contract(0, 1) === 55, `${expEx.sim_expedition_contract(0, 1)}`);
+check("contract starts", expEx.sim_expedition_start(0) === 0);
+check("contract is live", expEx.sim_expedition(0) === 1, `${expEx.sim_expedition(0)}`);
+check("contract paid the fee", Math.abs(snap(expEx)[H.brass] - 120) < 0.01, `${snap(expEx)[H.brass]}`);
+check("second contract refuses", expEx.sim_expedition_start(1) === -1);
+check("contract leg is zero", expEx.sim_expedition(2) === 0, `${expEx.sim_expedition(2)}`);
+
+// The marsh moves with a cause, and a harvest pays.
+const ecoEx = boot(82);
+const water0 = ecoEx.sim_eco(1);
+check("marsh starts balanced", ecoEx.sim_eco(9) === 0, `${ecoEx.sim_eco(9)}`);
+check("sluice opens", ecoEx.sim_eco_action(0) === 0);
+check("sluice raises water", ecoEx.sim_eco(1) > water0, `${ecoEx.sim_eco(1)}`);
+check("sluice becomes the cause", ecoEx.sim_eco(9) === 5, `${ecoEx.sim_eco(9)}`);
+const reedBrass = snap(ecoEx)[H.brass];
+check("reed harvest pays", ecoEx.sim_eco_action(2) > 0);
+check("reed harvest credits brass", snap(ecoEx)[H.brass] > reedBrass, `${snap(ecoEx)[H.brass]}`);
+
+// One shell line: made, buffered, convoyed, capped offline.
+const lineEx = boot(83);
+check("line starts off", lineEx.sim_automation(5) === 0, `${lineEx.sim_automation(5)}`);
+check("foundry stands", lineEx.sim_city(0) === 0);
+for (let i = 0; i < 140; i++) lineEx.sim_step(33);
+check("line starts", lineEx.sim_automation_toggle(0) === 0);
+check("line is on", lineEx.sim_automation(5) === 1);
+for (let i = 0; i < 140; i++) lineEx.sim_step(33);
+check("line buffered shells", lineEx.sim_automation(1) >= 4, `${lineEx.sim_automation(1)}`);
+check("convoy leaves", lineEx.sim_convoy() === 0);
+for (let i = 0; i < 120; i++) lineEx.sim_step(33);
+check("convoy delivers shells", lineEx.sim_automation(2) >= 4, `${lineEx.sim_automation(2)}`);
+const offline = lineEx.sim_offline(3600);
+check("offline gain is capped", offline <= 1200, `${offline}`);
+check("rule toggles", lineEx.sim_automation_toggle(1) === 0 && lineEx.sim_automation(6) === 1);
+
+// Survey maps: checked in the client, checked again in core.
+const surveyEx = boot(84);
+const survey = mapBytes([
+  [5, 2],
+  [5, 3],
+  [6, 2],
+  [11, 9],
+  [12, 9],
+  [11, 10],
+]);
+check("survey imports", importMap(surveyEx, survey) === 0);
+check("survey is ready", surveyEx.sim_custom(0) === 1);
+check("survey keeps six cells", surveyEx.sim_custom(1) === 6, `${surveyEx.sim_custom(1)}`);
+check("survey cell turns to rubble", surveyEx.sim_cell_state(5, 2) === 1, `${surveyEx.sim_cell_state(5, 2)}`);
+const surveySave = save(surveyEx);
+const surveyLoad = boot(1);
+const surveyPtr = surveyLoad.sim_snapshot_ptr();
+new Uint8Array(surveyLoad.memory.buffer).set(surveySave, surveyPtr);
+check("survey save loads", surveyLoad.sim_load(surveyPtr, surveySave.length) === 0);
+check("survey survives a save", surveyLoad.sim_custom(0) === 1);
+check("survey restores", surveyEx.sim_clear_map() === 0 && surveyEx.sim_custom(0) === 0);
+const sealed = mapBytes(Array.from({ length: 13 }, (_, gz) => [8, gz]));
+check("sealed survey refuses", importMap(surveyEx, sealed) === -5, `${importMap(surveyEx, sealed)}`);
+check("survey refuses a built district", (() => {
+  const ex = boot(85);
+  ex.sim_switch_map(1);
+  ex.sim_switch_map(2);
+  ex.sim_place(9, 4, 3);
+  return importMap(ex, survey) === -4;
+})());
+
+// Endless pressure is a curve, not a cliff.
+const curveEx = boot(86);
+check("wave 1 health is one", Math.abs(curveEx.sim_wave_curve(1, 0) - 1) < 0.001);
+check("wave 30 health is capped", Math.abs(curveEx.sim_wave_curve(30, 1) - 1.3) < 0.001, `${curveEx.sim_wave_curve(30, 1)}`);
+check("wave 10 holds a boss", curveEx.sim_wave_curve(10, 3) === 1);
+check("wave 30 fields 73 enemies", curveEx.sim_wave_curve(30, 2) === 73, `${curveEx.sim_wave_curve(30, 2)}`);
+
+// The pre-frontier fixture must still load.
+const v4 = new Uint8Array(readFileSync(resolve(root, "tests/fixtures/save-v4.bin")));
+const v4Ex = boot(1);
+const v4Ptr = v4Ex.sim_snapshot_ptr();
+new Uint8Array(v4Ex.memory.buffer).set(v4, v4Ptr);
+check("v4 save loads", v4Ex.sim_load(v4Ptr, v4.length) === 0);
+check("v4 save keeps three districts", v4Ex.sim_map_tower_count(0) === 1 && v4Ex.sim_map_tower_count(1) === 1 && v4Ex.sim_map_tower_count(2) === 1);
 
 // Determinism: same seed, same commands, same byte image.
 const aEx = boot(9001);
