@@ -74,6 +74,11 @@
   ],
   "todo": [
     {
+      "id": "T-0014",
+      "title": "Draw frontier tracks and threat edges",
+      "state": "open"
+    },
+    {
       "id": "T-0008",
       "title": "Connect districts on a frontier map",
       "state": "active"

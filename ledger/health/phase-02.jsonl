@@ -1,3 +1,4 @@
 {"seq":1,"at":"2026-11-19T15:45:00.000Z","ticket":"T-0008","claim":"The frontier keeps two district builds.","ev":"artifacts/receipts/probe.json","ok":true}
 {"seq":2,"at":"2026-11-19T15:45:00.000Z","ticket":"T-0008","claim":"The v0.2 core suite passes 13 tests.","ev":"artifacts/receipts/rust-test.json","ok":true}
 {"seq":3,"at":"2026-11-19T15:48:00.000Z","ticket":"T-0008","claim":"The v0.2 client suite passes 14 tests.","ev":"artifacts/receipts/test.json","ok":true}
+{"seq":4,"at":"2026-11-19T15:56:00.000Z","ticket":"T-0008","claim":"The v0.2 release asset carries both districts.","ev":"artifacts/receipts/release-0.2.0.json","ok":true}
