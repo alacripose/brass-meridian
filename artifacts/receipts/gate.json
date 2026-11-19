@@ -1,9 +1,9 @@
 {
   "ok": true,
-  "at": "2026-11-19T15:22:24.571Z",
+  "at": "2026-11-19T15:25:09.122Z",
   "passed": 35,
   "total": 35,
-  "percent": 75.3,
+  "percent": 81.3,
   "checks": [
     {
       "name": "package is MIT",
@@ -28,7 +28,7 @@
     {
       "name": "ledger has rows",
       "ok": true,
-      "detail": "17 rows"
+      "detail": "19 rows"
     },
     {
       "name": "ledger failures",
@@ -73,7 +73,7 @@
     {
       "name": "status percentage is current",
       "ok": true,
-      "detail": "expected 75.3%"
+      "detail": "expected 81.3%"
     },
     {
       "name": "wasm snapshot length",

@@ -6,9 +6,11 @@ This file is the resume point after a Freebuff pause. Update it before a long br
 
 Last update: 2026-11-19.
 
-The vertical slice is built. The core, client, tests, probe, gate, ledgers, and CI definitions exist.
+The vertical slice is built. The public repository is live and CI is green.
 
-The public repository and first release are the last step of this slice.
+Pages serves the build at https://alacripose.github.io/brass-meridian/.
+
+The `v0.1.0` release is the last step of this slice.
 
 ## What is proved
 
@@ -17,14 +19,12 @@ The public repository and first release are the last step of this slice.
 - The headless probe passes 24 checks.
 - The production build succeeds.
 - The gate checks prose, ledgers, tickets, progress, ABI, receipts, and secrets.
+- CI passes both jobs. Pages returns 200 and the wasm is `application/wasm`.
 
 ## Next 120 minutes
 
-1. Create the public MIT repository and push `main`.
-2. Watch CI. Fix the first real failure, not the symptom.
-3. Enable Pages and confirm the live URL.
-4. Tag `v0.1.0` and confirm the release asset.
-5. Start ticket T-0008: the frontier map graph.
+1. Tag `v0.1.0` and confirm the release asset.
+2. Start ticket T-0008: the frontier map graph.
 
 ## After that
 
@@ -38,7 +38,7 @@ Order matters. Each phase needs save migration and a proof before the next one s
 ## Known limits
 
 - No physical phone test.
-- No visual review on a real device.
+- The preview page was backgrounded, so no live wave was visually reviewed.
 - No frontier, expeditions, ecology, or automation.
 - The renderer is one bundle and not code-split.
 

@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "kind": "public-runtime",
+  "repo": "https://github.com/alacripose/brass-meridian",
+  "run_id": "44554184903",
+  "run_url": "https://github.com/alacripose/brass-meridian/actions/runs/44554184903",
+  "head_sha": "11c02cafb6535e4d8c40fa8a6d936cb537d92c4f",
+  "ci_conclusion": "success",
+  "pages_url": "https://alacripose.github.io/brass-meridian/",
+  "page_status": 200,
+  "wasm_status": 200,
+  "wasm_content_type": "application/wasm",
+  "wasm_bytes": 51011,
+  "at": "2026-11-19T15:23:10Z"
+}
