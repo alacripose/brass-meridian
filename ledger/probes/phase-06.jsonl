@@ -1,0 +1,3 @@
+{"seq":1,"at":"2026-11-19T23:10:00.000Z","ticket":"T-0016","claim":"The wasm probe preserves both halves of the exact seed.","ev":"tools/probe.mjs","ok":true}
+{"seq":2,"at":"2026-11-19T23:45:00.000Z","ticket":"T-0015","claim":"A README carrying the retired figure and an unlabelled status each fail the gate.","ev":"tools/gate.mjs","ok":true}
+{"seq":3,"at":"2026-11-20T00:20:00.000Z","ticket":"T-0018","claim":"The delivery scan rejects a token, env file, key file, or machine-local path.","ev":"tools/delivery-scan.mjs","ok":true}

@@ -27,10 +27,11 @@ let world: Battlefield;
 let hud: Hud;
 const audio = new GameAudio();
 
-function newSeed(): number {
-  const values = new Uint32Array(1);
+function newSeed(): bigint {
+  const values = new Uint32Array(2);
   crypto.getRandomValues(values);
-  return values[0] || 1;
+  const value = (BigInt(values[1]) << 32n) | BigInt(values[0]);
+  return value || 1n;
 }
 
 const model: HudModel = {

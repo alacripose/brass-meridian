@@ -116,7 +116,7 @@ fn base_terrain(map: u8, gx: usize, gz: usize) -> bool {
     }
 }
 
-fn threat_for(wave: u32, seed: u32) -> u8 {
+fn threat_for(wave: u32, seed: u64) -> u8 {
     ((wave as usize + (seed as usize % MAP_COUNT)) % MAP_COUNT) as u8
 }
 
@@ -397,7 +397,7 @@ struct Auto {
 }
 
 struct Sim {
-    seed: u32,
+    seed: u64,
     rng: u32,
     brass: f32,
     ingots: f32,
@@ -444,10 +444,11 @@ struct Sim {
 }
 
 impl Sim {
-    fn new(seed: u32) -> Self {
+    fn new(seed: u64) -> Self {
+        let low = seed as u32;
         let mut sim = Sim {
             seed,
-            rng: if seed == 0 { 0x9E37_79B9 } else { seed },
+            rng: if low == 0 { 0x9E37_79B9 } else { low },
             brass: 150.0,
             ingots: 0.0,
             shells: 0.0,
@@ -1795,7 +1796,7 @@ impl Sim {
     fn save_bytes(&mut self) -> &[u8] {
         let mut w = Vec::with_capacity(4608);
         w.extend_from_slice(b"BMG1");
-        w.push(5); // save format
+        w.push(6); // save format
         w.push(self.map);
         w.push(self.threat);
         w.extend_from_slice(&self.wave_bonus.to_le_bytes());
@@ -1917,7 +1918,7 @@ impl Sim {
     fn load_bytes(&mut self, bytes: &[u8]) -> i32 {
         if bytes.len() < 6
             || &bytes[0..4] != b"BMG1"
-            || !(2..=5).contains(&bytes[4])
+            || !(2..=6).contains(&bytes[4])
         {
             return -1;
         }
@@ -1990,13 +1991,18 @@ impl Sim {
                 let lo = self.u32() as u64;
                 f64::from_bits((hi << 32) | lo)
             }
+            fn u64(&mut self) -> u64 {
+                let lo = self.u32() as u64;
+                let hi = self.u32() as u64;
+                (hi << 32) | lo
+            }
         }
         let mut r = R {
             b: bytes,
             p: start,
             ok: true,
         };
-        let seed = r.u32();
+        let seed = if format >= 6 { r.u64() } else { r.u32() as u64 };
         let mut fresh = Sim::new(seed);
         fresh.map = map;
         fresh.threat = if format >= 4 {
@@ -2290,8 +2296,25 @@ pub extern "C" fn sim_version() -> u32 {
 #[no_mangle]
 pub extern "C" fn sim_init(seed: u32) {
     with_sim(|s| {
-        *s = Sim::new(seed);
+        *s = Sim::new(seed as u64);
     });
+}
+
+#[no_mangle]
+pub extern "C" fn sim_init64(lo: u32, hi: u32) {
+    with_sim(|s| {
+        *s = Sim::new(((hi as u64) << 32) | lo as u64);
+    });
+}
+
+#[no_mangle]
+pub extern "C" fn sim_seed_lo() -> u32 {
+    with_sim(|s| s.seed as u32)
+}
+
+#[no_mangle]
+pub extern "C" fn sim_seed_hi() -> u32 {
+    with_sim(|s| (s.seed >> 32) as u32)
 }
 
 #[no_mangle]
@@ -2967,6 +2990,17 @@ mod tests {
         assert_eq!(b.auto.buffer, 4.0);
         assert_eq!(b.exp_relics[1], 2);
         assert_eq!(b.discoveries, 0b101);
+    }
+
+    #[test]
+    fn the_exact_64_bit_seed_survives_a_save() {
+        let seed = 9_418_646_105_956_113_635u64;
+        let mut a = Sim::new(seed);
+        let bytes = a.save_bytes().to_vec();
+        assert_eq!(bytes[4], 6);
+        let mut b = Sim::new(1);
+        assert_eq!(b.load_bytes(&bytes), 0);
+        assert_eq!(b.seed, seed);
     }
 
     #[test]

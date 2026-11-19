@@ -1,0 +1,1 @@
+{"seq":1,"at":"2026-11-19T23:10:00.000Z","ticket":"T-0016","claim":"The exact 64-bit seed round-trips through save and load.","ev":"core/src/lib.rs","ok":true}

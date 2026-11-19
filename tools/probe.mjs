@@ -207,6 +207,20 @@ new Uint8Array(v4Ex.memory.buffer).set(v4, v4Ptr);
 check("v4 save loads", v4Ex.sim_load(v4Ptr, v4.length) === 0);
 check("v4 save keeps three districts", v4Ex.sim_map_tower_count(0) === 1 && v4Ex.sim_map_tower_count(1) === 1 && v4Ex.sim_map_tower_count(2) === 1);
 
+// The exact family seed is 64-bit and must survive the format 6 image.
+const exact = boot(1);
+exact.sim_init64(849435875, 2192949435);
+check("exact seed low half", exact.sim_seed_lo() === 849435875, `${exact.sim_seed_lo()}`);
+check("exact seed high half", (exact.sim_seed_hi() >>> 0) === 2192949435, `${exact.sim_seed_hi() >>> 0}`);
+const exactBytes = save(exact);
+check("save format is 6", exactBytes[4] === 6, `${exactBytes[4]}`);
+const exactLoad = boot(1);
+const exactPtr = exactLoad.sim_snapshot_ptr();
+new Uint8Array(exactLoad.memory.buffer).set(exactBytes, exactPtr);
+check("exact seed image loads", exactLoad.sim_load(exactPtr, exactBytes.length) === 0);
+check("exact seed low half survives", exactLoad.sim_seed_lo() === 849435875, `${exactLoad.sim_seed_lo()}`);
+check("exact seed high half survives", (exactLoad.sim_seed_hi() >>> 0) === 2192949435, `${exactLoad.sim_seed_hi() >>> 0}`);
+
 // Determinism: same seed, same commands, same byte image.
 const aEx = boot(9001);
 const bEx = boot(9001);

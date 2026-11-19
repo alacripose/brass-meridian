@@ -11,7 +11,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const TYPES = new Set(["failures", "health", "probes", "tests", "improvements"]);
+const TYPES = new Set(["failures", "health", "probes", "tests", "improvements", "reconciliation"]);
 
 function ledgerFiles() {
   const files = [];

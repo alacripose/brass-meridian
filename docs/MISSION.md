@@ -6,61 +6,55 @@ This file is the resume point after a Freebuff pause. Update it before a long br
 
 Last update: 2026-11-19.
 
-The vertical slice and the 0.3 frontier cut are built and tagged. The 0.4 frontier systems are built and waiting for the release pass.
+The vertical slice and the 0.3 frontier cut are built and tagged. The 0.4 systems are built, and CI is green on commit `2537a1e`.
 
-Pages serves the build at https://alacripose.github.io/brass-meridian/.
+The `v0.4.0` tag and release receipt are still owed. Do not tag until the worktree is clean.
 
-The `v0.3.0` release carries the built game and the changelog section at https://github.com/alacripose/brass-meridian/releases/tag/v0.3.0.
+The 6.0 interview is complete. All 100 answers are in `docs/QUESTIONS-6.0.md` and `state/questions-6.0.jsonl`.
 
-Version 0.4 adds expeditions, the Coldwater marsh, the shell line, and survey maps. It also adds save format 5 and a version 4 fixture.
+`docs/ROADMAP.md` carries the 6.0 phases. The measured inventory is 4.5% of 1,213 capabilities.
 
 ## What is proved
 
-- 23 Rust tests pass.
-- 27 client tests pass against the real wasm.
-- The headless probe passes 83 checks.
+- 25 Rust tests pass.
+- 28 client tests pass against the real wasm.
+- The headless probe passes 89 checks.
 - The production build succeeds.
+- CI run `44613847263` passed `check` and `deploy`.
 - Survey validation refuses a sealed, over-budget, or anonymous file.
 - A version 4 save from the 0.3 wasm still loads.
 - The gate checks prose, ledgers, tickets, progress, ABI, receipts, and secrets.
-- CI passed on 0.3. The 0.4 CI run is pending.
 
 ## Next 120 minutes
 
-1. Run `npm run check` and clear every failure.
-2. Show the City and Map sheets in the browser and inspect the new cards.
-3. Commit, push, wait for CI, tag `v0.4.0`, and verify the release asset.
-4. Then start T-0015, the tower roster.
+1. Land T-0016: cube-sphere faces, clock, streaming and save format 6.
+2. Build the 34 point loadout with the six Axis star tags.
+3. Tag `v0.4.0` only after the tree is clean and CI is green.
+4. Then start T-0017, production cells and seven resources.
 
 ## After that
 
-- T-0015 tower roster and upgrade branches.
-- T-0016 enemy roles and boss modifiers.
-- T-0017 authored campaign and teaching.
-- T-0018 meta progression and daily seeds.
-- T-0019 music and mix.
-- T-0020 accessibility and input rebinding.
-- T-0021 localization.
-- T-0022 more districts, biomes, and waves.
-- T-0023 gamepad and keyboard parity.
+- T-0018 roster: 12 towers, 12 roles, six modifiers, 34-point loadouts.
+- T-0019 living world: catalog, deferred fields, four tiers, residents.
+- T-0020 beta surface: four views, localization, score, accessibility.
+- T-0021 6.0 release gate and receipt.
 
-Order matters. Each phase needs save migration and a proof before the next one starts.
+Order matters. Each phase needs a save migration and a proof before the next one starts.
 
 ## Known limits
 
-- Progress is 5.2% of the full game scope, not the vertical slice.
-- No physical phone test.
-- Canvas motion was not visually reviewed.
-- The track graph is one chain, not a region zoom yet.
+- The measured 6.0 inventory is 4.5%, not a completion promise.
+- Region zoom is a 6.0 gate and is not built.
+- The planet, cube-sphere and voxel LOD are not built.
 - Expedition tracks are not seeded and loadouts are not limited.
-- Survey maps have a cell budget, not a measured performance budget.
-- No music, localization, or gamepad parity.
-- The renderer is one bundle and not code-split.
+- Survey maps have a cell budget, not a measured spawn budget.
+- The owner saw the game on a phone, but no 60 fps receipt exists.
+- Music, localization and gamepad parity remain open.
 
 ## Commands
 
 ```bash
-cd /f/Documents/brass-meridian
+cd brass-meridian
 npm run check
 npm run dev
 npm run status

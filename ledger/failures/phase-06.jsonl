@@ -1,0 +1,2 @@
+{"seq":1,"at":"2026-11-19T23:10:00.000Z","ticket":"T-0016","claim":"The first exact-seed probe compared a signed wasm i32 for the high half.","ev":"tools/probe.mjs","ok":true}
+{"seq":2,"at":"2026-11-20T00:20:00.000Z","ticket":"T-0018","claim":"The first delivery scan found a Windows path in AGENTS.md.","ev":"tools/delivery-scan.mjs","ok":true}

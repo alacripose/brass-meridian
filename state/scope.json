@@ -1,0 +1,392 @@
+{
+  "updated": "2026-11-19",
+  "label": "6.0",
+  "note": "Measured 6.0 inventory. Counts come from the live tree and the family references in docs/RECONCILIATION.md.",
+  "rubric": "have is a measured capability count; need is the reference count; percent is total have divided by total need.",
+  "areas": [
+    {
+      "id": "A01",
+      "name": "Planet runtime",
+      "have": 0,
+      "need": 8,
+      "evidence": ["src/view.ts", "docs/ARCHITECTURE.md", "docs/RECONCILIATION.md"],
+      "missing": ["six cube faces", "edge stitching", "32-cubed octree chunk", "LOD ladder", "boundary stream", "carve persistence", "fog and occlusion", "40,075 km bound"],
+      "next": "Build six cube faces and one 32-cubed chunk."
+    },
+    {
+      "id": "A02",
+      "name": "Seed and clock",
+      "have": 2,
+      "need": 6,
+      "evidence": ["core/src/lib.rs", "docs/RECONCILIATION.md"],
+      "missing": ["named sub-seeds", "1:8 clock", "24 hour day", "four seasons"],
+      "next": "Add named sub-seeds and the 1:8 clock."
+    },
+    {
+      "id": "A03",
+      "name": "Camera and views",
+      "have": 1,
+      "need": 6,
+      "evidence": ["src/view.ts", "docs/DESIGN.md", "docs/RECONCILIATION.md"],
+      "missing": ["first person", "city view", "region view", "planet view", "continuous zoom"],
+      "next": "Add a first-person camera above the tactical view."
+    },
+    {
+      "id": "A04",
+      "name": "Authored hubs",
+      "have": 3,
+      "need": 12,
+      "evidence": ["docs/DESIGN.md", "docs/QUESTIONS-6.0.md"],
+      "missing": ["nine authored hubs"],
+      "next": "Author the fourth hub and its rule."
+    },
+    {
+      "id": "A05",
+      "name": "Generated sites",
+      "have": 0,
+      "need": 60,
+      "evidence": ["docs/QUESTIONS-6.0.md", "docs/ROADMAP.md"],
+      "missing": ["five site templates", "site graph", "seed placement", "site validation"],
+      "next": "Generate one site from a seed and a template."
+    },
+    {
+      "id": "A06",
+      "name": "Hub production",
+      "have": 3,
+      "need": 72,
+      "evidence": ["docs/DESIGN.md", "docs/SCOPE.md"],
+      "missing": ["nine hub kits", "twelve landmarks", "twelve district tracks", "twelve threat edges"],
+      "next": "Build a distinct kit for the fourth hub."
+    },
+    {
+      "id": "A07",
+      "name": "Site production",
+      "have": 0,
+      "need": 180,
+      "evidence": ["docs/QUESTIONS-6.0.md", "docs/ROADMAP.md"],
+      "missing": ["sixty terrain layouts", "sixty encounter layouts", "sixty reward tables"],
+      "next": "Author the first seeded site kit."
+    },
+    {
+      "id": "A08",
+      "name": "Terrain editing",
+      "have": 0,
+      "need": 3,
+      "evidence": ["docs/QUESTIONS-6.0.md", "docs/ARCHITECTURE.md"],
+      "missing": ["carve", "fill", "persistent edit save"],
+      "next": "Add one carve cell and save it."
+    },
+    {
+      "id": "A09",
+      "name": "Biome catalog",
+      "have": 0,
+      "need": 50,
+      "evidence": ["docs/RECONCILIATION.md", "docs/QUESTIONS-6.0.md"],
+      "missing": ["16 envelopes", "19 types", "3 overlays", "12 deferred rows"],
+      "next": "Mount the family catalog and classify one column."
+    },
+    {
+      "id": "A10",
+      "name": "Biome production",
+      "have": 1,
+      "need": 200,
+      "evidence": ["docs/DESIGN.md", "docs/RECONCILIATION.md"],
+      "missing": ["terrain palette per row", "flora per row", "fauna per row", "ambience per row"],
+      "next": "Author the second biome's palette and flora."
+    },
+    {
+      "id": "A11",
+      "name": "Species and food web",
+      "have": 6,
+      "need": 96,
+      "evidence": ["core/src/lib.rs", "docs/RECONCILIATION.md"],
+      "missing": ["six species per biome", "needs", "predator links", "migration"],
+      "next": "Add the first full biome food web."
+    },
+    {
+      "id": "A12",
+      "name": "Ecology tiers",
+      "have": 1,
+      "need": 4,
+      "evidence": ["core/src/lib.rs", "docs/RECONCILIATION.md"],
+      "missing": ["regional aggregate", "distant statistics", "dormant seed"],
+      "next": "Add a regional aggregate tier."
+    },
+    {
+      "id": "A13",
+      "name": "Waves and director",
+      "have": 2,
+      "need": 8,
+      "evidence": ["core/src/lib.rs", "docs/RECONCILIATION.md"],
+      "missing": ["seeded templates", "five phases", "event budgets", "256 cap", "downtime", "resume state"],
+      "next": "Add signal and recovery phases around a wave."
+    },
+    {
+      "id": "A14",
+      "name": "Tower roster",
+      "have": 4,
+      "need": 12,
+      "evidence": ["core/src/lib.rs", "docs/DESIGN.md"],
+      "missing": ["eight towers"],
+      "next": "Add Prism Lance and its counter."
+    },
+    {
+      "id": "A15",
+      "name": "Tower branches",
+      "have": 0,
+      "need": 36,
+      "evidence": ["docs/DESIGN.md", "docs/QUESTIONS-6.0.md"],
+      "missing": ["three branches for each of twelve towers"],
+      "next": "Add the first branch to Arc Coil."
+    },
+    {
+      "id": "A16",
+      "name": "Tower sockets",
+      "have": 0,
+      "need": 12,
+      "evidence": ["docs/QUESTIONS-6.0.md", "docs/RECONCILIATION.md"],
+      "missing": ["socket count by tower", "socket rules", "upgrade scaling"],
+      "next": "Add one socket track to Arc Coil."
+    },
+    {
+      "id": "A17",
+      "name": "Tower production",
+      "have": 4,
+      "need": 84,
+      "evidence": ["docs/DESIGN.md", "docs/SCOPE.md"],
+      "missing": ["model", "rig", "fire VFX", "impact VFX", "sound", "icon", "codex"],
+      "next": "Replace one blockout tower with an authored model."
+    },
+    {
+      "id": "A18",
+      "name": "Enemy roles",
+      "have": 5,
+      "need": 12,
+      "evidence": ["core/src/lib.rs", "docs/DESIGN.md"],
+      "missing": ["seven roles"],
+      "next": "Add Spitter and its stop-to-fire rule."
+    },
+    {
+      "id": "A19",
+      "name": "Enemy variants",
+      "have": 0,
+      "need": 24,
+      "evidence": ["docs/QUESTIONS-6.0.md", "docs/DESIGN.md"],
+      "missing": ["two variants per role"],
+      "next": "Add one Drudge variant."
+    },
+    {
+      "id": "A20",
+      "name": "Bosses",
+      "have": 1,
+      "need": 12,
+      "evidence": ["core/src/lib.rs", "docs/DESIGN.md"],
+      "missing": ["eleven bosses"],
+      "next": "Add one boss per hub family."
+    },
+    {
+      "id": "A21",
+      "name": "Boss modifiers",
+      "have": 1,
+      "need": 6,
+      "evidence": ["core/src/lib.rs", "docs/QUESTIONS-6.0.md"],
+      "missing": ["shield", "haste", "split", "heal", "rage"],
+      "next": "Add the shield modifier."
+    },
+    {
+      "id": "A22",
+      "name": "Enemy production",
+      "have": 5,
+      "need": 84,
+      "evidence": ["docs/DESIGN.md", "docs/SCOPE.md"],
+      "missing": ["model", "rig", "spawn VFX", "death VFX", "sound", "icon", "codex"],
+      "next": "Replace one blockout enemy with an authored model."
+    },
+    {
+      "id": "A23",
+      "name": "Combat supply",
+      "have": 0,
+      "need": 2,
+      "evidence": ["docs/QUESTIONS-6.0.md", "docs/RECONCILIATION.md"],
+      "missing": ["ammunition draw", "power draw"],
+      "next": "Make one tower consume shells from the line."
+    },
+    {
+      "id": "A24",
+      "name": "Resource classes",
+      "have": 3,
+      "need": 7,
+      "evidence": ["core/src/lib.rs", "docs/RECONCILIATION.md"],
+      "missing": ["components", "energy", "food and biomass", "research"],
+      "next": "Add components as a second processed resource."
+    },
+    {
+      "id": "A25",
+      "name": "Production cells",
+      "have": 0,
+      "need": 12,
+      "evidence": ["docs/QUESTIONS-6.0.md", "docs/RECONCILIATION.md"],
+      "missing": ["one cell per hub", "local buffers", "cell consumers"],
+      "next": "Add one cell with a local buffer."
+    },
+    {
+      "id": "A26",
+      "name": "Logistics modes",
+      "have": 1,
+      "need": 3,
+      "evidence": ["core/src/lib.rs", "docs/RECONCILIATION.md"],
+      "missing": ["scheduled transport", "networked stock"],
+      "next": "Add a scheduled convoy between two cells."
+    },
+    {
+      "id": "A27",
+      "name": "Fault dashboard",
+      "have": 0,
+      "need": 2,
+      "evidence": ["docs/QUESTIONS-6.0.md", "docs/RECONCILIATION.md"],
+      "missing": ["whole-settlement dashboard", "per-machine fault history"],
+      "next": "Add a fault history panel for one machine."
+    },
+    {
+      "id": "A28",
+      "name": "Residents",
+      "have": 0,
+      "need": 24,
+      "evidence": ["docs/QUESTIONS-6.0.md", "docs/RECONCILIATION.md"],
+      "missing": ["24 named residents"],
+      "next": "Add one resident with a job and a need."
+    },
+    {
+      "id": "A29",
+      "name": "Faction layers",
+      "have": 0,
+      "need": 2,
+      "evidence": ["docs/QUESTIONS-6.0.md", "docs/RECONCILIATION.md"],
+      "missing": ["species relationships", "settlement politics"],
+      "next": "Add one species relationship state."
+    },
+    {
+      "id": "A30",
+      "name": "Resident needs",
+      "have": 0,
+      "need": 4,
+      "evidence": ["docs/QUESTIONS-6.0.md", "docs/RECONCILIATION.md"],
+      "missing": ["food", "rest", "morale", "health"],
+      "next": "Add food and rest to one resident."
+    },
+    {
+      "id": "A31",
+      "name": "Resident production",
+      "have": 0,
+      "need": 96,
+      "evidence": ["docs/QUESTIONS-6.0.md", "docs/SCOPE.md"],
+      "missing": ["model", "schedule", "needs", "dialogue"],
+      "next": "Author one resident model and schedule."
+    },
+    {
+      "id": "A32",
+      "name": "Loot classes",
+      "have": 3,
+      "need": 9,
+      "evidence": ["core/src/lib.rs", "docs/RECONCILIATION.md"],
+      "missing": ["materials", "components", "modules", "blueprints", "research samples", "currency"],
+      "next": "Add materials as an encounter drop."
+    },
+        {
+      "id": "A33",
+      "name": "Extraction loadout",
+      "have": 0,
+      "need": 2,
+      "evidence": [
+        "tickets/T-0009-expeditions.md",
+        "docs/FORKS-6.0.md"
+      ],
+            "missing": [
+        "34-point item costs",
+        "six Axis star tags"
+      ],
+      "next": "Add a 34-point loadout with one priced item."
+    },
+    {
+      "id": "A34",
+      "name": "UI views",
+      "have": 2,
+      "need": 4,
+      "evidence": ["src/ui.ts", "docs/RECONCILIATION.md"],
+      "missing": ["strategic view", "close interaction"],
+      "next": "Add a strategic map view."
+    },
+    {
+      "id": "A35",
+      "name": "Observability",
+      "have": 0,
+      "need": 2,
+      "evidence": ["docs/QUESTIONS-6.0.md", "docs/RECONCILIATION.md"],
+      "missing": ["dashboard", "fault history"],
+      "next": "Add a fault history for the shell line."
+    },
+    {
+      "id": "A36",
+      "name": "Music and mix",
+      "have": 1,
+      "need": 5,
+      "evidence": ["src/audio.ts", "docs/SCOPE.md"],
+      "missing": ["main theme", "district tracks", "combat layers", "ambience"],
+      "next": "Compose one main theme."
+    },
+    {
+      "id": "A37",
+      "name": "Localization",
+      "have": 0,
+      "need": 6,
+      "evidence": ["docs/SCOPE.md", "docs/QUESTIONS-6.0.md"],
+      "missing": ["string catalog", "locale files", "second language", "RTL", "font coverage", "number formats"],
+      "next": "Move every UI string into one catalog."
+    },
+    {
+      "id": "A38",
+      "name": "Platform and performance",
+      "have": 1,
+      "need": 9,
+      "evidence": ["src/main.ts", "tickets/T-0012-community-maps.md"],
+      "missing": ["60 fps receipt", "spawn budget", "render distance", "resolution", "presets", "gamepad", "reduced motion", "text scaling"],
+      "next": "Measure draw calls and triangles at spawn."
+    },
+    {
+      "id": "A39",
+      "name": "Meta progression",
+      "have": 0,
+      "need": 6,
+      "evidence": ["docs/QUESTIONS-6.0.md", "docs/ROADMAP.md"],
+      "missing": ["optional reset", "codex", "blueprints", "achievements", "daily seeds", "stats"],
+      "next": "Add one codex entry and one blueprint."
+    },
+    {
+      "id": "A40",
+      "name": "Narrative and onboarding",
+      "have": 1,
+      "need": 17,
+      "evidence": ["docs/DESIGN.md", "docs/SCOPE.md"],
+      "missing": ["twelve hub beats", "first-run teaching", "codex", "boss intros", "ending"],
+      "next": "Write the fourth hub beat."
+    },
+    {
+      "id": "A41",
+      "name": "Community and release",
+      "have": 2,
+      "need": 6,
+      "evidence": ["README.md", "tickets/T-0012-community-maps.md"],
+      "missing": ["release receipt", "tag", "seed sharing", "measured map budget"],
+      "next": "Tag v0.4.0 after a green run."
+    },
+    {
+      "id": "A42",
+      "name": "Save and persistence",
+      "have": 2,
+      "need": 8,
+      "evidence": ["core/src/lib.rs", "docs/ARCHITECTURE.md"],
+      "missing": ["format 6 snapshot", "journal", "checkpoint", "three slots", "0.4 import"],
+      "next": "Add the first format 6 journal block."
+    }
+  ]
+}

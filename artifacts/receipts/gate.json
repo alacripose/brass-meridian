@@ -1,9 +1,9 @@
 {
   "ok": true,
-  "at": "2026-11-19T20:56:30.184Z",
-  "passed": 35,
-  "total": 35,
-  "percent": 5.4,
+  "at": "2026-11-19T22:13:13.672Z",
+  "passed": 46,
+  "total": 46,
+  "percent": 4.5,
   "checks": [
     {
       "name": "package is MIT",
@@ -28,32 +28,42 @@
     {
       "name": "ledger has rows",
       "ok": true,
-      "detail": "69 rows"
+      "detail": "178 rows"
     },
     {
       "name": "ledger failures",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-03.jsonl,phase-04.jsonl"
+      "detail": "phase-01.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl"
     },
     {
       "name": "ledger health",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl"
     },
     {
       "name": "ledger probes",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl"
     },
     {
       "name": "ledger tests",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl"
     },
     {
       "name": "ledger improvements",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl"
+    },
+    {
+      "name": "ledger reconciliation",
+      "ok": true,
+      "detail": "phase-06.jsonl"
+    },
+    {
+      "name": "reconciliation covers every answer",
+      "ok": true,
+      "detail": "100 rows"
     },
     {
       "name": "ticket front matter",
@@ -61,19 +71,54 @@
       "detail": ""
     },
     {
-      "name": "progress weights sum to 100",
+      "name": "progress is labelled 6.0",
       "ok": true,
-      "detail": "100"
-    },
-    {
-      "name": "progress marks are in range",
-      "ok": true,
-      "detail": ""
+      "detail": "55/1213"
     },
     {
       "name": "status percentage is current",
       "ok": true,
-      "detail": "expected 5.4%"
+      "detail": "expected 4.5%"
+    },
+    {
+      "name": "status rejects the legacy label",
+      "ok": true,
+      "detail": "legacy label"
+    },
+    {
+      "name": "scope label is 6.0",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "scope has measured counts",
+      "ok": true,
+      "detail": "42 areas"
+    },
+    {
+      "name": "scope evidence exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "scope names a gap and a next step",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "scope percentage is single digit",
+      "ok": true,
+      "detail": "4.5%"
+    },
+    {
+      "name": "progress mirrors scope",
+      "ok": true,
+      "detail": "55/1213"
+    },
+    {
+      "name": "scope drops the old figure",
+      "ok": true,
+      "detail": "old figure"
     },
     {
       "name": "wasm snapshot length",
@@ -84,6 +129,16 @@
       "name": "wasm ABI version",
       "ok": true,
       "detail": "1"
+    },
+    {
+      "name": "64-bit seed ABI",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "save format 6 is declared",
+      "ok": true,
+      "detail": ""
     },
     {
       "name": "TS stride mirrors the core",
@@ -98,7 +153,7 @@
     {
       "name": "wasm receipt matches artifact",
       "ok": true,
-      "detail": "e685126b718545bc7bc65c93f3d7fac5e4ee99f1fad6cf8d216d7cbc9beb9f04"
+      "detail": "6ae9dd0f6606180180fc1f5bc4c554242d238d3093594bf632dd0da101f4bb5c"
     },
     {
       "name": "typescript tests passed",
@@ -123,7 +178,7 @@
     {
       "name": "refusal ids are documented",
       "ok": true,
-      "detail": "19 ids"
+      "detail": "20 ids"
     },
     {
       "name": "no committed secrets",
@@ -171,7 +226,7 @@
       "detail": ""
     },
     {
-      "name": "CI runs tests, probe, gate",
+      "name": "CI runs tests, probe, scope, scan, gate",
       "ok": true,
       "detail": ""
     },

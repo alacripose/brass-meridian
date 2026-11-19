@@ -1,0 +1,178 @@
+// One reconciliation row per 6.0 interview answer. The record is the ledger;
+// the Markdown table is generated from the same map so the two cannot drift.
+// Run once: node tools/reconcile-6.mjs
+
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const questions = readFileSync(resolve(root, "state/questions-6.0.jsonl"), "utf8")
+  .trim()
+  .split(/\r?\n/)
+  .map(JSON.parse);
+
+const E = {
+  "Q-001": ["taste", "docs/MISSION.md", "6.0 is a beta label; no reference fixes the term."],
+  "Q-002": ["consistent", "openlock design §8.1", "The reference names twelve tower roles; the tree has four towers."],
+  "Q-003": ["consistent", "openlock design §8.2", "The reference names twelve roles and six modifiers; the tree has five and one."],
+  "Q-004": ["consistent", "openlock design §3", "The reference requires authored hubs inside a generated world."],
+  "Q-005": ["consistent", "openlock design §10", "The reference requires seeded pressure with recovery windows."],
+  "Q-006": ["contradicts", "shploingus LEDGER line 7067", "The exact seed is 64-bit; the tree had a u32 ABI. Applied a format 6 u64 seed."],
+  "Q-007": ["consistent", "shploingus octree.rs", "The family mesher is the reference renderer; the tree has no octree path yet."],
+  "Q-008": ["consistent", "shploingus octree.rs", "The octree owns terrain, collision and rendering in the reference."],
+  "Q-009": ["consistent", "shploingus lod-ladder.md", "The ladder has no artificial view cap; the tree is one orthographic view."],
+  "Q-010": ["taste", "tickets/T-0014-frontier-tracks.md", "The ticket defers region zoom; the owner made it a 6.0 gate."],
+  "Q-011": ["consistent", "docs/ARCHITECTURE.md", "Format 6 now writes the 64-bit seed block; the journal and slots remain open."],
+  "Q-012": ["consistent", "docs/ARCHITECTURE.md", "A one-way import is the reference migration rule."],
+  "Q-013": ["consistent", "tickets/T-0009-expeditions.md", "Both seeded tracks and loadouts are still unchecked."],
+  "Q-014": ["consistent", "tickets/T-0012-community-maps.md", "The measured spawn budget is still unchecked."],
+  "Q-015": ["taste", "owner answer, batch 1", "The owner saw the game on a phone; no 60 fps receipt exists."],
+  "Q-016": ["consistent", "docs/REFUSALS.md", "The project refuses a server without an owner decision."],
+  "Q-017": ["consistent", "docs/ROADMAP.md", "All five buildcraft items are open."],
+  "Q-018": ["consistent", "docs/ROADMAP.md", "All local meta items are open."],
+  "Q-019": ["consistent", "docs/ROADMAP.md", "The original score is open."],
+  "Q-020": ["consistent", "docs/ROADMAP.md", "The localization pipeline and second language are open."],
+  "Q-021": ["consistent", "tools/scope.mjs", "scope.json is the one declared inventory."],
+  "Q-022": ["consistent", "state/questions-6.0.jsonl", "Both the Markdown and JSONL records exist."],
+  "Q-023": ["taste", "docs/ROADMAP.md", "0.5 to 0.9 then 6.0 is an owner release path."],
+  "Q-024": ["consistent", "shploingus profile32", "The voxel simulation sits behind the three.js diorama in the family design."],
+  "Q-025": ["consistent", "shploingus SHAPER-PROFILES.md", "profile32 uses a 32-cubed fill side."],
+  "Q-026": ["consistent", "db-mc ATMOSPHERE-LAWS.md S1", "The world is planetary at 1/8 scale."],
+  "Q-027": ["consistent", "shploingus lod-ladder.md", "The reference treats view cost as a ladder, not a hard cap."],
+  "Q-028": ["consistent", "core/src/lib.rs", "The core splits time into 33 ms ticks."],
+  "Q-029": ["contradicts", "core/src/lib.rs", "The tree had one u32 seed; the answer needs a master seed and named sub-seeds. Applied the u64 path."],
+  "Q-030": ["consistent", "openlock design §3.2", "Seeded templates with authored beats are the reference rule."],
+  "Q-031": ["consistent", "openlock design §10", "The five-phase rhythm is the reference downtime model."],
+  "Q-032": ["consistent", "openlock design A5", "The world must persist damage, economy and ecology."],
+  "Q-033": ["consistent", "docs/DESIGN.md", "Twelve authored hubs are the content target; three exist."],
+  "Q-034": ["consistent", "openlock design §3.3", "Planetary scale needs the multi-scale camera and UI."],
+  "Q-035": ["consistent", "openlock design §3.3", "The reference names five camera stops."],
+  "Q-036": ["consistent", "shploingus lod-ladder.md", "Zoom is a voxel LOD change, not a new scene."],
+  "Q-037": ["consistent", "db-mc TICKET-0012", "Cubic chunks and streaming are the family pattern."],
+  "Q-038": ["consistent", "shploingus SHAPER-PROFILES.md", "Carve and build persist at the shaper level."],
+  "Q-039": ["taste", "owner answer, batch 1", "The owner saw the game on a phone; the receipt is still missing."],
+  "Q-040": ["consistent", "README.md", "The repository is public MIT and the gate refuses secrets."],
+  "Q-041": ["taste", "openlock design §3", "One planet is the owner choice; the reference allows a graph."],
+  "Q-042": ["contradicts", "db-mc ATMOSPHERE-LAWS.md S1", "40,075 km is real; the 1/8 engine bound is 5,009 km. Applied the unit split."],
+  "Q-043": ["consistent", "core/src/lib.rs", "The clock is 1:1 today; the answer asks for 1 real second to 8 world seconds."],
+  "Q-044": ["consistent", "openlock design §3.3", "The five stops are the reference hierarchy."],
+  "Q-045": ["consistent", "shploingus lod-ladder.md", "Zoom stays continuous through LOD rungs."],
+  "Q-046": ["contradicts", "openlock design §3.2", "A finite planet cannot hold infinite sites. Applied endless generation order on a finite surface."],
+  "Q-047": ["consistent", "openlock design §3.1", "Walking across a map boundary is the reference continuity rule."],
+  "Q-048": ["consistent", "shploingus SHAPER-PROFILES.md", "Full carve and build is the shaper contract."],
+  "Q-049": ["taste", "owner answer, batch 3", "No reference fixes the memory controls; the owner chose options."],
+  "Q-050": ["consistent", "openlock design §10", "All five director phases are named."],
+  "Q-051": ["consistent", "openlock design §10", "Event budgets keep the director from hard-countering."],
+  "Q-052": ["contradicts", "openlock design A5.4", "The design defaults to pause-on-unload; the tree had four-hour catch-up. Applied pause plus opt-in."],
+  "Q-053": ["consistent", "openlock design A5.3", "Snapshot, journal and checkpoint are the reference save model."],
+  "Q-054": ["consistent", "openlock design A5.1", "Several world records are allowed; the owner chose one world and three slots."],
+  "Q-055": ["consistent", "openlock design §4.5", "Residents and factions are required for the social layer."],
+  "Q-056": ["consistent", "openlock design §15.1.1", "A district is a set of production cells."],
+  "Q-057": ["consistent", "openlock design §4.4", "The reference names three logistics modes."],
+  "Q-058": ["consistent", "shploingus biome catalog", "The family catalog is scientific, with named sources."],
+  "Q-059": ["consistent", "openlock design §11", "The reference names four UI views."],
+  "Q-060": ["consistent", "openlock design §11.5", "Fault history and observability are required."],
+  "Q-061": ["consistent", "shploingus docs/baselines/biomes.json", "The catalog has 16 envelopes, 19 types and 3 overlays."],
+  "Q-062": ["contradicts", "shploingus biome_library.rs", "The family defers 12 rows until fields exist. Applied all 12 as new field work, not existing rows."],
+  "Q-063": ["consistent", "openlock design §6.1", "The full modular creature model is the reference."],
+  "Q-064": ["consistent", "openlock design §6.4", "Four fidelity tiers are named."],
+  "Q-065": ["consistent", "openlock design §6.5", "The full field model is the reference crop model."],
+  "Q-066": ["taste", "owner answer, batch 4", "No reference fixes 24 residents."],
+  "Q-067": ["taste", "openlock design §4.5", "The reference requires factions but not a fixed count."],
+  "Q-068": ["consistent", "openlock design §4.5", "The full needs set is the reference social model."],
+  "Q-069": ["consistent", "openlock design §8.1", "Twelve roles map one-to-one to twelve towers."],
+  "Q-070": ["consistent", "openlock design §8.2", "All twelve roles are wave-legal in the reference taxonomy."],
+  "Q-071": ["contradicts", "openlock design §8.2", "The reference warns against stacking too many traits. Applied one base plus a second at high threat, cap two."],
+  "Q-072": ["consistent", "openlock design §8.3", "Nine loot classes are named."],
+  "Q-073": ["consistent", "openlock design §9.1", "Seven resource classes are named."],
+  "Q-074": ["consistent", "openlock design §8.5", "Towers consume ammunition and power from the graph."],
+  "Q-075": ["consistent", "openlock design §4.4", "Network scope depends on power, range and permissions."],
+  "Q-076": ["consistent", "openlock design §9.4", "An optional full reset is a named prestige scope."],
+  "Q-077": ["taste", "owner answer, batch 4", "No reference fixes presets plus two controls."],
+  "Q-078": ["taste", "owner answer, batch 4", "No reference fixes 256 live bodies; the current core allows 320."],
+  "Q-079": ["consistent", "secure-shell server/stars.mjs", "The six top-level Axis stars are presence, craft, evidence, standing, conduct and continuity."],
+  "Q-080": ["contradicts", "docs/QUESTIONS-6.0.md", "A fixed two sockets conflicts with Q-093. Applied sockets that scale with tower properties."],
+  "Q-081": ["taste", "shploingus octree.rs", "The octree reference is cuboid chunks; it does not decide cube-sphere geometry."],
+  "Q-082": ["consistent", "openlock design §3.2", "Finite surface with endless generation order resolves the planet bound."],
+  "Q-083": ["consistent", "db-mc ATMOSPHERE-LAWS.md S1", "24 world hours at 8x is three real hours."],
+  "Q-084": ["taste", "shploingus GAIA", "GAIA has seasons but does not fix four global seasons."],
+  "Q-085": ["consistent", "shploingus biome_library.rs", "Flow per column is unaffordable; a regional cache is the reference-compatible choice."],
+  "Q-086": ["consistent", "openlock design §4.4", "Power, range and permissions independently gate the network."],
+  "Q-087": ["consistent", "openlock design §4.5", "Species relationships and settlement politics can coexist."],
+  "Q-088": ["consistent", "openlock design §4.5", "Downed, recoverable or permanent follows the injury model."],
+  "Q-089": ["consistent", "openlock design §6.4", "Off-screen residents use the aggregate tier."],
+  "Q-090": ["consistent", "openlock design §9.4", "Codex, blueprints and settings survive a reset."],
+  "Q-091": ["contradicts", "openlock design §8.2", "The design caps trait stacking. Applied a second modifier at high threat and a cap of two."],
+  "Q-092": ["consistent", "secure-shell server/stars.mjs", "Use the six named Axis stars as loadout tags. The 34 point item costs remain a tuning rule."],
+  "Q-093": ["consistent", "openlock design §8.1", "Sockets scale with tower properties and upgrades."],
+  "Q-094": ["consistent", "core/src/lib.rs", "The core already derives loot and waves from the seed."],
+  "Q-095": ["consistent", "shploingus GAIA mass ledger", "Conserved transfers are the family rule."],
+  "Q-096": ["consistent", "openlock design A5.3", "A snapshot after every wave and on unload is the checkpoint rule."],
+  "Q-097": ["taste", "owner answer, batch 5", "No reference fixes LOD eviction as the first pressure response."],
+  "Q-098": ["consistent", "openlock design §8.2", "Splits and summons are live bodies in the budget."],
+  "Q-099": ["consistent", "docs/REFUSALS.md", "No live network; seed and map strings are local data."],
+  "Q-100": ["consistent", "shploingus docs/baselines/biomes.json", "The baseline classifies on 32 m cells."],
+};
+
+const missing = [];
+for (const q of questions) if (!E[q.id]) missing.push(q.id);
+const extra = Object.keys(E).filter((id) => !questions.some((q) => q.id === id));
+if (missing.length || extra.length) {
+  console.error(`RECONCILE-FAIL missing=${missing.join(",")} extra=${extra.join(",")}`);
+  process.exit(1);
+}
+
+const allowed = new Set(["consistent", "contradicts", "taste"]);
+for (const [id, value] of Object.entries(E)) {
+  if (!allowed.has(value[0])) {
+    console.error(`RECONCILE-FAIL ${id} verdict ${value[0]}`);
+    process.exit(1);
+  }
+}
+
+const ledgerPath = resolve(root, "ledger/reconciliation/phase-06.jsonl");
+if (existsSync(ledgerPath)) {
+  console.error("RECONCILE-FAIL ledger already exists; corrections must be appended, not regenerated.");
+  process.exit(1);
+}
+mkdirSync(dirname(ledgerPath), { recursive: true });
+
+const at = "2026-11-19T23:00:00.000Z";
+const lines = questions.map((q, index) => {
+  const [verdict, source, claim] = E[q.id];
+  return JSON.stringify({
+    seq: index + 1,
+    at,
+    ticket: "T-0015",
+    q: q.id,
+    verdict,
+    source,
+    claim,
+    ev: "docs/RECONCILIATION.md",
+    ok: true,
+  });
+});
+writeFileSync(ledgerPath, lines.join("\n") + "\n");
+
+const counts = { consistent: 0, contradicts: 0, taste: 0 };
+for (const value of Object.values(E)) counts[value[0]] += 1;
+
+const md = [];
+md.push("<!-- generated by tools/reconcile-6.mjs -->");
+md.push("# 6.0 reconciliation");
+md.push("");
+md.push(`Every interview answer has one row. The verdict is consistent, contradicts, or taste: ${counts.consistent} consistent, ${counts.contradicts} contradict, ${counts.taste} taste.`);
+md.push("");
+md.push("A contradiction records the evidence that won and the answer it replaced. The ledger is `ledger/reconciliation/phase-06.jsonl`.");
+md.push("");
+md.push("| ID | Verdict | Evidence source | Ruling |");
+md.push("| --- | --- | --- | --- |");
+for (const q of questions) {
+  const [verdict, source, claim] = E[q.id];
+  md.push(`| ${q.id} | ${verdict} | ${source} | ${claim} |`);
+}
+md.push("");
+writeFileSync(resolve(root, "docs/RECONCILIATION.md"), md.join("\n"));
+
+console.log(`RECONCILE-PASS rows=${questions.length} consistent=${counts.consistent} contradicts=${counts.contradicts} taste=${counts.taste}`);

@@ -1,129 +1,145 @@
 # Roadmap
 
-The foundations ship. The full game is much larger, so order follows dependency, not spectacle.
+The 6.0 interview changes the world model, not only the content count. This page replaces the 0.4 plan.
 
-Progress is a scope estimate for the whole game. The vertical slice is not the finish line.
+The measured 6.0 inventory is 4.5%. It counts 55 existing capabilities against 1,213 required ones.
 
-## Done in 0.1
+## Status
 
-- [x] One core, one track, and one readable route.
-- [x] Four towers with distinct counters.
-- [x] Five enemies, including air and armor.
-- [x] Ten authored waves and endless scaling.
-- [x] Flow-field maze placement with route refusal.
-- [x] Four city works with real battlefield effects.
-- [x] Save, resume, autosave, and a byte image.
-- [x] Touch HUD and Popit-style sheet.
-- [x] Headless probe and repository gate.
-- [x] CI, Pages, and tagged releases.
+The 0.4 vertical slice is built and CI is green. The `v0.4.0` tag and release receipt are still owed.
 
-## Done in 0.4
+The inventory is `state/scope.json`. The reconciliation is `docs/RECONCILIATION.md`.
 
-- [x] Three paid contracts with a fee and three legs.
-- [x] Relics and boons with explicit stacking.
-- [x] One marsh with soil, water, cover, and six species.
-- [x] A cause view for every population shift.
-- [x] One shell line with a convoy and a repair rule.
-- [x] Offline production with a four hour cap.
-- [x] Survey schema, budget, provenance, and rollback.
-- [x] Save format 5 and a version 4 fixture.
+## What changed
 
-## Next: frontier graph
+| Area | 0.4 plan | 6.0 decision | Impact |
+| --- | --- | --- | --- |
+| World | 17 by 13 field, three districts | Cube-sphere planet, 40,075 km, 1/8 scale | P2 and P6 reopen |
+| Sites | Three authored districts | 12 hubs, infinite generated sites | P16 reopens |
+| Camera | Tactical view and map sheet | Five stops, first person to planet | New platform work |
+| Time | 15 and 12 second build phases | 1:8 clock, 24 hour day, four seasons | New clock work |
+| Waves | 120 authored waves | Unlimited seeded waves, five phases | P16 reopens |
+| City | Four works, three resources | Production cells, seven resources | P3 reopens |
+| Logistics | One shell line | Local, scheduled and networked stock | P9 reopens |
+| Towers | Four towers, three levels | 12 towers, three branches, dynamic sockets | P4 confirms |
+| Enemies | Five enemies, one boss | 12 roles, six modifiers, all wave-legal | P5 confirms |
+| Ecology | One marsh, six species | 16/19/3 catalog, 12 deferred rows, four tiers | P8 reopens |
+| People | Decorative civilians | 24 residents, full needs, two faction layers | P13 reopens |
+| Save | Byte image format 5 | Snapshot, journal, checkpoint, format 6 | P7 and P17 reopen |
+| UI | Sheets and cards | Four views, dashboard and fault history | P15 reopens |
+| Community | Local survey maps | Seed and map strings, no live network | P10 narrows |
+| Progress | Legacy 205-item estimate | 55 of 1,213 capabilities, 4.5% | Measured by T-0015 |
 
-- [x] A world map with districts, tracks, and connections.
-- [ ] A zoom from region to track without losing state.
-- [x] Three connected maps with separate build state.
-- [x] Threat direction visible on the map.
-- [x] Save migration for district state.
+## Ticket impact
 
-The 0.3 cut ships a paid track chain, a raid edge, and all three builds. Region zoom is still open.
+| Ticket | State | 6.0 impact |
+| --- | --- | --- |
+| T-0009 expeditions | Active | Seeded tracks and 34-point loadout remain open |
+| T-0010 ecology | Done | One marsh reopens as the 16/19/3 catalog |
+| T-0011 automation | Done | One line reopens as production cells |
+| T-0012 community maps | Active | Spawn draw-call and triangle budget still open |
+| T-0013 endless pressure | Done | The 30-wave test is superseded by the director |
+| T-0014 frontier tracks | Done | Region zoom reopens as a 6.0 gate |
 
-**Exit:** a player can pay a track hop and meet a marked raid.
+## Phase 0.5: planet spine
 
-## Then: city depth
+- Six cube-sphere faces, each a 32-cubed octree.
+- 40,075 km real bound, or 5,009 km at 1/8 engine scale.
+- One master seed with named sub-seeds.
+- Continuous stream across map boundaries.
+- First person, tactical, city, region and planet camera stops.
+- Voxel LOD zoom with fog and terrain occlusion.
+- Full carve and build with persistent edits.
+- Memory presets plus render-distance and resolution controls.
 
-- [ ] Power as a typed carrier.
-- [ ] One local buffer and one transport limit.
-- [ ] Machine faults: starved, blocked, unpowered, damaged.
-- [ ] Repair crews with reserved brass.
-- [ ] A compact fault log with cause and time.
+**Exit:** a player walks from a hub to a neighboring site without a load screen.
 
-**Exit:** a broken chain names its upstream cause without developer logs.
+## Phase 0.6: city cells
 
-## Then: buildcraft
+- Seven resource classes with mass and energy conservation.
+- One production cell per district, with local buffers.
+- Power, range and permissions can cut networked stock.
+- All three logistics modes share one status model.
+- Faults name starved, blocked, unpowered and damaged states.
+- Dashboard with per-machine history.
+- 24 named residents with the full needs set.
+- Species and settlement factions can both exist.
 
-- [ ] Target priority per tower.
-- [ ] Two modules per tower with tags.
-- [ ] Damage types and resistances.
-- [ ] One active ability with a cooldown.
-- [ ] Blueprint save and compare.
+**Exit:** a blocked cell names its cause, and a power cut cuts the network.
 
-**Exit:** two viable builds can be compared in the Intel panel.
+## Phase 0.7: roster
 
-## Then: expeditions
+- 12 towers map 1:1 to the 12 roles.
+- Three upgrade branches per tower.
+- Sockets scale with tower properties and upgrades.
+- 12 enemy roles are wave-legal.
+- Six boss modifiers, with a second at high threat.
+- 256 live bodies, including splits and summons.
+- Nine loot classes, seeded by encounter.
+- 34-point loadouts with family axis stars.
 
-- [ ] Procedural track templates with a seed.
-- [ ] Extraction with a limited loadout.
-- [x] Boons and relics with explicit stacking.
-- [x] Boss contract with a fixed modifier.
-- [x] Persistent discoveries.
+**Exit:** two builds clear the same seeded wave with different counters.
 
-**Exit:** an expedition pays the city without replacing it. The first contract loop is live. Seed and loadout work remain.
+## Phase 0.8: living world
 
-## Then: ecology
+- 16 climate envelopes, 19 classified types and 3 overlays.
+- All 12 deferred rows, with regional fields sampled per column.
+- Four ecology tiers from full local to dormant seed.
+- Full modular creature needs, perception and behavior.
+- Four global seasons on the 1:8 clock.
+- Full field model with soil, water, nutrients and pests.
+- Five-phase director with explicit event budgets.
+- Pause on unload, with opt-in catch-up.
 
-- [x] One biome with soil, water, and vegetation state.
-- [x] Three prey, two predators, one scavenger.
-- [x] Habitat change that alters a resource or a route.
-- [x] A dormant-region model that keeps outcomes.
-- [x] A cause view for population change.
+**Exit:** a population shift has a readable cause and survives a season.
 
-**Exit:** the player can explain why a species moved. Coldwater meets this.
+## Phase 0.9: beta surface
 
-## Then: automation
+- Snapshot, journal and checkpoint save in format 6.
+- One world with three slots, plus one-way 0.4 import.
+- Strategic, city, tactical and close-interaction views.
+- Region zoom enters at the planet scale.
+- Localization pipeline and one complete second language.
+- Original score, accessibility settings and gamepad parity.
+- Spawn budget measured in draw calls and triangles.
+- 60 fps on the owner's phone.
 
-- [x] One conveyor with measured throughput.
-- [x] One mobile consignment with in-transit state.
-- [x] One rule with permissions and a log.
-- [x] Offline production with a cap.
-- [x] Save recovery for a blocked line.
+**Exit:** a new player finishes the first hub and resumes after a crash.
 
-**Exit:** automation is inspectable and stock is conserved. The shell line meets this.
+## 6.0 gate
 
-## Then: community
+- Every 0.5 to 0.9 exit passes.
+- The scope inventory reflects this roadmap.
+- Public MIT repository, green CI, no secrets.
+- Release receipt for 6.0 with a tagged asset.
+- No open item claims a system the build does not prove.
 
-- [x] Map schema with generator version.
-- [x] Import validation and refusal reasons.
-- [x] Provenance and author fields.
-- [x] Rollback for a bad map.
-- [ ] A measured performance budget per map.
+## First three tickets
 
-**Exit:** a map can be validated, played, and removed without migration damage. A measured budget is still open.
+| Ticket | Scope | Why first |
+| --- | --- | --- |
+| T-0015 | Rebuild `state/scope.json` for 6.0 | Done: 4.5% measured baseline |
+| T-0016 | Planet spine and save format 6 | Every other system sits on it |
+| T-0017 | Production cells and seven resources | The city must feed the roster |
 
-## Then: roster and campaign
+## Release debt
 
-- [ ] Twelve towers with three upgrade branches.
-- [ ] Damage types, resistances, and target priority.
-- [ ] Twelve enemies with roles and six boss modifiers.
-- [ ] A twelve-district authored campaign.
-- [ ] First-run teaching without a wall of text.
-- [ ] Meta progression and daily seeds.
+- `v0.4.0` is not tagged and has no release receipt.
+- CI run `44613847263` passed on commit `2537a1e`.
+- Tag after the scope note and roadmap are committed.
+- Do not publish a release without a green run on the same commit.
 
-**Exit:** a player can finish a campaign and name two viable builds.
+## Open decisions
 
-## Then: surface and platform
+- Days per season on the 24 hour world clock.
+- The 34 point item costs and Axis star tag weights.
+- The socket formula for each tower class.
+- Network bandwidth and storage limits.
+- The default memory preset for a small phone.
 
-- [ ] Original music with a quiet mix and a mute path.
-- [ ] Reduced motion, color-blind palettes, and text scaling.
-- [ ] Gamepad and keyboard parity.
-- [ ] A localization pipeline and a second language.
-- [ ] A physical-phone touch pass.
+## Refusals
 
-**Exit:** the game is playable with one hand and one input, and readable in two languages.
-
-## Never
-
-- A second renderer.
-- A server without an owner decision.
-- A paid service without keys in the user's secret store.
-- A hidden cost in the UI.
+- Do not restore a flat bounded field as the planet.
+- Do not cap view distance to hide streaming cost.
+- Do not fix the faction count before the world exists.
+- Do not quote the retired estimate as 6.0 progress.

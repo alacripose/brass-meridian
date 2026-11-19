@@ -2,7 +2,7 @@
 
 Rules for anyone working here. Read `STATUS.md` first. It is generated and carries the current percentage.
 
-The family base is `C:/Users/ala/Documents/deadlock-model-forge/AGENTS.md`. This file adds the game contract. It does not weaken the family rules.
+The family base is the `deadlock-model-forge` agents file. This file adds the game contract. It does not weaken the family rules.
 
 ## 1. Evidence before claims
 
@@ -55,7 +55,7 @@ The gate fails when an id is missing from the doc. Do not add an exemption inste
 
 ## 7. Paths
 
-This repo lives at `F:/Documents/brass-meridian`. `C:` is nearly full.
+This repo lives on the F work drive. The system drive is nearly full.
 
 The source design docs stay outside the repo. Cite them by path in docs.
 

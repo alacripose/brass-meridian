@@ -1,0 +1,100 @@
+{"id":"Q-001","round":1,"phase":"Product","question":"What counts as 6.0?","answer":"A content-complete beta.","evidence":"docs/MISSION.md","ruling":""}
+{"id":"Q-002","round":1,"phase":"Product","question":"How large is the tower roster?","answer":"Twelve towers with three branches each.","evidence":"docs/DESIGN.md","ruling":""}
+{"id":"Q-003","round":1,"phase":"Product","question":"How large is the enemy roster?","answer":"Twelve roles and six boss modifiers.","evidence":"docs/DESIGN.md","ruling":""}
+{"id":"Q-004","round":1,"phase":"Product","question":"What is the world content?","answer":"A generated world with authored hubs.","evidence":"openlock design §3","ruling":""}
+{"id":"Q-005","round":1,"phase":"Product","question":"What is the wave model?","answer":"Unlimited seeded waves with downtime.","evidence":"docs/DESIGN.md","ruling":""}
+{"id":"Q-006","round":1,"phase":"Product","question":"Which seed is exact?","answer":"-9028097967753437981.","evidence":"shploingus LEDGER line 7067","ruling":"Evidence applied: format 6 stores the full 64-bit seed."}
+{"id":"Q-007","round":1,"phase":"Product","question":"Which renderer stays?","answer":"three.js with the family octree mesher.","evidence":"docs/ARCHITECTURE.md","ruling":""}
+{"id":"Q-008","round":1,"phase":"Product","question":"What does the octree own?","answer":"Terrain, collision and rendering.","evidence":"crates/voxel-mesh/src/octree.rs","ruling":""}
+{"id":"Q-009","round":1,"phase":"Product","question":"Is the view distance capped?","answer":"No; use LOD, fog and terrain occlusion.","evidence":"shploingus docs/lod-ladder.md","ruling":""}
+{"id":"Q-010","round":1,"phase":"Product","question":"Is region zoom deferred?","answer":"No; it is a 6.0 gate.","evidence":"tickets/T-0014-frontier-tracks.md","ruling":""}
+{"id":"Q-011","round":1,"phase":"Product","question":"Which save format ships?","answer":"Format 6 with seed, world and slots.","evidence":"docs/ARCHITECTURE.md","ruling":""}
+{"id":"Q-012","round":1,"phase":"Product","question":"How do 0.4 saves load?","answer":"One-way import into format 6.","evidence":"docs/ARCHITECTURE.md","ruling":""}
+{"id":"Q-013","round":1,"phase":"Product","question":"Does T-0009 close in 6.0?","answer":"Yes; seeded tracks and extraction loadouts.","evidence":"tickets/T-0009-expeditions.md","ruling":""}
+{"id":"Q-014","round":1,"phase":"Product","question":"What does T-0012 measure?","answer":"Draw calls and triangles at spawn.","evidence":"tickets/T-0012-community-maps.md","ruling":""}
+{"id":"Q-015","round":1,"phase":"Product","question":"What is the frame target?","answer":"60 fps on the owner's phone.","evidence":"docs/ARCHITECTURE.md","ruling":""}
+{"id":"Q-016","round":1,"phase":"Product","question":"Is community networking in 6.0?","answer":"No; deferred for security.","evidence":"docs/REFUSALS.md","ruling":""}
+{"id":"Q-017","round":1,"phase":"Product","question":"How much buildcraft ships?","answer":"All five buildcraft items.","evidence":"docs/ROADMAP.md","ruling":""}
+{"id":"Q-018","round":1,"phase":"Product","question":"How much local meta ships?","answer":"All local meta progression.","evidence":"docs/ROADMAP.md","ruling":""}
+{"id":"Q-019","round":1,"phase":"Product","question":"What music ships?","answer":"An original score.","evidence":"docs/ROADMAP.md","ruling":""}
+{"id":"Q-020","round":1,"phase":"Product","question":"What localization ships?","answer":"The pipeline and a second language.","evidence":"docs/ROADMAP.md","ruling":""}
+{"id":"Q-021","round":2,"phase":"World","question":"What is the scope source?","answer":"state/scope.json is canonical.","evidence":"tools/scope.mjs","ruling":""}
+{"id":"Q-022","round":2,"phase":"World","question":"Where do the answers live?","answer":"docs/QUESTIONS-6.0.md and a JSONL record.","evidence":"state/questions-6.0.jsonl","ruling":""}
+{"id":"Q-023","round":2,"phase":"World","question":"What is the release path?","answer":"0.5 through 0.9, then 6.0.","evidence":"docs/ROADMAP.md","ruling":""}
+{"id":"Q-024","round":2,"phase":"World","question":"What is the voxel role?","answer":"Simulation behind the three.js diorama.","evidence":"docs/ARCHITECTURE.md","ruling":""}
+{"id":"Q-025","round":2,"phase":"World","question":"What carving profile is used?","answer":"profile32 with 32-cubed carving.","evidence":"shploingus docs/SHAPER-PROFILES.md","ruling":""}
+{"id":"Q-026","round":2,"phase":"World","question":"What is the world scale?","answer":"One eighth of real scale, time included.","evidence":"db-mc docs/ATMOSPHERE-LAWS.md","ruling":""}
+{"id":"Q-027","round":2,"phase":"World","question":"Is performance bounded?","answer":"No; read the family LOD docs.","evidence":"shploingus docs/lod-ladder.md","ruling":""}
+{"id":"Q-028","round":2,"phase":"World","question":"What is the core tick?","answer":"33 ms.","evidence":"docs/ARCHITECTURE.md","ruling":""}
+{"id":"Q-029","round":2,"phase":"World","question":"How are seeds structured?","answer":"One master seed with named sub-seeds.","evidence":"shploingus LEDGER line 7067","ruling":"Evidence applied: the tree now takes a 64-bit seed; named sub-seeds remain open."}
+{"id":"Q-030","round":2,"phase":"World","question":"How are waves authored?","answer":"Seeded templates with authored beats.","evidence":"docs/DESIGN.md","ruling":""}
+{"id":"Q-031","round":2,"phase":"World","question":"Where does downtime design come from?","answer":"The deeper family design docs.","evidence":"openlock design §10","ruling":""}
+{"id":"Q-032","round":2,"phase":"World","question":"What persists?","answer":"World, damage, economy and ecology.","evidence":"openlock design A5","ruling":""}
+{"id":"Q-033","round":2,"phase":"World","question":"How many authored hubs?","answer":"Twelve districts remain the hub set.","evidence":"docs/DESIGN.md","ruling":""}
+{"id":"Q-034","round":2,"phase":"World","question":"What scale and UI?","answer":"Planetary scale and a much better UI.","evidence":"openlock design §3.3","ruling":""}
+{"id":"Q-035","round":2,"phase":"World","question":"What is the camera path?","answer":"Walk continuously, first person to planetary.","evidence":"openlock design §3.3","ruling":""}
+{"id":"Q-036","round":2,"phase":"World","question":"How does zoom work?","answer":"Voxel LOD zoom.","evidence":"shploingus docs/lod-ladder.md","ruling":""}
+{"id":"Q-037","round":2,"phase":"World","question":"How does streaming work?","answer":"Use the family cubic chunk streaming.","evidence":"db-mc TICKET-0012","ruling":""}
+{"id":"Q-038","round":2,"phase":"World","question":"Does terrain editing persist?","answer":"Carve and build both persist.","evidence":"shploingus docs/SHAPER-PROFILES.md","ruling":""}
+{"id":"Q-039","round":2,"phase":"World","question":"Was the phone check done?","answer":"Yes; the owner saw it on a phone.","evidence":"owner answer, batch 1","ruling":""}
+{"id":"Q-040","round":2,"phase":"World","question":"What repo boundary applies?","answer":"MIT, public, and no secrets.","evidence":"README.md","ruling":""}
+{"id":"Q-041","round":3,"phase":"Planet","question":"What is the 6.0 extent?","answer":"One planet with many regions.","evidence":"owner answer, batch 3","ruling":""}
+{"id":"Q-042","round":3,"phase":"Planet","question":"What is the world bound?","answer":"40,075 km.","evidence":"shploingus docs/lod-ladder.md","ruling":"Evidence applied: 40,075 km real equals 5,009 km at 1/8 engine scale."}
+{"id":"Q-043","round":3,"phase":"Clock","question":"How does 1/8 scale affect time?","answer":"One real second is eight world seconds.","evidence":"owner answer, batch 3","ruling":""}
+{"id":"Q-044","round":3,"phase":"Camera","question":"Which camera stops ship?","answer":"First person, tactical, city, region, planet.","evidence":"openlock design §3.3","ruling":""}
+{"id":"Q-045","round":3,"phase":"Camera","question":"Is zoom continuous?","answer":"Yes; continuous LOD zoom with no load screen.","evidence":"openlock design §3.3","ruling":""}
+{"id":"Q-046","round":3,"phase":"Planet","question":"How many sites?","answer":"Infinite generated sites.","evidence":"owner answer, batch 3","ruling":"Evidence applied: the planet is finite; sites generate in endless order until full."}
+{"id":"Q-047","round":3,"phase":"Planet","question":"What happens at a map boundary?","answer":"Walk across and stream the next map.","evidence":"openlock design §3.1","ruling":""}
+{"id":"Q-048","round":3,"phase":"Terrain","question":"Can the player carve terrain?","answer":"Yes; full carve and build.","evidence":"shploingus profile32","ruling":""}
+{"id":"Q-049","round":3,"phase":"Platform","question":"What memory ceiling applies?","answer":"Provide options instead of one cap.","evidence":"owner answer, batch 3","ruling":""}
+{"id":"Q-050","round":3,"phase":"Waves","question":"Which director phases ship?","answer":"Signal, preparation, engagement, resolution, recovery.","evidence":"openlock design §10","ruling":""}
+{"id":"Q-051","round":3,"phase":"Waves","question":"What selects events?","answer":"Seeded templates with explicit event budgets.","evidence":"openlock design §10","ruling":""}
+{"id":"Q-052","round":3,"phase":"Save","question":"What offline policy applies?","answer":"Pause on unload, with opt-in catch-up.","evidence":"openlock design A5.4","ruling":"Evidence applied: the design default replaces four-hour catch-up."}
+{"id":"Q-053","round":3,"phase":"Save","question":"What save model ships?","answer":"Snapshot, journal and checkpoint.","evidence":"openlock design A5.3","ruling":""}
+{"id":"Q-054","round":3,"phase":"Save","question":"How many worlds?","answer":"One world with three slots.","evidence":"openlock design A5.1","ruling":""}
+{"id":"Q-055","round":3,"phase":"People","question":"How deep is the social layer?","answer":"Full residents and factions.","evidence":"openlock design §4.5","ruling":""}
+{"id":"Q-056","round":3,"phase":"City","question":"What is the city unit?","answer":"Production cells per district.","evidence":"openlock design §15.1.1","ruling":""}
+{"id":"Q-057","round":3,"phase":"City","question":"Which logistics modes ship?","answer":"All three, including networked stock.","evidence":"openlock design §4.4","ruling":""}
+{"id":"Q-058","round":3,"phase":"Ecology","question":"How are biomes chosen?","answer":"From scientific references with evidence.","evidence":"shploingus biome catalog","ruling":""}
+{"id":"Q-059","round":3,"phase":"UI","question":"Which UI views ship?","answer":"Strategic, city, tactical and close interaction.","evidence":"openlock design §11","ruling":""}
+{"id":"Q-060","round":3,"phase":"UI","question":"What observability ships?","answer":"A dashboard and per-machine fault history.","evidence":"openlock design §11.5","ruling":""}
+{"id":"Q-061","round":4,"phase":"Ecology","question":"Which biome catalog ships?","answer":"16 envelopes, 19 types and 3 overlays.","evidence":"shploingus docs/baselines/biomes.json","ruling":""}
+{"id":"Q-062","round":4,"phase":"Ecology","question":"What about the deferred rows?","answer":"Add all twelve, with their missing fields.","evidence":"crates/voxel-shapers/src/biome_library.rs","ruling":"Evidence applied: all 12 rows are new field work; the family defers them until those fields exist."}
+{"id":"Q-063","round":4,"phase":"Ecology","question":"How deep is the creature model?","answer":"Full modular needs, perception and behavior.","evidence":"openlock design §6.1","ruling":""}
+{"id":"Q-064","round":4,"phase":"Ecology","question":"How many ecology tiers?","answer":"All four fidelity tiers.","evidence":"openlock design §6.4","ruling":""}
+{"id":"Q-065","round":4,"phase":"Ecology","question":"How deep is agriculture?","answer":"The full field model with soil and pests.","evidence":"openlock design §6.5","ruling":""}
+{"id":"Q-066","round":4,"phase":"People","question":"How many residents?","answer":"24 named residents.","evidence":"owner answer, batch 4","ruling":""}
+{"id":"Q-067","round":4,"phase":"People","question":"How many factions?","answer":"No fixed count; creatures can become factions.","evidence":"owner answer, batch 4","ruling":""}
+{"id":"Q-068","round":4,"phase":"People","question":"Which resident needs matter?","answer":"The full RimWorld set.","evidence":"openlock design §4.5","ruling":""}
+{"id":"Q-069","round":4,"phase":"Combat","question":"Do tower roles map to towers?","answer":"Yes; 12 roles map 1:1 to 12 towers.","evidence":"openlock design §8.1","ruling":""}
+{"id":"Q-070","round":4,"phase":"Combat","question":"Which enemies are wave-legal?","answer":"All twelve roles.","evidence":"openlock design §8.2","ruling":""}
+{"id":"Q-071","round":4,"phase":"Combat","question":"How are boss modifiers assigned?","answer":"One per boss, with stacking.","evidence":"owner answer, batch 4","ruling":"Evidence applied: one base modifier plus a second at high threat, capped at two."}
+{"id":"Q-072","round":4,"phase":"Loot","question":"How many loot classes?","answer":"All nine classes.","evidence":"openlock design §8.3","ruling":""}
+{"id":"Q-073","round":4,"phase":"Economy","question":"How many resource classes?","answer":"Seven classes.","evidence":"openlock design §9.1","ruling":""}
+{"id":"Q-074","round":4,"phase":"Combat","question":"Do towers consume supply?","answer":"Yes; ammunition and power.","evidence":"openlock design §8.5","ruling":""}
+{"id":"Q-075","round":4,"phase":"Logistics","question":"What is the network scope?","answer":"All three modes depend on operational status.","evidence":"openlock design §4.4","ruling":""}
+{"id":"Q-076","round":4,"phase":"Meta","question":"What prestige reset ships?","answer":"An optional full reset.","evidence":"openlock design §9.4","ruling":""}
+{"id":"Q-077","round":4,"phase":"Platform","question":"Which memory controls ship?","answer":"Presets plus two controls.","evidence":"owner answer, batch 4","ruling":""}
+{"id":"Q-078","round":4,"phase":"Waves","question":"What is the live-enemy cap?","answer":"256 live enemies.","evidence":"owner answer, batch 4","ruling":""}
+{"id":"Q-079","round":4,"phase":"Expedition","question":"What is the loadout budget?","answer":"34 points, with axis stars for costly items.","evidence":"owner answer, batch 4","ruling":"Evidence applied: the six named Axis stars are the loadout tags."}
+{"id":"Q-080","round":4,"phase":"Towers","question":"How many module sockets?","answer":"Two, but scale with tower properties.","evidence":"owner answer, batch 4","ruling":"Evidence applied: sockets scale with tower properties; there is no fixed two."}
+{"id":"Q-081","round":5,"phase":"Planet","question":"What planet geometry?","answer":"A cube-sphere with six faces.","evidence":"shploingus octree CHUNK_SIDE","ruling":""}
+{"id":"Q-082","round":5,"phase":"Planet","question":"How do infinite sites fit?","answer":"Finite surface, endless generation order.","evidence":"openlock design §3.2","ruling":""}
+{"id":"Q-083","round":5,"phase":"Clock","question":"How long is a day?","answer":"24 world hours, or 3 real hours.","evidence":"owner answer, batch 5","ruling":""}
+{"id":"Q-084","round":5,"phase":"Ecology","question":"Are seasons global?","answer":"Yes; four global seasons.","evidence":"owner answer, batch 5","ruling":""}
+{"id":"Q-085","round":5,"phase":"Ecology","question":"Where are deferred fields computed?","answer":"A regional cache, sampled per column.","evidence":"biome_library.rs","ruling":""}
+{"id":"Q-086","round":5,"phase":"Logistics","question":"What gates the network?","answer":"Power, range and permissions.","evidence":"openlock design §4.4","ruling":""}
+{"id":"Q-087","round":5,"phase":"People","question":"What is a faction?","answer":"Both species relationships and settlement politics.","evidence":"openlock design §4.5","ruling":""}
+{"id":"Q-088","round":5,"phase":"People","question":"What happens when a resident falls?","answer":"Downed, then recoverable or permanent.","evidence":"openlock design §4.5","ruling":""}
+{"id":"Q-089","round":5,"phase":"People","question":"How do residents simulate off-screen?","answer":"Aggregate off-screen, full when present.","evidence":"openlock design §6.4","ruling":""}
+{"id":"Q-090","round":5,"phase":"Meta","question":"What survives prestige?","answer":"Codex, blueprints and settings.","evidence":"openlock design §9.4","ruling":""}
+{"id":"Q-091","round":5,"phase":"Combat","question":"When is a second boss modifier added?","answer":"At high threat; two or more are allowed.","evidence":"owner answer, batch 5","ruling":"Evidence applied: a second modifier at high threat, capped at two."}
+{"id":"Q-092","round":5,"phase":"Expedition","question":"Which axes price a loadout?","answer":"The family axis.","evidence":"owner answer, batch 5","ruling":"Evidence applied: use presence, craft, evidence, standing, conduct and continuity; costs stay tuning."}
+{"id":"Q-093","round":5,"phase":"Towers","question":"Are sockets fixed at two?","answer":"No; they scale with tower properties and upgrades.","evidence":"owner answer, batch 5","ruling":""}
+{"id":"Q-094","round":5,"phase":"Loot","question":"Is loot deterministic?","answer":"Encounter-seeded.","evidence":"docs/ARCHITECTURE.md","ruling":""}
+{"id":"Q-095","round":5,"phase":"Economy","question":"Do resource conversions conserve?","answer":"Mass and energy conservation.","evidence":"shploingus GAIA mass ledger","ruling":""}
+{"id":"Q-096","round":5,"phase":"Save","question":"When is the snapshot written?","answer":"After every wave and on unload.","evidence":"openlock design A5.3","ruling":""}
+{"id":"Q-097","round":5,"phase":"Platform","question":"What happens under memory pressure?","answer":"Evict distant LOD first.","evidence":"owner answer, batch 5","ruling":""}
+{"id":"Q-098","round":5,"phase":"Waves","question":"Does the cap include summons?","answer":"Yes; all live bodies count.","evidence":"openlock design §8.2","ruling":""}
+{"id":"Q-099","round":5,"phase":"Community","question":"What sharing is allowed?","answer":"Seed and map strings only.","evidence":"docs/REFUSALS.md","ruling":""}
+{"id":"Q-100","round":5,"phase":"Ecology","question":"At what scale is a biome classified?","answer":"Per 32 m cell.","evidence":"shploingus docs/baselines/biomes.json","ruling":""}

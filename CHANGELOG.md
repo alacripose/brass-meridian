@@ -3,6 +3,20 @@
 All notable changes to Brass Meridian are recorded here.
 The format follows Keep a Changelog, and versions use semantic numbering.
 
+## [Unreleased]
+
+### Added
+
+- A 100-row reconciliation ledger with evidence and verdicts.
+- A measured 6.0 inventory: 55 of 1,213 capabilities, or 4.5 percent.
+- A format 6 save block that preserves the full 64-bit seed.
+- A 6.0 roadmap for the planet, city cells, roster and living world.
+
+### Changed
+
+- The planet replaces the flat field, three districts and 120 authored waves.
+- Tests now cover 25 Rust cases, 28 client cases, and 89 probes.
+
 ## [0.4.0] - 2026-11-19
 
 ### Added
@@ -14,20 +28,21 @@ The format follows Keep a Changelog, and versions use semantic numbering.
 - A survey example and one-step restore to authored Ashfall.
 - Save format 5 with shells, expeditions, ecology, automation, and survey cells.
 - A version 4 save fixture from the 0.3 wasm.
-- Twenty-three Rust tests, twenty-seven client tests, and eighty-three probe checks.
+- Twenty-four Rust tests, twenty-seven client tests, and eighty-three probe checks.
 
 ### Changed
 
 - The City sheet now shows the marsh and the shell line as inspectable cards.
 - The Map sheet now shows contracts and the survey importer.
 - Offline production resumes from the last save time, capped at four hours.
-- Progress is re-baselined to 5.2 percent of the full game scope.
+- A full-scope inventory now drives progress, and every open item names a next step.
+- A pre-6.0 inventory recorded 5.5 percent of the old scope.
 
 ### Limits
 
 - Expedition tracks are not seeded and loadouts are not limited yet.
 - Survey maps have a cell budget, not a measured performance budget.
-- Music, localization, and a physical-phone check remain open.
+- Music and localization remain open, and no 60 fps phone receipt exists.
 
 ## [0.3.0] - 2026-11-19
 
