@@ -26,6 +26,12 @@ const FACE_SIDE: u32 = 32;
 const REGION_SIDE: u32 = 4;
 const REGIONS_PER_AXIS: u32 = FACE_SIDE / REGION_SIDE;
 const STREAM_MAX: usize = 16;
+const CHUNK_CELLS: u32 = 8;
+const CHUNK_TILES: u32 = 32;
+const CHUNKS_PER_AXIS: usize = (FACE_SIDE / CHUNK_CELLS) as usize;
+const CHUNKS_PER_FACE: usize = CHUNKS_PER_AXIS * CHUNKS_PER_AXIS;
+const CHUNK_MAX: usize = 32;
+const LOD_COUNT: u8 = 3;
 const EXP_LEGS: u8 = 3;
 const TRACK_COST: [[i32; MAP_COUNT]; MAP_COUNT] = [
     [0, 14, -1, 18, 20, -1],
@@ -86,8 +92,13 @@ const H_SEASON: usize = 37;
 const H_SEASON_PROGRESS: usize = 38;
 const H_WORLD_KM: usize = 39;
 const H_STREAM_EPOCH: usize = 40;
+const H_LOD: usize = 41;
+const H_CHUNKS: usize = 42;
+const H_CHUNK: usize = 43;
+const H_CHUNK_ACTIVE: usize = 44;
+const H_CHUNK_EPOCH: usize = 45;
 
-const TOWER_BASE: usize = 41;
+const TOWER_BASE: usize = 46;
 const TOWER_STRIDE: usize = 16;
 const ENEMY_BASE: usize = TOWER_BASE + MAX_TOWERS * TOWER_STRIDE;
 const ENEMY_STRIDE: usize = 12;
@@ -167,6 +178,7 @@ const SUB_SEED_NAMES: [&str; 6] = [
     "expeditions",
     "surveys",
 ];
+const TERRAIN_SUB_SEED: usize = 0;
 const WAVES_SUB_SEED: usize = 2;
 const ECOLOGY_SUB_SEED: usize = 3;
 const WORLD_MS_PER_REAL_MS: f64 = 8.0;
@@ -220,6 +232,37 @@ impl WorldPos {
             face,
             x: (FACE_SIDE / 2) as u8,
             z: (FACE_SIDE / 2) as u8,
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+struct Chunk {
+    face: u8,
+    qx: u8,
+    qz: u8,
+    lod: u8,
+    ring: u8,
+    height: f32,
+    id_lo: u32,
+    id_hi: u32,
+    active: bool,
+    skirt: u8,
+}
+
+impl Chunk {
+    const fn zero() -> Self {
+        Chunk {
+            face: 0,
+            qx: 0,
+            qz: 0,
+            lod: 0,
+            ring: 0,
+            height: 0.0,
+            id_lo: 0,
+            id_hi: 0,
+            active: false,
+            skirt: 0,
         }
     }
 }
@@ -612,6 +655,11 @@ struct Sim {
     stream_count: usize,
     stream_sig: u64,
     stream_epoch: u32,
+    chunks: [Chunk; CHUNK_MAX],
+    chunk_count: usize,
+    chunk_index: u8,
+    chunk_sig: u64,
+    chunk_epoch: u32,
     rng: u32,
     brass: f32,
     ingots: f32,
@@ -671,6 +719,11 @@ impl Sim {
             stream_count: 0,
             stream_sig: 0,
             stream_epoch: 0,
+            chunks: [Chunk::zero(); CHUNK_MAX],
+            chunk_count: 0,
+            chunk_index: 0,
+            chunk_sig: 0,
+            chunk_epoch: 0,
             rng: if wave_seed as u32 == 0 { 0x9E37_79B9 } else { wave_seed as u32 },
             brass: 150.0,
             ingots: 0.0,
@@ -780,17 +833,18 @@ impl Sim {
             push(face, x as i32, z as i32, &mut ids, &mut n);
         }
         ids[..n].sort_unstable();
+        self.stream = ids;
+        self.stream_count = n;
         let mut sig = 0xcbf2_9ce4_8422_2325u64;
-        for id in &ids[..n] {
+        for id in &self.stream[..n] {
             sig ^= *id as u64;
             sig = sig.wrapping_mul(0x100_0000_01b3);
         }
+        sig ^= self.recompute_chunks();
         if sig != self.stream_sig {
             self.stream_epoch = self.stream_epoch.wrapping_add(1);
             self.stream_sig = sig;
         }
-        self.stream = ids;
-        self.stream_count = n;
     }
 
     fn season(&self) -> u8 {
@@ -832,6 +886,153 @@ impl Sim {
         };
         let armor = if kind == 2 && self.season() == 3 { 1.15 } else { 1.0 };
         (hp * armor, speed, bounty)
+    }
+
+    fn chunk_hash(&self, face: u8, qx: u8, qz: u8) -> u64 {
+        mix64(
+            self.sub_seeds[TERRAIN_SUB_SEED]
+                ^ (face as u64 + 1).wrapping_mul(0x9E37_79B9_7F4A_7C15)
+                ^ (qz as u64 + 1).wrapping_mul(0xC2B2_AE3D_27D4_EB4F)
+                ^ (qx as u64 + 1).wrapping_mul(0x1656_67B1_9E37_79F9)
+                ^ 0x4348_554E_4B53_0001,
+        )
+    }
+
+    fn corner_height(&self, face: u8, x: u32, z: u32) -> f32 {
+        let h = mix64(
+            self.sub_seeds[TERRAIN_SUB_SEED]
+                ^ (face as u64 + 1).wrapping_mul(0x9E37_79B9_7F4A_7C15)
+                ^ (z as u64 + 1).wrapping_mul(0xC2B2_AE3D_27D4_EB4F)
+                ^ (x as u64 + 1).wrapping_mul(0x1656_67B1_9E37_79F9)
+                ^ 0x434F_524E_4552_0001,
+        );
+        (h % 1024) as f32 / 1024.0 * 0.8
+    }
+
+    fn chunk_height(&self, face: u8, qx: u8, qz: u8) -> f32 {
+        let x = qx as u32 * CHUNK_CELLS;
+        let z = qz as u32 * CHUNK_CELLS;
+        let a = self.corner_height(face, x, z);
+        let b = self.corner_height(face, x + CHUNK_CELLS, z);
+        let c = self.corner_height(face, x, z + CHUNK_CELLS);
+        let d = self.corner_height(face, x + CHUNK_CELLS, z + CHUNK_CELLS);
+        (a + b + c + d) * 0.25
+    }
+
+    fn chunk_lod_at(&self, face: u8, qx: u8, qz: u8) -> u8 {
+        let sx = (self.world.x as u32 / CHUNK_CELLS) as i32;
+        let sz = (self.world.z as u32 / CHUNK_CELLS) as i32;
+        let ring = (qx as i32 - sx)
+            .abs()
+            .max((qz as i32 - sz).abs());
+        if self.world.face == face {
+            ring.min(LOD_COUNT as i32 - 1) as u8
+        } else {
+            1
+        }
+    }
+
+    fn chunk_streams_region(&self, face: u8, qx: u8, qz: u8) -> bool {
+        let x0 = qx as u32 * CHUNK_CELLS;
+        let z0 = qz as u32 * CHUNK_CELLS;
+        self.stream[..self.stream_count].iter().any(|id| {
+            if (*id / 64) as u8 != face {
+                return false;
+            }
+            let region = (*id % 64) as u32;
+            let rx = (region % REGIONS_PER_AXIS) * REGION_SIDE;
+            let rz = (region / REGIONS_PER_AXIS) * REGION_SIDE;
+            rx < x0 + CHUNK_CELLS && rx + REGION_SIDE > x0 && rz < z0 + CHUNK_CELLS && rz + REGION_SIDE > z0
+        })
+    }
+
+    fn recompute_chunks(&mut self) -> u64 {
+        let mut list = [Chunk::zero(); CHUNK_MAX];
+        let mut n = 0usize;
+        for qz in 0..CHUNKS_PER_AXIS as u8 {
+            for qx in 0..CHUNKS_PER_AXIS as u8 {
+                let id = self.chunk_hash(self.world.face, qx, qz);
+                let sx = (self.world.x as u32 / CHUNK_CELLS) as i32;
+                let sz = (self.world.z as u32 / CHUNK_CELLS) as i32;
+                list[n] = Chunk {
+                    face: self.world.face,
+                    qx,
+                    qz,
+                    lod: self.chunk_lod_at(self.world.face, qx, qz),
+                    ring: (qx as i32 - sx).abs().max((qz as i32 - sz).abs()) as u8,
+                    height: self.chunk_height(self.world.face, qx, qz),
+                    id_lo: id as u32,
+                    id_hi: (id >> 32) as u32,
+                    active: self.chunk_streams_region(self.world.face, qx, qz),
+                    skirt: 0b1111,
+                };
+                n += 1;
+            }
+        }
+        for id in self.stream[..self.stream_count].iter().copied() {
+            let face = (id / 64) as u8;
+            if face == self.world.face {
+                continue;
+            }
+            let region = (id % 64) as u32;
+            let qx = (region % REGIONS_PER_AXIS) as u8 / 2;
+            let qz = (region / REGIONS_PER_AXIS) as u8 / 2;
+            if list[..n].iter().any(|c| c.face == face && c.qx == qx && c.qz == qz) {
+                continue;
+            }
+            if n >= CHUNK_MAX {
+                break;
+            }
+            let hash = self.chunk_hash(face, qx, qz);
+            list[n] = Chunk {
+                face,
+                qx,
+                qz,
+                lod: 1,
+                ring: 1,
+                height: self.chunk_height(face, qx, qz),
+                id_lo: hash as u32,
+                id_hi: (hash >> 32) as u32,
+                active: true,
+                skirt: 0b1111,
+            };
+            n += 1;
+        }
+        list[..n].sort_by_key(|c| (c.face, c.qz, c.qx));
+        self.chunks = list;
+        self.chunk_count = n;
+        self.chunk_index = 0;
+        for (i, chunk) in self.chunks[..n].iter().enumerate() {
+            if chunk.face == self.world.face
+                && chunk.qx == (self.world.x as u32 / CHUNK_CELLS) as u8
+                && chunk.qz == (self.world.z as u32 / CHUNK_CELLS) as u8
+            {
+                self.chunk_index = i as u8;
+            }
+        }
+        let mut sig = 0xcbf2_9ce4_8422_2325u64;
+        for chunk in &self.chunks[..n] {
+            for value in [
+                chunk.face as u64,
+                chunk.qx as u64,
+                chunk.qz as u64,
+                chunk.lod as u64,
+                chunk.ring as u64,
+                chunk.id_lo as u64,
+                chunk.id_hi as u64,
+                chunk.active as u64,
+            ] {
+                sig ^= value;
+                sig = sig.wrapping_mul(0x100_0000_01b3);
+            }
+            sig ^= (chunk.height * 1000.0) as u64;
+            sig = sig.wrapping_mul(0x100_0000_01b3);
+        }
+        if sig != self.chunk_sig {
+            self.chunk_epoch = self.chunk_epoch.wrapping_add(1);
+            self.chunk_sig = sig;
+        }
+        sig
     }
 
     fn world_step(&mut self, dx: i32, dz: i32) -> i32 {
@@ -2095,6 +2296,8 @@ impl Sim {
         let season = self.season();
         let season_progress = season_fraction(self.world_ms);
         let region = region_of(self.world.x, self.world.z);
+        let chunk = self.chunks[self.chunk_index as usize];
+        let chunk_active = self.chunks[..self.chunk_count].iter().filter(|c| c.active).count();
         let s = &mut self.snap;
         s[H_VERSION] = 1.0;
         s[H_BRASS] = self.brass;
@@ -2137,6 +2340,11 @@ impl Sim {
         s[H_SEASON_PROGRESS] = season_progress;
         s[H_WORLD_KM] = WORLD_KM_ENGINE as f32;
         s[H_STREAM_EPOCH] = self.stream_epoch as f32;
+        s[H_LOD] = chunk.lod as f32;
+        s[H_CHUNKS] = self.chunk_count as f32;
+        s[H_CHUNK] = self.chunk_index as f32;
+        s[H_CHUNK_ACTIVE] = chunk_active as f32;
+        s[H_CHUNK_EPOCH] = self.chunk_epoch as f32;
 
         for (i, t) in self.towers.iter().take(MAX_TOWERS).enumerate() {
             let b = TOWER_BASE + i * TOWER_STRIDE;
@@ -2205,7 +2413,7 @@ impl Sim {
     fn save_bytes(&mut self) -> &[u8] {
         let mut w = Vec::with_capacity(4608);
         w.extend_from_slice(b"BMG1");
-        w.push(8); // save format
+        w.push(9); // save format
         w.push(self.map);
         w.push(self.threat);
         w.extend_from_slice(&self.wave_bonus.to_le_bytes());
@@ -2325,6 +2533,7 @@ impl Sim {
         w.push(self.world.x);
         w.push(self.world.z);
         w.extend_from_slice(&self.stream_epoch.to_le_bytes());
+        w.extend_from_slice(&self.chunk_epoch.to_le_bytes());
         self.save_buf = w;
         &self.save_buf
     }
@@ -2332,7 +2541,7 @@ impl Sim {
     fn load_bytes(&mut self, bytes: &[u8]) -> i32 {
         if bytes.len() < 6
             || &bytes[0..4] != b"BMG1"
-            || !(2..=8).contains(&bytes[4])
+            || !(2..=9).contains(&bytes[4])
         {
             return -1;
         }
@@ -2616,6 +2825,7 @@ impl Sim {
             });
         }
         let mut saved_epoch: Option<u32> = None;
+        let mut saved_chunk_epoch: Option<u32> = None;
         if format >= 5 {
             fresh.shells = r.f32();
             fresh.exp_active = r.u8() != 0;
@@ -2670,6 +2880,9 @@ impl Sim {
                 saved_epoch = Some(r.u32());
                 fresh.map = fresh.world.face;
             }
+            if format >= 9 {
+                saved_chunk_epoch = Some(r.u32());
+            }
             if fresh.core_max > 0.0 {
                 fresh.core_max = 20.0
                     + fresh.city[3] as f32 * 4.0
@@ -2684,6 +2897,9 @@ impl Sim {
         fresh.recompute_stream();
         if let Some(epoch) = saved_epoch {
             fresh.stream_epoch = epoch;
+        }
+        if let Some(epoch) = saved_chunk_epoch {
+            fresh.chunk_epoch = epoch;
         }
         fresh.fill_snapshot();
         *self = fresh;
@@ -2886,6 +3102,90 @@ pub extern "C" fn sim_snapshot_ptr() -> *const f32 {
     with_sim(|s| {
         s.fill_snapshot();
         s.snap.as_ptr()
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn sim_chunk_count() -> u32 {
+    with_sim(|s| s.chunk_count as u32)
+}
+
+#[no_mangle]
+pub extern "C" fn sim_chunk(index: u32, field: u32) -> f32 {
+    with_sim(|s| {
+        if index as usize >= s.chunk_count {
+            return -1.0;
+        }
+        let c = s.chunks[index as usize];
+        match field {
+            0 => c.face as f32,
+            1 => c.qx as f32,
+            2 => c.qz as f32,
+            3 => c.lod as f32,
+            4 => c.ring as f32,
+            5 => c.height,
+            6 => c.qx as f32 * CHUNK_CELLS as f32,
+            7 => c.qz as f32 * CHUNK_CELLS as f32,
+            8 => if c.active { 1.0 } else { 0.0 },
+            9 => c.skirt as f32,
+            _ => -1.0,
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn sim_chunk_current(field: u32) -> f32 {
+    with_sim(|s| {
+        let c = s.chunks[s.chunk_index as usize];
+        match field {
+            0 => s.chunk_index as f32,
+            1 => c.face as f32,
+            2 => c.qx as f32,
+            3 => c.qz as f32,
+            4 => c.lod as f32,
+            5 => c.height,
+            _ => -1.0,
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn sim_chunk_lod(face: u32, qx: u32, qz: u32) -> u32 {
+    with_sim(|s| {
+        if face > 5 || qx >= CHUNKS_PER_AXIS as u32 || qz >= CHUNKS_PER_AXIS as u32 {
+            return 255;
+        }
+        s.chunk_lod_at(face as u8, qx as u8, qz as u8) as u32
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn sim_chunk_height(face: u32, qx: u32, qz: u32) -> f32 {
+    with_sim(|s| {
+        if face > 5 || qx >= CHUNKS_PER_AXIS as u32 || qz >= CHUNKS_PER_AXIS as u32 {
+            return -1.0;
+        }
+        s.chunk_height(face as u8, qx as u8, qz as u8)
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn sim_chunk_id_lo(face: u32, qx: u32, qz: u32) -> u32 {
+    with_sim(|s| {
+        if face > 5 || qx >= CHUNKS_PER_AXIS as u32 || qz >= CHUNKS_PER_AXIS as u32 {
+            return 0;
+        }
+        s.chunk_hash(face as u8, qx as u8, qz as u8) as u32
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn sim_chunk_id_hi(face: u32, qx: u32, qz: u32) -> u32 {
+    with_sim(|s| {
+        if face > 5 || qx >= CHUNKS_PER_AXIS as u32 || qz >= CHUNKS_PER_AXIS as u32 {
+            return 0;
+        }
+        (s.chunk_hash(face as u8, qx as u8, qz as u8) >> 32) as u32
     })
 }
 
@@ -3508,7 +3808,7 @@ mod tests {
         let seed = 9_418_646_105_956_113_635u64;
         let mut a = Sim::new(seed);
         let bytes = a.save_bytes().to_vec();
-        assert_eq!(bytes[4], 8);
+        assert_eq!(bytes[4], 9);
         let mut b = Sim::new(1);
         assert_eq!(b.load_bytes(&bytes), 0);
         assert_eq!(b.seed, seed);
@@ -3640,7 +3940,7 @@ mod tests {
         a.recompute_stream();
         a.advance_clock(SEASON_MS * 2.5 / WORLD_MS_PER_REAL_MS);
         let bytes = a.save_bytes().to_vec();
-        assert_eq!(bytes[4], 8);
+        assert_eq!(bytes[4], 9);
         let mut b = Sim::new(1);
         assert_eq!(b.load_bytes(&bytes), 0);
         assert_eq!(b.world.face, 3);
@@ -3648,6 +3948,8 @@ mod tests {
         assert_eq!(b.world.z, 29);
         assert_eq!(b.season(), a.season());
         assert_eq!(b.stream_count, a.stream_count);
+        assert_eq!(b.chunk_count, a.chunk_count);
+        assert_eq!(b.chunk_epoch, a.chunk_epoch);
         assert_eq!(b.stream_sig, a.stream_sig);
     }
 
@@ -3727,5 +4029,135 @@ mod tests {
         }
         assert_eq!(bare.phase, 2);
         assert!(bare.wave <= 10);
+    }
+
+    fn at(face: u8, x: u8, z: u8) -> Sim {
+        let mut s = Sim::new(7);
+        s.world = WorldPos { face, x, z };
+        s.recompute_stream();
+        s
+    }
+
+    #[test]
+    fn chunk_tree_is_a_stable_32_tile_partition() {
+        assert_eq!(CHUNK_CELLS * 4, CHUNK_TILES);
+        let a = at(2, 16, 16);
+        assert_eq!(a.chunk_count, CHUNKS_PER_FACE);
+        let mut count = [[0u8; FACE_SIDE as usize]; FACE_SIDE as usize];
+        for chunk in &a.chunks[..a.chunk_count] {
+            for z in 0..CHUNK_CELLS {
+                for x in 0..CHUNK_CELLS {
+                    count[(chunk.qz as u32 * CHUNK_CELLS + z) as usize]
+                        [(chunk.qx as u32 * CHUNK_CELLS + x) as usize] += 1;
+                }
+            }
+        }
+        assert!(count.iter().all(|row| row.iter().all(|n| *n == 1)));
+        let b = at(2, 16, 16);
+        for i in 0..a.chunk_count {
+            assert_eq!(a.chunks[i].id_lo, b.chunks[i].id_lo);
+            assert_eq!(a.chunks[i].id_hi, b.chunks[i].id_hi);
+            assert_eq!(a.chunks[i].height, b.chunks[i].height);
+            assert_eq!(a.chunks[i].skirt, 0b1111);
+        }
+        let c = Sim::new(8);
+        assert_ne!(a.chunks[0].id_lo, c.chunks[0].id_lo);
+    }
+
+    #[test]
+    fn lod_ladder_has_named_rings_and_exact_boundaries() {
+        let s = at(0, 16, 16);
+        assert_eq!(s.chunk_lod_at(0, 2, 2), 0);
+        assert_eq!(s.chunk_lod_at(0, 1, 2), 1);
+        assert_eq!(s.chunk_lod_at(0, 3, 2), 1);
+        assert_eq!(s.chunk_lod_at(0, 0, 2), 2);
+        assert_eq!(s.chunk_lod_at(0, 0, 0), 2);
+        assert_eq!(s.chunk_lod_at(1, 0, 0), 1);
+        let edge = at(0, 0, 0);
+        assert_eq!(edge.chunk_lod_at(0, 0, 0), 0);
+        assert_eq!(edge.chunk_lod_at(0, 1, 0), 1);
+        assert_eq!(edge.chunk_lod_at(0, 2, 0), 2);
+        assert_eq!(edge.chunk_lod_at(0, 3, 3), 2);
+    }
+
+    #[test]
+    fn neighbouring_chunks_share_corners_and_all_skirts() {
+        let s = at(4, 12, 12);
+        for qz in 0..CHUNKS_PER_AXIS as u32 {
+            for qx in 0..CHUNKS_PER_AXIS as u32 {
+                let chunk = s
+                    .chunks
+                    .iter()
+                    .find(|c| c.qx == qx as u8 && c.qz == qz as u8)
+                    .unwrap();
+                assert_eq!(chunk.skirt, 0b1111);
+                if qx + 1 < CHUNKS_PER_AXIS as u32 {
+                    let right = s
+                        .chunks
+                        .iter()
+                        .find(|c| c.qx == qx as u8 + 1 && c.qz == qz as u8)
+                        .unwrap();
+                    assert_eq!(
+                        (chunk.qx as u32 + 1) * CHUNK_CELLS,
+                        right.qx as u32 * CHUNK_CELLS
+                    );
+                    assert!(chunk.skirt & 0b0010 != 0);
+                    assert!(right.skirt & 0b0001 != 0);
+                }
+                if qz + 1 < CHUNKS_PER_AXIS as u32 {
+                    let below = s
+                        .chunks
+                        .iter()
+                        .find(|c| c.qx == qx as u8 && c.qz == qz as u8 + 1)
+                        .unwrap();
+                    assert_eq!(
+                        (chunk.qz as u32 + 1) * CHUNK_CELLS,
+                        below.qz as u32 * CHUNK_CELLS
+                    );
+                    assert!(chunk.skirt & 0b1000 != 0);
+                    assert!(below.skirt & 0b0100 != 0);
+                }
+            }
+        }
+        let a = s.chunks.iter().find(|c| c.qx == 1 && c.qz == 1).unwrap();
+        let b = s.chunks.iter().find(|c| c.qx == 2 && c.qz == 1).unwrap();
+        assert!(a.lod != b.lod && a.skirt != 0 && b.skirt != 0);
+    }
+
+    #[test]
+    fn the_stream_chunk_set_is_equal_for_the_same_position() {
+        let mut s = at(3, 9, 9);
+        let first: Vec<(u8, u8, u8, u8, u32, u32)> = s.chunks[..s.chunk_count]
+            .iter()
+            .map(|c| (c.face, c.qx, c.qz, c.lod, c.id_lo, c.id_hi))
+            .collect();
+        let epoch = s.stream_epoch;
+        s.recompute_stream();
+        let again: Vec<(u8, u8, u8, u8, u32, u32)> = s.chunks[..s.chunk_count]
+            .iter()
+            .map(|c| (c.face, c.qx, c.qz, c.lod, c.id_lo, c.id_hi))
+            .collect();
+        assert_eq!(first, again);
+        assert_eq!(epoch, s.stream_epoch);
+    }
+
+    #[test]
+    fn format_eight_fixture_still_loads_and_nine_round_trips_chunks() {
+        let v8 = include_bytes!("../../tests/fixtures/save-v8.bin");
+        let mut old = Sim::new(1);
+        assert_eq!(old.load_bytes(v8), 0);
+        assert_eq!(old.world.face, 0);
+        assert!(old.chunk_count >= CHUNKS_PER_FACE);
+        let mut a = at(5, 20, 20);
+        let bytes = a.save_bytes().to_vec();
+        assert_eq!(bytes[4], 9);
+        let mut b = Sim::new(1);
+        assert_eq!(b.load_bytes(&bytes), 0);
+        assert_eq!(b.world.face, 5);
+        assert_eq!(b.world.x, 20);
+        assert_eq!(b.world.z, 20);
+        assert_eq!(b.chunk_count, a.chunk_count);
+        assert_eq!(b.chunk_epoch, a.chunk_epoch);
+        assert_eq!(b.chunks[..b.chunk_count][0].id_lo, a.chunks[..a.chunk_count][0].id_lo);
     }
 }

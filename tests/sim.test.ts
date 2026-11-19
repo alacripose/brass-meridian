@@ -25,7 +25,7 @@ describe("snapshot bridge", () => {
     expect(snap.world.face).toBe(0);
     expect(snap.world.regions).toBeGreaterThanOrEqual(6);
     expect(snap.towerCount).toBe(0);
-    expect(SNAPSHOT_FLOATS).toBe(8489);
+    expect(SNAPSHOT_FLOATS).toBe(8494);
   });
 
   it("keeps the grid dimensions the renderer draws", () => {
@@ -68,6 +68,49 @@ describe("snapshot bridge", () => {
     expect(restored.snapshot().world.face).toBe(3);
     expect(restored.snapshot().world.regions).toBe(snap.world.regions);
     expect(restored.snapshot().world.epoch).toBe(snap.world.epoch);
+  });
+
+  it("builds a deterministic 32-tile chunk tree with a live LOD ladder", () => {
+    const sim = fresh(7);
+    const snap = sim.snapshot();
+    expect(snap.chunks.length).toBe(16);
+    expect(snap.lod).toBe(0);
+    expect(snap.currentChunk.qx).toBe(2);
+    expect(snap.currentChunk.qz).toBe(2);
+    expect(snap.chunks.every((chunk) => chunk.skirt === 15)).toBe(true);
+    expect(new Set(snap.chunks.map((chunk) => `${chunk.face},${chunk.qx},${chunk.qz}`)).size).toBe(16);
+    expect(new Set(snap.chunks.map((chunk) => chunk.lod))).toEqual(new Set([0, 1, 2]));
+    expect(snap.activeChunks).toBeGreaterThanOrEqual(4);
+    const again = fresh(7).snapshot();
+    expect(again.chunks.map((chunk) => `${chunk.idLo}:${chunk.idHi}`)).toEqual(
+      snap.chunks.map((chunk) => `${chunk.idLo}:${chunk.idHi}`),
+    );
+    expect(snap.chunks.filter((chunk) => chunk.active).length).toBe(snap.activeChunks);
+  });
+
+  it("keeps chunk identity and epoch through a format 9 save", () => {
+    const sim = fresh(7);
+    for (let i = 0; i < 16; i++) sim.worldStep(1, 1);
+    const snap = sim.snapshot();
+    const image = sim.saveBytes();
+    expect(image[4]).toBe(9);
+    const restored = Sim.fromBytes(wasm);
+    expect(restored.loadBytes(image)).toBe(0);
+    const after = restored.snapshot();
+    expect(after.world.x).toBe(snap.world.x);
+    expect(after.chunkEpoch).toBe(snap.chunkEpoch);
+    expect(after.lod).toBe(snap.lod);
+    expect(after.chunks.map((chunk) => chunk.idLo)).toEqual(snap.chunks.map((chunk) => chunk.idLo));
+  });
+
+  it("loads a version 8 save and rebuilds its chunks", () => {
+    const image = new Uint8Array(readFileSync(resolve(process.cwd(), "tests/fixtures/save-v8.bin")));
+    const sim = Sim.fromBytes(wasm);
+    expect(sim.loadBytes(image)).toBe(0);
+    const snap = sim.snapshot();
+    expect(snap.world.face).toBe(0);
+    expect(snap.chunks.length).toBeGreaterThanOrEqual(16);
+    expect(snap.currentChunk.face).toBe(0);
   });
 
   it("loads a version 7 save onto the centred world", () => {
@@ -208,7 +251,7 @@ describe("save image", () => {
     expect(clock.hour).toBe(0);
     expect(clock.minute).toBe(0);
     const image = sim.saveBytes();
-    expect(image[4]).toBe(8);
+    expect(image[4]).toBe(9);
     const loaded = Sim.fromBytes(wasm);
     expect(loaded.loadBytes(image)).toBe(0);
     expect(loaded.clock().worldMs).toBe(8000);

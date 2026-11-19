@@ -28,8 +28,12 @@ const H = {
   seasonProgress: 38,
   worldKm: 39,
   streamEpoch: 40,
+  lod: 41,
+  chunks: 42,
+  activeChunks: 44,
+  chunkEpoch: 45,
 };
-const SNAPSHOT = 8489;
+const SNAPSHOT = 8494;
 
 function boot(seed) {
   const instance = new WebAssembly.Instance(new WebAssembly.Module(wasm), {});
@@ -77,6 +81,13 @@ check("snapshot length", first.length === SNAPSHOT, `${first.length}`);
 check("version", first[H.version] === 1, `${first[H.version]}`);
 check("straight route is 16 steps", first[H.pathSteps] === 16, `${first[H.pathSteps]}`);
 check("straight path has 17 nodes", first[H.pathCount] === 17, `${first[H.pathCount]}`);
+check("chunk tree has sixteen 32-tile chunks", firstEx.sim_chunk_count() === 16 && first[H.chunks] === 16, `${firstEx.sim_chunk_count()}`);
+check("current chunk is the seat chunk", first[H.lod] === 0 && firstEx.sim_chunk_current(2) === 2 && firstEx.sim_chunk_current(3) === 2, `${firstEx.sim_chunk_current(2)},${firstEx.sim_chunk_current(3)}`);
+check("LOD ladder selects 0, 1, 2 by ring", firstEx.sim_chunk_lod(0, 2, 2) === 0 && firstEx.sim_chunk_lod(0, 1, 2) === 1 && firstEx.sim_chunk_lod(0, 0, 2) === 2, `${firstEx.sim_chunk_lod(0, 0, 2)}`);
+check("chunk ids are seed-derived and stable", firstEx.sim_chunk_id_lo(0, 2, 2) === boot(42).sim_chunk_id_lo(0, 2, 2) && firstEx.sim_chunk_id_hi(0, 2, 2) === boot(42).sim_chunk_id_hi(0, 2, 2), `${firstEx.sim_chunk_id_lo(0, 2, 2)}`);
+check("chunk ids differ across seeds", firstEx.sim_chunk_id_lo(0, 2, 2) !== boot(43).sim_chunk_id_lo(0, 2, 2));
+check("all resident chunks carry a skirt", [...Array(firstEx.sim_chunk_count()).keys()].every((i) => firstEx.sim_chunk(i, 9) === 15));
+check("resident detail set is non-empty", first[H.activeChunks] >= 4, `${first[H.activeChunks]}`);
 
 const buildEx = boot(42);
 check("empty plot", buildEx.sim_cell_state(8, 6) === 0);
@@ -222,7 +233,7 @@ exact.sim_init64(849435875, 2192949435);
 check("exact seed low half", exact.sim_seed_lo() === 849435875, `${exact.sim_seed_lo()}`);
 check("exact seed high half", (exact.sim_seed_hi() >>> 0) === 2192949435, `${exact.sim_seed_hi() >>> 0}`);
 const exactBytes = save(exact);
-check("save format is 8", exactBytes[4] === 8, `${exactBytes[4]}`);
+check("save format is 9", exactBytes[4] === 9, `${exactBytes[4]}`);
 const exactLoad = boot(1);
 const exactPtr = exactLoad.sim_snapshot_ptr();
 new Uint8Array(exactLoad.memory.buffer).set(exactBytes, exactPtr);
@@ -265,7 +276,8 @@ const seasonEx = boot(7);
 const seasonBase = save(seasonEx);
 const seasons = [0, 1, 2, 3].map((season) => {
   const image = Buffer.from(seasonBase);
-  image.writeDoubleLE(21_600_000 * season, image.length - 15);
+  // Format 9 tail: world_ms, face, x, z, stream epoch, chunk epoch.
+  image.writeDoubleLE(21_600_000 * season, image.length - 19);
   const loaded = boot(1);
   const ptr = loaded.sim_snapshot_ptr();
   new Uint8Array(loaded.memory.buffer).set(image, ptr);

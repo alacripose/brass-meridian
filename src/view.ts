@@ -71,6 +71,8 @@ export class Battlefield {
   private moved = 0;
   private downAt = 0;
   private pinchDist = 0;
+  private readonly chunkGroup = new THREE.Group();
+  private chunkSig = "";
   private readonly towerGroup = new THREE.Group();
   private readonly enemyGroup = new THREE.Group();
   private readonly fxGroup = new THREE.Group();
@@ -128,6 +130,7 @@ export class Battlefield {
 
     this.buildLights();
     this.buildGround();
+    this.scene.add(this.chunkGroup);
     this.pathMesh = this.buildPath();
     this.buildGateAndCore();
 
@@ -310,6 +313,53 @@ export class Battlefield {
     this.buildRubble(2, [[3, 8], [4, 8], [3, 9], [11, 2], [12, 2], [11, 3]]);
 
     this.buildCity();
+  }
+
+  private applyChunks(snap: Snapshot) {
+    const sig = `${snap.world.face}:${snap.chunkEpoch}:${snap.chunks
+      .map((c) => `${c.face}.${c.qx}.${c.qz}.${c.lod}`)
+      .join("|")}`;
+    if (sig === this.chunkSig) return;
+    this.chunkSig = sig;
+    for (const child of [...this.chunkGroup.children]) {
+      this.chunkGroup.remove(child);
+      const mesh = child as THREE.Mesh;
+      mesh.geometry?.dispose();
+      const mat = mesh.material as THREE.Material | THREE.Material[] | undefined;
+      if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
+      else mat?.dispose();
+    }
+    const colors = [0x53d6c7, 0xd9a85f, 0x6e5b80];
+    for (const chunk of snap.chunks) {
+      if (chunk.face !== snap.world.face) continue;
+      const size = 8;
+      const x = chunk.qx * size + size / 2 - 16;
+      const z = chunk.qz * size + size / 2 - 16;
+      const color = colors[Math.min(2, Math.max(0, chunk.lod))];
+      // The slab bevel tops out near 0.22, so the chunk wire sits above it.
+      const y = 0.26;
+      const outline = new THREE.LineSegments(
+        new THREE.EdgesGeometry(new THREE.BoxGeometry(size - 0.12, 0.02, size - 0.12)),
+        new THREE.LineBasicMaterial({
+          color,
+          transparent: true,
+          opacity: chunk.active ? 0.85 : 0.45,
+        }),
+      );
+      outline.position.set(x, y, z);
+      this.chunkGroup.add(outline);
+      const here = chunk.qx === Math.floor(snap.world.x / 8) && chunk.qz === Math.floor(snap.world.z / 8);
+      if (here) {
+        const marker = new THREE.Mesh(
+          new THREE.RingGeometry(1.4, 1.7, 4),
+          new THREE.MeshBasicMaterial({ color: 0xf4cd87, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
+        );
+        marker.rotation.x = -Math.PI / 2;
+        marker.rotation.z = Math.PI / 4;
+        marker.position.set(x, y + 0.004, z);
+        this.chunkGroup.add(marker);
+      }
+    }
   }
 
   private buildRubble(map: number, cells: Array<[number, number]>) {
@@ -987,6 +1037,7 @@ export class Battlefield {
     this.lastTime = now;
     const snap = options.snapshot;
     this.applySeason(Math.round(snap.world.season));
+    this.applyChunks(snap);
 
     const sig = snap.towers.map((t) => `${t.id}.${t.kind}.${t.level}`).join("|");
     if (sig !== this.towerSig.value) {

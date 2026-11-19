@@ -7,7 +7,7 @@
     {
       "id": "A01",
       "name": "Planet runtime",
-      "have": 4,
+      "have": 6,
       "need": 8,
       "evidence": [
         "core/src/lib.rs",
@@ -17,12 +17,10 @@
         "docs/ARCHITECTURE.md"
       ],
       "missing": [
-        "32-cubed octree chunk",
-        "LOD ladder",
         "carve persistence",
         "fog and occlusion"
       ],
-      "next": "Add the 32-cubed chunk and LOD ladder."
+      "next": "Persist terrain carve state."
     },
     {
       "id": "A02",

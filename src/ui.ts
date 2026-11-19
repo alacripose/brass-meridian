@@ -15,7 +15,7 @@ import {
   TOWERS,
 } from "./copy";
 import { exampleMap, loadMapMeta, MAP_BUDGET } from "./map";
-import type { ClockView, Snapshot } from "./sim";
+import { LOD_NAMES, type ClockView, type Snapshot } from "./sim";
 
 export type HudModel = {
   towerCost: (kind: number) => number;
@@ -140,6 +140,12 @@ export class Hud {
         <button type="button" class="call" data-act="call" data-k="call">
           <span>${COPY.sendNow}</span><small data-k="bonus">+0</small>
         </button>
+      </div>
+
+      <div class="chunk-live" aria-label="${COPY.chunkLive}">
+        <span>${COPY.lod} <b data-k="lod">0 Near</b></span>
+        <span>${COPY.chunks} <b data-k="chunks">16/4</b></span>
+        <span>${COPY.chunkHere} <b data-k="playerChunk">2,2</b></span>
       </div>
 
       <div class="placement" hidden>
@@ -405,6 +411,10 @@ export class Hud {
     const bar = this.root.querySelector<HTMLElement>('[data-k="corebar"]');
     if (bar) bar.style.width = `${Math.max(0, Math.min(100, (snap.core / Math.max(1, snap.coreMax)) * 100))}%`;
     set("wave", `${snap.wave}`);
+    const lod = LOD_NAMES[Math.max(0, Math.min(LOD_NAMES.length - 1, Math.round(snap.lod)))];
+    set("lod", `${Math.round(snap.lod)} ${lod}`);
+    set("chunks", `${Math.round(snap.chunks.length)}/${Math.round(snap.activeChunks)}`);
+    set("playerChunk", `${snap.currentChunk?.qx ?? 0},${snap.currentChunk?.qz ?? 0}`);
     const clock = this.model.clock();
     const season = SEASONS[Math.max(0, Math.min(SEASONS.length - 1, clock.season))];
     set(
@@ -675,14 +685,31 @@ export class Hud {
     const face = Math.max(0, Math.min(DISTRICTS.length - 1, Math.round(snap.world.face)));
     const season = SEASONS[Math.max(0, Math.min(SEASONS.length - 1, Math.round(snap.world.season)))];
     const seasonChips = SEASONS.map((item, id) => `<span class="season-chip${id === snap.world.season ? " on" : ""}">${item.name}</span>`).join("");
+    const activeFace = Math.round(snap.world.face);
+    const currentQx = Math.floor(snap.world.x / 8);
+    const currentQz = Math.floor(snap.world.z / 8);
+    const chunkCells = snap.chunks
+      .filter((chunk) => chunk.face === activeFace)
+      .map((chunk) => {
+        const here = chunk.qx === currentQx && chunk.qz === currentQz;
+        return `<rect x="${chunk.qx * 32 + 1}" y="${chunk.qz * 32 + 1}" width="30" height="30" class="chunk-cell lod${chunk.lod}${here ? " here" : ""}${chunk.active ? " active" : ""}"><title>LOD ${chunk.lod} · chunk ${chunk.qx},${chunk.qz}</title></rect>`;
+      })
+      .join("");
+    const lodName = LOD_NAMES[Math.max(0, Math.min(LOD_NAMES.length - 1, Math.round(snap.lod)))];
     return `<section class="world-strip">
         <div><span>${COPY.worldFace}</span><b>${face + 1} · ${DISTRICTS[face].name}</b></div>
         <div><span>${COPY.worldSeat}</span><b>${Math.round(snap.world.x)}, ${Math.round(snap.world.z)}</b></div>
         <div><span>${COPY.worldRegions}</span><b>${Math.round(snap.world.regions)}</b></div>
         <div><span>${COPY.worldBound}</span><b>${Math.round(snap.world.km).toLocaleString("en-US")} km</b></div>
         <div><span>${COPY.season}</span><b>${season.name} ${Math.round(snap.world.seasonProgress * 100)}%</b></div>
+        <div><span>${COPY.lod}</span><b>${Math.round(snap.lod)} ${lodName}</b></div>
+        <div><span>${COPY.chunks}</span><b>${snap.chunks.length} resident · ${Math.round(snap.activeChunks)} detail</b></div>
       </section>
       <div class="season-wheel">${seasonChips}</div>
+      <div class="chunk-board" aria-label="${COPY.chunkLive}">
+        <svg viewBox="0 0 128 128" class="chunk-grid">${chunkCells}</svg>
+        <div class="chunk-key"><span class="l0">Near LOD 0</span><span class="l1">Mid LOD 1</span><span class="l2">Far LOD 2</span></div>
+      </div>
       <div class="seat-pad" aria-label="${COPY.worldSeat}">
         <button type="button" class="seat-btn up" data-act="seat" data-dx="0" data-dz="-1">↑</button>
         <button type="button" class="seat-btn left" data-act="seat" data-dx="-1" data-dz="0">←</button>

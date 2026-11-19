@@ -2,7 +2,7 @@
 
 The 6.0 interview changes the world model, not only the content count. This page replaces the 0.4 plan.
 
-The measured 6.0 inventory is 5.2%. It counts 63 existing capabilities against 1,213 required ones.
+The measured 6.0 inventory is 5.4%. It counts 65 existing capabilities against 1,213 required ones.
 
 ## Status
 
@@ -28,7 +28,7 @@ The inventory is `state/scope.json`. The reconciliation is `docs/RECONCILIATION.
 | Save | Byte image format 5 | Snapshot, journal, checkpoint, format 8 | P7 and P17 reopen |
 | UI | Sheets and cards | Four views, dashboard and fault history | P15 reopens |
 | Community | Local survey maps | Seed and map strings, no live network | P10 narrows |
-| Progress | Legacy 205-item estimate | 63 of 1,213 capabilities, 5.2% | Measured by T-0016 |
+| Progress | Legacy 205-item estimate | 65 of 1,213 capabilities, 5.4% | Measured by T-0016 |
 
 ## Ticket impact
 

@@ -27,6 +27,8 @@ The core exposes a small C ABI.
 | `sim_world_travel`, `sim_world_step`, `sim_world_field` | Face seat, bounded step, and world facts. |
 | `sim_world_region_count`, `sim_world_region` | Deterministic streamed region ids. |
 | `sim_world_point`, `sim_world_km`, `sim_world_cell_km` | Unit cube-sphere point and real bound. |
+| `sim_chunk_count`, `sim_chunk`, `sim_chunk_current` | Resident chunk facts and the seat chunk. |
+| `sim_chunk_lod`, `sim_chunk_height`, `sim_chunk_id_lo`, `sim_chunk_id_hi` | LOD, height and stable chunk identity. |
 | `sim_expedition`, `sim_expedition_start`, `sim_expedition_contract` | Contract state, launch, fee, pay, and relics. |
 | `sim_eco`, `sim_eco_action` | Marsh state and one habitat action. |
 | `sim_automation`, `sim_automation_toggle`, `sim_convoy`, `sim_offline` | Shell line, rule, convoy, and catch-up. |
@@ -40,20 +42,22 @@ Commands return an integer code. Placement codes are named in `src/sim.ts` and `
 
 ## Snapshot
 
-The snapshot is a flat `f32` buffer. It is 8,489 floats, about 34 KB.
+The snapshot is a flat `f32` buffer. It is 8,494 floats, about 34 KB.
 
 | Range | Content |
 | ---: | --- |
-| 0–40 | Header: resources, wave, phase, counts, route, world and season. |
-| 41–1,576 | 96 towers, stride 16. |
-| 1,577–5,416 | 320 enemies, stride 12. |
-| 5,417–7,336 | 192 projectiles, stride 10. |
-| 7,337–8,360 | 128 effects, stride 8. |
-| 8,361–8,488 | Up to 64 route points. |
+| 0–45 | Header: resources, wave, phase, counts, route, world, season and chunks. |
+| 46–1,581 | 96 towers, stride 16. |
+| 1,582–5,421 | 320 enemies, stride 12. |
+| 5,422–7,341 | 192 projectiles, stride 10. |
+| 7,342–8,365 | 128 effects, stride 8. |
+| 8,366–8,493 | Up to 64 route points. |
 
 The header carries the tower, enemy, projectile, and effect counts. The renderer reads only those counts.
 
 Header slot 29 holds the active face id. Header slot 30 holds the raid face id. Slots 32–40 hold the face seat, region, stream epoch, season and bound.
+
+Slots 41–45 hold the current LOD, resident count, seat chunk and chunk epoch.
 
 The raid is the face the next wave targets. The client counts live enemies from the enemy count and spawn-left header slots; it does not store a second count.
 
@@ -64,6 +68,10 @@ The track graph is a cube net. Neighbour edges cost 14 to 22 brass, and far hops
 The world has six 32 by 32 faces at 1:8 scale. The engine bound is 5,009.375 km against a 40,075 km real planet. A seat steps one cell at a time and crosses a face seam by projecting the point across the cube edge.
 
 Regions are 4 by 4 cells. The stream is the 3 by 3 block around the seat plus seam-neighbour regions. Ids are deduped, sorted, and hashed into a stream epoch.
+
+Chunks are 32 tiles on a side. A cell is four tiles, so a chunk is 8 by 8 cells and a face holds sixteen chunks. Chunk ids hash the terrain sub-seed with the face and chunk coordinate.
+
+LOD levels are Near, Mid and Far, chosen by chunk ring. Ring 0 is Near, ring 1 is Mid, and ring 2 or more is Far. Every chunk carries four skirt bits, so a level change never opens an edge.
 
 Expedition state lives in `sim_expedition`: active, contract, leg, result, three relic counts, discoveries, and spawn left.
 
@@ -101,7 +109,7 @@ It also keeps the raid district, wave bonus, enemies, projectiles, effects, spaw
 
 Format 5 appends expedition state, the marsh, the shell line, and a 4 by 64 bit survey mask. Format 6 widens the seed from 32 to 64 bits. Format 7 appends the world clock as a little-endian f64.
 
-Format 8 appends the face, seat, and stream epoch, and widens the tower lists to six.
+Format 8 appends the face, seat, and stream epoch, and widens the tower lists to six. Format 9 appends the chunk epoch after the stream epoch.
 
 Formats 2 through 7 still load. Older saves open at the Switchyard centre with an empty survey, a balanced marsh and a stopped line. Their raid derives from the seed and wave.
 
@@ -163,5 +171,5 @@ The build is one JavaScript chunk of about 648 KB, or 167 KB gzipped. It is not 
 
 - `cargo test` covers the core with 35 tests.
 - `npm test` loads the real wasm and runs 33 bridge tests.
-- `npm run probe` runs 116 checks for routes, waves, contracts, marsh, line, survey, seeds, clock, seasons, seam walking, world streaming, determinism, and saves.
+- `npm run probe` runs 123 checks for routes, waves, contracts, marsh, line, survey, seeds, clock, seasons, seam walking, chunks, LOD, determinism, and saves.
 - `npm run gate` checks prose, ledgers, tickets, progress, ABI, receipts, and secrets.

@@ -148,11 +148,12 @@ try {
   const wasm = readFileSync(resolve(root, "public/brass_core.wasm"));
   const instance = new WebAssembly.Instance(new WebAssembly.Module(wasm), {});
   const ex = instance.exports;
-  check("wasm snapshot length", ex.sim_snapshot_len() === 8489, `${ex.sim_snapshot_len()}`);
+  check("wasm snapshot length", ex.sim_snapshot_len() === 8494, `${ex.sim_snapshot_len()}`);
   check("wasm ABI version", ex.sim_version() === 1, `${ex.sim_version()}`);
   check("64-bit seed ABI", typeof ex.sim_init64 === "function" && typeof ex.sim_seed_lo === "function" && typeof ex.sim_seed_hi === "function");
-  check("save format 8 is declared", read("core/src/lib.rs").includes("w.push(8)"));
+  check("save format 9 is declared", read("core/src/lib.rs").includes("w.push(9)"));
   check("world ABI is exported", typeof ex.sim_world_step === "function" && typeof ex.sim_world_region === "function" && Math.abs(ex.sim_world_km() - 5009.375) < 0.001);
+  check("chunk ABI is exported", typeof ex.sim_chunk_count === "function" && typeof ex.sim_chunk === "function" && typeof ex.sim_chunk_id_lo === "function");
   const ts = read("src/sim.ts");
   check("TS stride mirrors the core", ts.includes("TOWER_STRIDE = 16") && ts.includes("ENEMY_STRIDE = 12"));
   check("TS path base mirrors the core", ts.includes("PROJ_STRIDE = 10") && ts.includes("FX_STRIDE = 8"));
