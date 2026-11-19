@@ -10,6 +10,8 @@ The format follows Keep a Changelog, and versions use semantic numbering.
 - A 100-row reconciliation ledger with evidence and verdicts.
 - A measured 6.0 inventory: 55 of 1,213 capabilities, or 4.5 percent.
 - A format 6 save block that preserves the full 64-bit seed.
+- A public MIT repo with CI and Pages deployment for the playable build.
+- A pre-push scan for secrets, keys, env files, and machine paths.
 - A 6.0 roadmap for the planet, city cells, roster and living world.
 
 ### Changed

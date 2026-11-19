@@ -1,1 +1,2 @@
 {"seq":1,"at":"2026-11-19T23:10:00.000Z","ticket":"T-0016","claim":"The full check chain passes on the measured 6.0 tree.","ev":"artifacts/receipts/gate.json","ok":true}
+{"seq":2,"at":"2026-11-20T00:30:00.000Z","ticket":"T-0018","claim":"The default branch CI run 44626620877 passed check and Pages deploy.","ev":"artifacts/receipts/ci-run-9486ab3.json","ok":true}

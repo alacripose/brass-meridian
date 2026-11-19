@@ -6,6 +6,8 @@ A top-down tower defense you can play with one hand. Build on an open grid, bend
 
 [![ci](https://github.com/alacripose/brass-meridian/actions/workflows/ci.yml/badge.svg)](https://github.com/alacripose/brass-meridian/actions/workflows/ci.yml)
 
+[Play the public build](https://alacripose.github.io/brass-meridian/)
+
 ## What it is
 
 Brass Meridian is a mobile-first three.js game with a Rust simulation core compiled to WebAssembly.

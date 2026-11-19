@@ -1,1 +1,2 @@
 {"seq":1,"at":"2026-11-19T23:10:00.000Z","ticket":"T-0015","claim":"The gate rejects the retired figure and an unlabelled 6.0 status.","ev":"tools/gate.mjs","ok":true}
+{"seq":2,"at":"2026-11-20T00:30:00.000Z","ticket":"T-0018","claim":"CI runs the scope and delivery scan before the gate.","ev":".github/workflows/ci.yml","ok":true}
