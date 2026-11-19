@@ -255,4 +255,4 @@ Next: Tag v0.4.0 after a green run.
 ### A42 Save and persistence
 
 Missing: journal, checkpoint, three slots, 0.4 import.
-Next: Add the first format 7 journal block.
+Next: Add the first format 8 journal block.
