@@ -4,9 +4,9 @@ This file is the resume point after a Freebuff pause. Update it before a long br
 
 ## State
 
-Last update: 2026-11-20.
+Last update: 2026-11-19.
 
-The vertical slice and the 0.3 frontier cut are built and tagged. The 0.4 systems are built, and CI is green on the public repo.
+The vertical slice and the 0.3 frontier cut are built and tagged. The 0.4 systems are built, and the named sub-seeds and 1:8 clock are live.
 
 The `v0.4.0` tag and release receipt are still owed. Do not tag until the worktree is clean.
 
