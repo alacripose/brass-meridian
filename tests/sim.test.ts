@@ -49,7 +49,9 @@ describe("snapshot bridge", () => {
     for (let i = 0; i < 80; i++) sim.worldStep(1, 0);
     const snap = sim.snapshot();
     expect(snap.world.x).toBe(31);
-    expect(sim.worldStep(1, 0)).toBe(-2);
+    const edgeFace = snap.world.face;
+    expect(sim.worldStep(1, 0)).toBe(0);
+    expect(sim.snapshot().world.face).not.toBe(edgeFace);
     expect(sim.snapshot().world.x).toBe(31);
   });
 

@@ -4,3 +4,4 @@
 {"seq":4,"at":"2026-11-20T01:30:00.000Z","ticket":"T-0016","claim":"A completed scope area may carry an empty gap without failing the gate.","ev":"tools/gate.mjs","ok":true}
 {"seq":5,"at":"2026-11-20T01:30:00.000Z","ticket":"T-0016","claim":"The scope now counts four world capabilities and six clock capabilities.","ev":"state/scope.json","ok":true}
 {"seq":6,"at":"2026-11-20T01:30:00.000Z","ticket":"T-0016","claim":"Three new refusals name season units, stream epoch loads, and idle clock probes.","ev":"docs/REFUSALS.md","ok":true}
+{"seq":7,"at":"2026-11-20T02:10:00.000Z","ticket":"T-0016","claim":"Seam streaming is derived from the same cube projection as seat walking.","ev":"core/src/lib.rs","ok":true}

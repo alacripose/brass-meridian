@@ -244,11 +244,15 @@ check("stream ids are unique", regionIds.size === centreRegions, `${regionIds.si
 let seam = null;
 for (let i = 0; i < 40; i++) worldEx.sim_world_step(1, 0);
 const edge = snap(worldEx);
-check("world clamps at the face edge", edge[H.worldX] === 31, `${edge[H.worldX]}`);
-check("world refuses to leave the face", worldEx.sim_world_step(1, 0) === -2);
-check("edge stays at 31", snap(worldEx)[H.worldX] === 31, `${snap(worldEx)[H.worldX]}`);
+check("world reaches the face edge", edge[H.worldX] === 31, `${edge[H.worldX]}`);
+check("a seam step crosses the face", worldEx.sim_world_step(1, 0) === 0);
+const crossed = snap(worldEx);
+check("crossed face is known", crossed[H.worldFace] >= 0 && crossed[H.worldFace] <= 5, `${crossed[H.worldFace]}`);
+check("crossed seat keeps the edge", crossed[H.worldX] === 31, `${crossed[H.worldX]}`);
 for (let i = 0; i < worldEx.sim_world_region_count(); i++) {
-  if (worldEx.sim_world_region(i, 0) !== 0) seam = worldEx.sim_world_region(i, 0);
+  if (worldEx.sim_world_region(i, 0) !== worldEx.sim_world_field(0)) {
+    seam = worldEx.sim_world_region(i, 0);
+  }
 }
 check("edge streams a neighbour face", seam !== null, `${seam}`);
 const p0 = worldEx.sim_world_point(1, 16, 16, 0);

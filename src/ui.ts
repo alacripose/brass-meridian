@@ -689,7 +689,7 @@ export class Hud {
         <button type="button" class="seat-btn right" data-act="seat" data-dx="1" data-dz="0">→</button>
         <button type="button" class="seat-btn down" data-act="seat" data-dx="0" data-dz="1">↓</button>
       </div>
-      <p class="micro">${COPY.worldEdge}</p>
+      <p class="micro">${COPY.worldSeam}</p>
       <div class="track-map" aria-hidden="true">
         <svg viewBox="0 0 340 180" class="track-svg">
           <defs><marker id="raid-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" class="raid-mark"/></marker></defs>

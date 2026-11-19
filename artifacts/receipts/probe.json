@@ -1,8 +1,8 @@
 {
   "ok": true,
   "kind": "headless-probe",
-  "at": "2026-11-19T22:50:25.678Z",
-  "sha256": "f4a32e9297d6ba45c89e8f4fbc6bb973d70e7dcefe568c0c7ae92c27c55a0d68",
+  "at": "2026-11-19T22:56:59.721Z",
+  "sha256": "5974f2c057a5a795c4e753c513c3c9cd360b9af34e603602e1f8cfc1a1b53b85",
   "checks": [
     {
       "name": "snapshot length",
@@ -430,17 +430,22 @@
       "detail": "9/9"
     },
     {
-      "name": "world clamps at the face edge",
+      "name": "world reaches the face edge",
       "ok": true,
       "detail": "31"
     },
     {
-      "name": "world refuses to leave the face",
+      "name": "a seam step crosses the face",
       "ok": true,
       "detail": ""
     },
     {
-      "name": "edge stays at 31",
+      "name": "crossed face is known",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "crossed seat keeps the edge",
       "ok": true,
       "detail": "31"
     },
@@ -580,5 +585,5 @@
       "detail": "1"
     }
   ],
-  "bytes": 78437
+  "bytes": 78745
 }

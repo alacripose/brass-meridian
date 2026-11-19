@@ -4,3 +4,4 @@
 {"seq":4,"at":"2026-11-20T01:30:00.000Z","ticket":"T-0016","claim":"A season test spent world milliseconds as real milliseconds and stopped one edge short.","ev":"core/src/lib.rs","ok":true}
 {"seq":5,"at":"2026-11-20T01:30:00.000Z","ticket":"T-0016","claim":"A format eight load recomputed the stream and bumped the saved epoch.","ev":"core/src/lib.rs","ok":true}
 {"seq":6,"at":"2026-11-20T01:30:00.000Z","ticket":"T-0016","claim":"A probe idled through defeat and expected the stopped clock to reach a season.","ev":"tools/probe.mjs","ok":true}
+{"seq":7,"at":"2026-11-20T02:10:00.000Z","ticket":"T-0016","claim":"A seat hit a dead clamp at a face edge instead of crossing the seam.","ev":"core/src/lib.rs","ok":true}

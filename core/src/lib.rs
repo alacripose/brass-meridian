@@ -229,53 +229,82 @@ fn region_of(x: u8, z: u8) -> u8 {
         + (x as u32 / REGION_SIDE) as u8
 }
 
-/// Map the region on one face edge to the region on the shared edge.
-/// Edges are west 0, east 1, north 2, south 3.
-fn seam_region(face: u8, edge: u8, lane: u8) -> (u8, u8, u8) {
-    let l = lane.min(REGIONS_PER_AXIS as u8 - 1);
-    let far = REGIONS_PER_AXIS as u8 - 1;
-    match (face, edge) {
-        (0, 0) => (5, far, l),
-        (0, 1) => (4, 0, l),
-        (0, 2) => (2, l, far),
-        (0, 3) => (3, l, 0),
-        (1, 0) => (4, far, l),
-        (1, 1) => (5, 0, l),
-        (1, 2) => (2, far - l, 0),
-        (1, 3) => (3, far - l, far),
-        (2, 0) => (5, l, 0),
-        (2, 1) => (4, far - l, 0),
-        (2, 2) => (1, far - l, 0),
-        (2, 3) => (0, l, 0),
-        (3, 0) => (5, far - l, far),
-        (3, 1) => (4, l, far),
-        (3, 2) => (0, l, far),
-        (3, 3) => (1, l, far),
-        (4, 0) => (0, far, l),
-        (4, 1) => (1, 0, l),
-        (4, 2) => (2, far, far - l),
-        (4, 3) => (3, far, l),
-        (5, 0) => (1, far, l),
-        (5, 1) => (0, 0, l),
-        (5, 2) => (2, 0, l),
-        (5, 3) => (3, 0, far - l),
-        _ => (face, 0, 0),
-    }
-}
-
-/// One cell's point on the unit cube-sphere. The six faces are the cube
-/// faces; normalising the cube point places it on the sphere.
-fn world_point(face: u8, x: u8, z: u8) -> [f64; 3] {
-    let u = ((x.min((FACE_SIDE - 1) as u8) as f64 + 0.5) / FACE_SIDE as f64) * 2.0 - 1.0;
-    let v = ((z.min((FACE_SIDE - 1) as u8) as f64 + 0.5) / FACE_SIDE as f64) * 2.0 - 1.0;
-    let p = match face.min(5) {
+/// A point on or near one cube face, without clamping. Cell coordinates
+/// outside 0..32 sit just across a seam.
+fn raw_point(face: u8, x: i32, z: i32) -> [f64; 3] {
+    let u = ((x as f64 + 0.5) / FACE_SIDE as f64) * 2.0 - 1.0;
+    let v = ((z as f64 + 0.5) / FACE_SIDE as f64) * 2.0 - 1.0;
+    match face.min(5) {
         0 => [1.0, v, u],
         1 => [-1.0, v, -u],
         2 => [u, 1.0, -v],
         3 => [u, -1.0, v],
         4 => [u, v, 1.0],
         _ => [-u, v, -1.0],
+    }
+}
+
+fn project_world(p: [f64; 3]) -> Option<WorldPos> {
+    let len = (p[0] * p[0] + p[1] * p[1] + p[2] * p[2]).sqrt();
+    if !len.is_finite() || len < 0.0001 {
+        return None;
+    }
+    let q = [p[0] / len, p[1] / len, p[2] / len];
+    let ax = q[0].abs();
+    let ay = q[1].abs();
+    let az = q[2].abs();
+    let (face, a, u, v) = if ax >= ay && ax >= az {
+        if q[0] >= 0.0 {
+            (0, ax, q[2], q[1])
+        } else {
+            (1, ax, -q[2], q[1])
+        }
+    } else if ay >= az {
+        if q[1] >= 0.0 {
+            (2, ay, q[0], -q[2])
+        } else {
+            (3, ay, q[0], q[2])
+        }
+    } else if q[2] >= 0.0 {
+        (4, az, q[0], q[1])
+    } else {
+        (5, az, -q[0], q[1])
     };
+    let x = (((u / a + 1.0) * 0.5 * FACE_SIDE as f64).floor() as i32)
+        .clamp(0, FACE_SIDE as i32 - 1) as u8;
+    let z = (((v / a + 1.0) * 0.5 * FACE_SIDE as f64).floor() as i32)
+        .clamp(0, FACE_SIDE as i32 - 1) as u8;
+    Some(WorldPos { face, x, z })
+}
+
+/// Map a region on one face edge to the region across the shared edge.
+/// Edges are west 0, east 1, north 2, south 3. The projection is the seam.
+fn seam_region(face: u8, edge: u8, lane: u8) -> (u8, u8, u8) {
+    let cell = lane.min(REGIONS_PER_AXIS as u8 - 1) as i32 * 4 + 2;
+    let (x, z) = match edge {
+        0 => (-1, cell),
+        1 => (FACE_SIDE as i32, cell),
+        2 => (cell, -1),
+        _ => (cell, FACE_SIDE as i32),
+    };
+    match project_world(raw_point(face, x, z)) {
+        Some(pos) => (
+            pos.face,
+            (pos.x as u32 / REGION_SIDE) as u8,
+            (pos.z as u32 / REGION_SIDE) as u8,
+        ),
+        None => (face, 0, 0),
+    }
+}
+
+/// One cell's point on the unit cube-sphere. The six faces are the cube
+/// faces; normalising the cube point places it on the sphere.
+fn world_point(face: u8, x: u8, z: u8) -> [f64; 3] {
+    let p = raw_point(
+        face,
+        x.min((FACE_SIDE - 1) as u8) as i32,
+        z.min((FACE_SIDE - 1) as u8) as i32,
+    );
     let len = (p[0] * p[0] + p[1] * p[1] + p[2] * p[2]).sqrt().max(1.0);
     [p[0] / len, p[1] / len, p[2] / len]
 }
@@ -808,13 +837,41 @@ impl Sim {
     fn world_step(&mut self, dx: i32, dz: i32) -> i32 {
         let x = self.world.x as i32 + dx.clamp(-1, 1);
         let z = self.world.z as i32 + dz.clamp(-1, 1);
-        let bx = x.clamp(0, FACE_SIDE as i32 - 1) as u8;
-        let bz = z.clamp(0, FACE_SIDE as i32 - 1) as u8;
-        let outside = x != bx as i32 || z != bz as i32;
-        self.world.x = bx;
-        self.world.z = bz;
+        if x >= 0 && z >= 0 && x < FACE_SIDE as i32 && z < FACE_SIDE as i32 {
+            self.world.x = x as u8;
+            self.world.z = z as u8;
+            self.recompute_stream();
+            self.fill_snapshot();
+            return 0;
+        }
+        if self.phase != 0 || !self.enemies.is_empty() {
+            return -2;
+        }
+        let Some(pos) = project_world(raw_point(self.world.face, x, z)) else {
+            return -2;
+        };
+        self.enter_face(pos.face);
+        self.world = pos;
         self.recompute_stream();
-        if outside { -2 } else { 0 }
+        self.fill_snapshot();
+        0
+    }
+
+    fn enter_face(&mut self, map: u8) {
+        if map == self.map || map as usize >= MAP_COUNT {
+            return;
+        }
+        let from = self.map as usize;
+        let to = map as usize;
+        let active = std::mem::replace(&mut self.towers, Vec::new());
+        self.stored[from] = active;
+        self.towers = std::mem::replace(&mut self.stored[to], Vec::new());
+        self.map = map;
+        self.projectiles.clear();
+        self.fx.clear();
+        self.spawn_queue.clear();
+        self.spawn_index = 0;
+        self.recompute();
     }
 
     fn world_field(&self, field: u32) -> f32 {
@@ -1105,16 +1162,8 @@ impl Sim {
         }
         self.brass -= cost as f32;
         self.countdown = (self.countdown - TRACK_TIME[from][to]).max(0.2);
-        let active = std::mem::replace(&mut self.towers, Vec::new());
-        self.stored[from] = active;
-        self.towers = std::mem::replace(&mut self.stored[to], Vec::new());
-        self.map = map;
+        self.enter_face(map);
         self.world = WorldPos::center(map);
-        self.projectiles.clear();
-        self.fx.clear();
-        self.spawn_queue.clear();
-        self.spawn_index = 0;
-        self.recompute();
         self.recompute_stream();
         self.fill_snapshot();
         0
@@ -3498,8 +3547,30 @@ mod tests {
             assert!(s.world.x < FACE_SIDE as u8);
         }
         assert_eq!(s.world.x, FACE_SIDE as u8 - 1);
-        assert_eq!(s.world_step(1, 0), -2);
+        let edge_face = s.world.face;
+        assert_eq!(s.world_step(1, 0), 0);
+        assert_ne!(s.world.face, edge_face);
         assert_eq!(s.world.x, FACE_SIDE as u8 - 1);
+    }
+
+    #[test]
+    fn a_seam_step_crosses_and_returns() {
+        let mut s = Sim::new(7);
+        s.world = WorldPos {
+            face: 0,
+            x: FACE_SIDE as u8 - 1,
+            z: 16,
+        };
+        s.recompute_stream();
+        assert_eq!(s.world_step(1, 0), 0);
+        assert_eq!(s.world.face, 4);
+        assert_eq!(s.world.x, FACE_SIDE as u8 - 1);
+        assert_eq!(s.world.z, 16);
+        assert_eq!(s.map, 4);
+        assert_eq!(s.world_step(1, 0), 0);
+        assert_eq!(s.world.face, 0);
+        assert_eq!(s.world.x, FACE_SIDE as u8 - 1);
+        assert_eq!(s.map, 0);
     }
 
     #[test]

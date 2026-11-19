@@ -10,6 +10,7 @@ The format follows Keep a Changelog, and versions use semantic numbering.
 - A bounded six-face cube-sphere at 1:8 scale, 5,009.375 km around.
 - Six named faces with face seats, 4 by 4 regions and seam-neighbour streaming.
 - Four 6-hour seasons driven by the 1:8 clock, with spawn and ecology shifts.
+- Seam walking: a seat crosses a face edge by cube projection, not a dead clamp.
 - Save format 8 with six tower lists, the face seat and stream epoch.
 - A version 7 save fixture, so older images still load on the centre seat.
 - A measured 6.0 inventory: 63 of 1,213 capabilities, or 5.2 percent.
@@ -24,7 +25,7 @@ The format follows Keep a Changelog, and versions use semantic numbering.
 
 - The snapshot grows to 8,489 floats, with world and season header slots.
 - The map sheet draws the cube net, a seat pad and the season wheel.
-- Tests now cover 34 Rust cases, 33 client cases, and 115 probes.
+- Tests now cover 35 Rust cases, 33 client cases, and 116 probes.
 
 ## [0.4.0] - 2026-11-19
 
