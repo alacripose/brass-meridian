@@ -1,0 +1,87 @@
+{
+  "updated": "2026-11-19",
+  "phases": [
+    {
+      "id": "P1",
+      "name": "Defense loop",
+      "weight": 22,
+      "done": 1,
+      "evidence": "artifacts/receipts/test.json"
+    },
+    {
+      "id": "P2",
+      "name": "Maze placement",
+      "weight": 10,
+      "done": 1,
+      "evidence": "artifacts/receipts/probe.json"
+    },
+    {
+      "id": "P3",
+      "name": "City production",
+      "weight": 10,
+      "done": 0.85,
+      "evidence": "artifacts/receipts/test.json"
+    },
+    {
+      "id": "P4",
+      "name": "Tower roster",
+      "weight": 10,
+      "done": 0.8,
+      "evidence": "artifacts/receipts/probe.json"
+    },
+    {
+      "id": "P5",
+      "name": "Mobile shell",
+      "weight": 10,
+      "done": 0.9,
+      "evidence": "artifacts/receipts/build.json"
+    },
+    {
+      "id": "P6",
+      "name": "Save and resume",
+      "weight": 5,
+      "done": 1,
+      "evidence": "artifacts/receipts/probe.json"
+    },
+    {
+      "id": "P7",
+      "name": "Proof gate",
+      "weight": 10,
+      "done": 1,
+      "evidence": "artifacts/receipts/gate.json"
+    },
+    {
+      "id": "P8",
+      "name": "Public CI and release",
+      "weight": 6,
+      "done": 0,
+      "evidence": "artifacts/receipts/gate.json"
+    },
+    {
+      "id": "P9",
+      "name": "Endless frontier",
+      "weight": 8,
+      "done": 0.35,
+      "evidence": "artifacts/receipts/test.json"
+    },
+    {
+      "id": "P10",
+      "name": "Later systems",
+      "weight": 9,
+      "done": 0,
+      "evidence": "docs/ROADMAP.md"
+    }
+  ],
+  "todo": [
+    { "id": "T-0008", "title": "Connect districts on a frontier map", "state": "open" },
+    { "id": "T-0009", "title": "Add expedition rewards and contracts", "state": "open" },
+    { "id": "T-0010", "title": "Add one ecology with visible cause and effect", "state": "open" },
+    { "id": "T-0011", "title": "Add one automated production line with fault reasons", "state": "open" },
+    { "id": "T-0012", "title": "Validate community maps before play", "state": "open" }
+  ],
+  "limits": [
+    "No accounts, server, or multiplayer.",
+    "The frontier, expeditions, ecology, and automation are not built.",
+    "Touch play was not checked on a physical phone."
+  ]
+}

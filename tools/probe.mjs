@@ -1,0 +1,122 @@
+// Headless proof. This reads the real wasm artifact and the documented
+// snapshot layout, without a browser or a TypeScript build step.
+import { createHash } from "node:crypto";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const wasm = new Uint8Array(readFileSync(resolve(root, "public/brass_core.wasm")));
+const H = {
+  version: 0,
+  brass: 1,
+  ingots: 2,
+  core: 3,
+  phase: 6,
+  towers: 13,
+  enemies: 14,
+  pathSteps: 25,
+  pathCount: 31,
+};
+const SNAPSHOT = 8480;
+
+function boot(seed) {
+  const instance = new WebAssembly.Instance(new WebAssembly.Module(wasm), {});
+  const ex = instance.exports;
+  ex.sim_init(seed);
+  return ex;
+}
+
+function snap(ex) {
+  const ptr = ex.sim_snapshot_ptr();
+  const len = ex.sim_snapshot_len();
+  return new Float32Array(ex.memory.buffer, ptr, len);
+}
+
+function save(ex) {
+  const len = ex.sim_save_len();
+  const ptr = ex.sim_save_ptr();
+  return Buffer.from(new Uint8Array(ex.memory.buffer, ptr, len));
+}
+
+const checks = [];
+function check(name, ok, detail) {
+  checks.push({ name, ok: Boolean(ok), detail: detail ?? "" });
+}
+
+const firstEx = boot(42);
+const first = snap(firstEx);
+check("snapshot length", first.length === SNAPSHOT, `${first.length}`);
+check("version", first[H.version] === 1, `${first[H.version]}`);
+check("straight route is 16 steps", first[H.pathSteps] === 16, `${first[H.pathSteps]}`);
+check("straight path has 17 nodes", first[H.pathCount] === 17, `${first[H.pathCount]}`);
+
+const buildEx = boot(42);
+check("empty plot", buildEx.sim_cell_state(8, 6) === 0);
+check("pylon placed", buildEx.sim_place(8, 6, 3) === 0);
+const detoured = snap(buildEx);
+check("placement detours the route", detoured[H.pathSteps] > 16, `${detoured[H.pathSteps]}`);
+check("occupied plot refuses", buildEx.sim_place(8, 6, 0) === -2);
+check("tower count", detoured[H.towers] === 1, `${detoured[H.towers]}`);
+check("brass paid", Math.abs(detoured[H.brass] - 115) < 0.01, `${detoured[H.brass]}`);
+
+let refusals = 0;
+for (let gz = 0; gz < 13; gz++) {
+  if (buildEx.sim_place(8, gz, 0) !== 0) refusals++;
+}
+const walled = snap(buildEx);
+check("a wall refuses at least one cell", refusals > 0, `${refusals}`);
+check("a route survives every accepted wall", walled[H.pathSteps] >= 0 && walled[H.pathSteps] <= 40, `${walled[H.pathSteps]}`);
+
+const waveEx = boot(7);
+check("wave preview is eight drudges", waveEx.sim_preview_count(0) === 8, `${waveEx.sim_preview_count(0)}`);
+check("wave called", waveEx.sim_call_wave() === 0);
+for (let i = 0; i < 120; i++) waveEx.sim_step(33);
+const live = snap(waveEx);
+check("wave spawns enemies", live[H.enemies] > 0, `${live[H.enemies]}`);
+check("wave goes live", live[H.phase] === 1, `${live[H.phase]}`);
+
+const cityEx = boot(11);
+check("foundry built", cityEx.sim_city(0) === 0);
+for (let i = 0; i < 100; i++) cityEx.sim_step(30);
+const made = snap(cityEx);
+check("foundry makes ingots", made[H.ingots] > 0.5, `${made[H.ingots].toFixed(3)}`);
+
+// Determinism: same seed, same commands, same byte image.
+const aEx = boot(9001);
+const bEx = boot(9001);
+for (const ex of [aEx, bEx]) {
+  ex.sim_place(7, 4, 0);
+  ex.sim_place(10, 8, 2);
+  ex.sim_call_wave();
+  for (let i = 0; i < 300; i++) ex.sim_step(33);
+}
+const aBytes = save(aEx);
+const bBytes = save(bEx);
+check("save length is stable", aBytes.length === bBytes.length, `${aBytes.length}/${bBytes.length}`);
+check("same seed is deterministic", aBytes.equals(bBytes), `${aBytes.length} bytes`);
+
+const restoredEx = boot(1);
+const loadPtr = restoredEx.sim_snapshot_ptr();
+new Uint8Array(restoredEx.memory.buffer).set(aBytes, loadPtr);
+const loadCode = restoredEx.sim_load(loadPtr, aBytes.length);
+const after = snap(restoredEx);
+check("save loads", loadCode === 0, `${loadCode}`);
+check("loaded towers match", after[H.towers] === snap(aEx)[H.towers], `${after[H.towers]}`);
+check("loaded enemies match", after[H.enemies] === snap(aEx)[H.enemies], `${after[H.enemies]}`);
+check("loaded route matches", after[H.pathSteps] === snap(aEx)[H.pathSteps], `${after[H.pathSteps]}`);
+
+const ok = checks.every((c) => c.ok);
+const receipt = {
+  ok,
+  kind: "headless-probe",
+  at: new Date().toISOString(),
+  sha256: createHash("sha256").update(wasm).digest("hex"),
+  checks,
+  bytes: wasm.length,
+};
+mkdirSync(resolve(root, "artifacts/receipts"), { recursive: true });
+writeFileSync(resolve(root, "artifacts/receipts/probe.json"), JSON.stringify(receipt, null, 2) + "\n");
+for (const item of checks) console.log(`${item.ok ? "PASS" : "FAIL"} ${item.name}${item.detail ? ` (${item.detail})` : ""}`);
+console.log(`PROBE-${ok ? "PASS" : "FAIL"} ${checks.filter((c) => c.ok).length}/${checks.length}`);
+process.exit(ok ? 0 : 1);

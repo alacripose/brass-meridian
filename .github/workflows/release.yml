@@ -1,0 +1,43 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - run: npm ci
+      - run: npm run wasm
+      - run: npm run test:rust
+      - run: npm test
+      - run: npm run build
+      - run: npm run probe
+      - run: npm run status
+      - run: npm run gate
+      - name: Tag matches package version
+        run: |
+          VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json')).version)")
+          test "v$VERSION" = "$GITHUB_REF_NAME"
+      - name: Extract release notes
+        run: node tools/release-notes.mjs > release-notes.md
+      - name: Zip the built game
+        run: |
+          cd dist
+          zip -r "../brass-meridian-${GITHUB_REF_NAME}.zip" .
+      - uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-notes.md
+          files: brass-meridian-*.zip

@@ -1,0 +1,5 @@
+{"seq":1,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0001","claim":"Rust rejected a bool cast in the snapshot writer.","ev":"artifacts/receipts/phase-01-failures.json","ok":false}
+{"seq":2,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0001","claim":"A route-cap test expected a refusal the map never produced.","ev":"artifacts/receipts/phase-01-failures.json","ok":false}
+{"seq":3,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0002","claim":"The WASM bridge rejected a Uint8Array as BufferSource.","ev":"artifacts/receipts/phase-01-failures.json","ok":false}
+{"seq":4,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0004","claim":"The enemy pool creator was unused, so enemies would not draw.","ev":"artifacts/receipts/phase-01-failures.json","ok":false}
+{"seq":5,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0004","claim":"The affordability refresh re-enabled a maxed button.","ev":"artifacts/receipts/phase-01-failures.json","ok":false}

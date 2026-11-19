@@ -1,0 +1,184 @@
+{
+  "ok": true,
+  "at": "2026-11-19T15:22:24.571Z",
+  "passed": 35,
+  "total": 35,
+  "percent": 75.3,
+  "checks": [
+    {
+      "name": "package is MIT",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "changelog names this version",
+      "ok": true,
+      "detail": "looking for 0.1.0"
+    },
+    {
+      "name": "two-second prose",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "ledger schema and evidence",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "ledger has rows",
+      "ok": true,
+      "detail": "17 rows"
+    },
+    {
+      "name": "ledger failures",
+      "ok": true,
+      "detail": "phase-01.jsonl"
+    },
+    {
+      "name": "ledger health",
+      "ok": true,
+      "detail": "phase-01.jsonl"
+    },
+    {
+      "name": "ledger probes",
+      "ok": true,
+      "detail": "phase-01.jsonl"
+    },
+    {
+      "name": "ledger tests",
+      "ok": true,
+      "detail": "phase-01.jsonl"
+    },
+    {
+      "name": "ledger improvements",
+      "ok": true,
+      "detail": "phase-01.jsonl"
+    },
+    {
+      "name": "ticket front matter",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "progress weights sum to 100",
+      "ok": true,
+      "detail": "100"
+    },
+    {
+      "name": "progress marks are in range",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "status percentage is current",
+      "ok": true,
+      "detail": "expected 75.3%"
+    },
+    {
+      "name": "wasm snapshot length",
+      "ok": true,
+      "detail": "8480"
+    },
+    {
+      "name": "wasm ABI version",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "TS stride mirrors the core",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "TS path base mirrors the core",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "wasm receipt matches artifact",
+      "ok": true,
+      "detail": "5b7bbf4933433748f4926d2322b1a3b462b2b7c7618f6749566116b8ee240937"
+    },
+    {
+      "name": "typescript tests passed",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "rust tests passed",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "headless probe passed",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "production build passed",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "refusal ids are documented",
+      "ok": true,
+      "detail": "9 ids"
+    },
+    {
+      "name": "no committed secrets",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "no root .env",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": ".env is ignored",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "file README.md",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "file AGENTS.md",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "file LICENSE",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "file CONTRIBUTING.md",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "file .github/workflows/ci.yml",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "file .github/workflows/release.yml",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "CI runs tests, probe, gate",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "PWA shell exists",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

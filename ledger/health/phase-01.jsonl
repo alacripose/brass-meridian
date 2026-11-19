@@ -1,0 +1,4 @@
+{"seq":1,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0001","claim":"The Rust core passes 10 tests.","ev":"artifacts/receipts/rust-test.json","ok":true}
+{"seq":2,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0002","claim":"The client passes 12 tests against the real wasm.","ev":"artifacts/receipts/test.json","ok":true}
+{"seq":3,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0004","claim":"The production build passes.","ev":"artifacts/receipts/build.json","ok":true}
+{"seq":4,"at":"2026-11-19T08:25:00.000Z","ticket":"T-0005","claim":"The headless probe passes 24 checks.","ev":"artifacts/receipts/probe.json","ok":true}

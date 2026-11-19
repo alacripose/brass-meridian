@@ -1,0 +1,37 @@
+{
+  "name": "brass-meridian",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Hold the line. Grow the city. A top-down tower defense for touch.",
+  "type": "module",
+  "license": "MIT",
+  "author": "alacripose",
+  "homepage": "https://github.com/alacripose/brass-meridian",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alacripose/brass-meridian.git"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173",
+    "build": "node tools/run-build.mjs",
+    "preview": "vite preview --host 127.0.0.1 --port 5174",
+    "wasm": "node tools/build-wasm.mjs",
+    "test": "node tools/run-tests.mjs",
+    "test:rust": "node tools/run-rust-tests.mjs",
+    "gate": "node tools/gate.mjs",
+    "status": "node tools/status.mjs",
+    "probe": "node tools/probe.mjs",
+    "ledger": "node tools/ledger.mjs verify",
+    "check": "npm run wasm && npm run test:rust && npm run test && npm run build && npm run probe && npm run status && npm run gate"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/three": "^0.187.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.1"
+  },
+  "dependencies": {
+    "three": "^0.187.0"
+  }
+}

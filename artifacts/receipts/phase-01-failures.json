@@ -1,0 +1,43 @@
+{
+  "ok": true,
+  "kind": "development-failures",
+  "at": "2026-11-19T08:20:00.000Z",
+  "note": "Five real failures, each fixed before the slice was called complete.",
+  "failures": [
+    {
+      "id": "rust-bool-cast",
+      "claim": "The first core build stopped on a bool cast to f32.",
+      "error": "error[E0606]: casting `bool` as `f32` is invalid",
+      "fix": "Cast the flag through u8 in the snapshot writer.",
+      "where": "core/src/lib.rs"
+    },
+    {
+      "id": "route-cap-test",
+      "claim": "A route-cap test expected a refusal the map never produced.",
+      "error": "the detour cap must be reachable",
+      "fix": "Assert the invariant: accepted walls never leave an over-budget route.",
+      "where": "core/src/lib.rs"
+    },
+    {
+      "id": "buffersource-union",
+      "claim": "The client bridge rejected a Uint8Array as BufferSource.",
+      "error": "TS2345: Uint8Array<ArrayBufferLike> is not assignable to BufferSource",
+      "fix": "Copy the view into a plain ArrayBuffer before compiling the module.",
+      "where": "src/sim.ts"
+    },
+    {
+      "id": "orphan-enemy-pool",
+      "claim": "The enemy pool creator was dropped, so no enemy meshes would draw.",
+      "error": "TS6133: makeEnemy is declared but its value is never read",
+      "fix": "Restore the slot creator and call it while growing the pool.",
+      "where": "src/view.ts"
+    },
+    {
+      "id": "maxed-reenabled",
+      "claim": "The affordability refresh could re-enable a maxed button.",
+      "error": "review found maxed upgrades and a full core re-enabled by data-need-brass",
+      "fix": "Mark maxed buttons with data-maxed and short-circuit the refresh.",
+      "where": "src/ui.ts"
+    }
+  ]
+}
