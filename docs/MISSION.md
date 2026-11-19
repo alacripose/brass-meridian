@@ -12,7 +12,7 @@ The `v0.4.0` tag and release receipt are still owed. Do not tag until the worktr
 
 The 6.0 interview is complete. All 100 answers are in `docs/QUESTIONS-6.0.md` and `state/questions-6.0.jsonl`.
 
-`docs/ROADMAP.md` carries the 6.0 phases. The measured inventory is 5.2% of 1,213 capabilities.
+`docs/ROADMAP.md` carries the 6.0 phases. The measured inventory is 5.4% of 1,213 capabilities.
 
 ## What is proved
 
@@ -43,7 +43,7 @@ Order matters. Each phase needs a save migration and a proof before the next one
 
 ## Known limits
 
-- The measured 6.0 inventory is 5.2%, not a completion promise.
+- The measured 6.0 inventory is 5.4%, not a completion promise.
 - Region zoom is a 6.0 gate and is not built.
 - The planet, cube-sphere and voxel LOD are not built.
 - Expedition tracks are not seeded and loadouts are not limited.

@@ -25,6 +25,9 @@ export const REFUSALS = {
   streamEpoch: "stream-epoch-load",
   idleClock: "idle-clock-stop",
   seamClamp: "seam-clamp",
+  chunkId: "chunk-iteration-id",
+  chunkSkirt: "chunk-seam-gap",
+  saveTail: "save-tail-offset",
   release: "release-unverified",
 } as const;
 

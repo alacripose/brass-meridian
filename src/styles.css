@@ -299,6 +299,34 @@ button:disabled {
   pointer-events: none;
 }
 
+.chunk-live {
+  position: absolute;
+  top: calc(var(--safe-t) + 108px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, calc(100% - 20px));
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 11px;
+  border: 1px solid var(--line-soft);
+  border-radius: 9px;
+  background: rgba(7, 19, 21, 0.72);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.chunk-live b {
+  margin-left: 4px;
+  color: var(--brass-hi);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
 .wave-meta {
   display: flex;
   flex-direction: column;
@@ -850,6 +878,71 @@ button:disabled {
   color: var(--brass-hi);
   white-space: nowrap;
 }
+
+.chunk-board {
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  gap: 9px;
+  align-items: center;
+  margin: 0 0 8px;
+  padding: 7px;
+  border: 1px solid var(--line-soft);
+  background: rgba(7, 17, 19, 0.3);
+}
+
+.chunk-grid {
+  display: block;
+  width: 128px;
+  height: 128px;
+}
+
+.chunk-cell {
+  fill: rgba(83, 214, 199, 0.08);
+  stroke: rgba(83, 214, 199, 0.5);
+  stroke-width: 1.5;
+}
+
+.chunk-cell.lod1 {
+  fill: rgba(217, 168, 95, 0.08);
+  stroke: rgba(217, 168, 95, 0.45);
+}
+
+.chunk-cell.lod2 {
+  fill: rgba(110, 91, 128, 0.08);
+  stroke: rgba(110, 91, 128, 0.45);
+}
+
+.chunk-cell.active {
+  fill-opacity: 0.7;
+}
+
+.chunk-cell.here {
+  stroke: var(--brass-hi);
+  stroke-width: 3;
+}
+
+.chunk-key {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.chunk-key span::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border: 1px solid currentColor;
+}
+
+.chunk-key .l0::before { color: var(--teal); }
+.chunk-key .l1::before { color: var(--brass); }
+.chunk-key .l2::before { color: #8d76a6; }
 
 .season-wheel {
   display: flex;

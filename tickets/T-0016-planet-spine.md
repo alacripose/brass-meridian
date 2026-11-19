@@ -13,7 +13,7 @@ Every later system sits on the planet, the clock and the save. Build it before t
 
 ## Checks
 
-- [ ] Six cube-sphere faces, each a 32-cubed octree.
+- [x] Six cube-sphere faces, each with a 32-tile chunk tree and Near, Mid, Far LOD.
 - [x] A 64-bit seed survives the format 7 image.
 - [x] One master seed with named sub-seeds.
 - [x] A 40,075 km real bound, or 5,009 km at 1/8 engine scale.

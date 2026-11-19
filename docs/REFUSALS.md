@@ -172,6 +172,24 @@ A seat refuses to cross a face edge instead of projecting across it.
 
 The cube projection is the only bound. A live wave may still pin the battle face.
 
+## `chunk-iteration-id`
+
+A chunk id is taken from its array index or the live cursor.
+
+The id comes from the terrain sub-seed, face and chunk coordinate. The Rust and wasm tests pin it across runs.
+
+## `chunk-seam-gap`
+
+A chunk pair at different LOD levels shares an edge with no skirt or no exact footprint.
+
+The core gives every chunk four skirt bits and exact 8-cell coverage. The client paints the same edges.
+
+## `save-tail-offset`
+
+A probe writes a save field at a hard-coded distance from the file tail.
+
+Format 9 added four bytes after the stream epoch. The probe now uses the format 9 tail and the save length check refuses silent drift.
+
 ## `release-unverified`
 
 A tag is pushed without a green CI run on the same commit.

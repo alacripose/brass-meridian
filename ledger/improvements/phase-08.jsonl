@@ -1,0 +1,2 @@
+{"seq":1,"at":"2026-11-19T23:20:00.000Z","ticket":"T-0016","claim":"Chunk ids come from the terrain sub-seed, face and coordinate, never array order.","ev":"core/src/lib.rs","ok":true}
+{"seq":2,"at":"2026-11-19T23:21:00.000Z","ticket":"T-0016","claim":"Every chunk has four skirt bits and exact 8-cell coverage, so LOD edges stay closed.","ev":"core/src/lib.rs","ok":true}

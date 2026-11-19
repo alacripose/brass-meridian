@@ -7,13 +7,19 @@ The format follows Keep a Changelog, and versions use semantic numbering.
 
 ### Added
 
+- A deterministic 32-tile chunk tree: sixteen chunks per face, 8 cells each.
+- A named Near, Mid and Far LOD ladder with exact ring boundaries and skirts.
+- Chunk ids drawn from the terrain sub-seed, face and chunk coordinate.
+- A live HUD readout for LOD, resident chunks, detail chunks and the seat chunk.
+- A map-sheet chunk grid and a translucent chunk overlay on the marsh face.
+- Save format 9 with the chunk epoch; a version 8 fixture still loads.
 - A bounded six-face cube-sphere at 1:8 scale, 5,009.375 km around.
 - Six named faces with face seats, 4 by 4 regions and seam-neighbour streaming.
 - Four 6-hour seasons driven by the 1:8 clock, with spawn and ecology shifts.
 - Seam walking: a seat crosses a face edge by cube projection, not a dead clamp.
 - Save format 8 with six tower lists, the face seat and stream epoch.
 - A version 7 save fixture, so older images still load on the centre seat.
-- A measured 6.0 inventory: 63 of 1,213 capabilities, or 5.2 percent.
+- A measured 6.0 inventory: 65 of 1,213 capabilities, or 5.4 percent.
 - A format 7 save block that preserves the full 64-bit seed and the world clock.
 - Six named sub-seeds for terrain, sites, waves, ecology, expeditions and surveys.
 - A 1:8 world clock with a 24 hour day and a live HUD timer.
@@ -23,9 +29,9 @@ The format follows Keep a Changelog, and versions use semantic numbering.
 
 ### Changed
 
-- The snapshot grows to 8,489 floats, with world and season header slots.
+- The snapshot grows to 8,494 floats, with LOD and chunk header slots.
 - The map sheet draws the cube net, a seat pad and the season wheel.
-- Tests now cover 35 Rust cases, 33 client cases, and 116 probes.
+- Tests now cover 40 Rust cases, 36 client cases, and 123 probes.
 
 ## [0.4.0] - 2026-11-19
 

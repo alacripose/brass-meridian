@@ -1,0 +1,3 @@
+{"seq":1,"at":"2026-11-19T23:15:00.000Z","ticket":"T-0016","claim":"Two save tests still expected format 8 after the writer moved to format 9.","ev":"core/src/lib.rs","ok":true,"fixes":"docs/REFUSALS.md"}
+{"seq":2,"at":"2026-11-19T23:16:00.000Z","ticket":"T-0016","claim":"A season probe wrote world time at a fixed tail offset and broke when format 9 added four bytes.","ev":"tools/probe.mjs","ok":true,"fixes":"docs/REFUSALS.md"}
+{"seq":3,"at":"2026-11-19T23:17:00.000Z","ticket":"T-0016","claim":"The first seam test compared corner heights with themselves and proved nothing.","ev":"core/src/lib.rs","ok":true,"fixes":"docs/REFUSALS.md"}

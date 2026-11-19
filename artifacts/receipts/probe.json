@@ -1,13 +1,13 @@
 {
   "ok": true,
   "kind": "headless-probe",
-  "at": "2026-11-19T22:56:59.721Z",
-  "sha256": "5974f2c057a5a795c4e753c513c3c9cd360b9af34e603602e1f8cfc1a1b53b85",
+  "at": "2026-11-19T23:23:35.702Z",
+  "sha256": "7b35ca7d873dfaff575d99bb1ec1df73c1a11524117f3e58f37c3e2b7a4613aa",
   "checks": [
     {
       "name": "snapshot length",
       "ok": true,
-      "detail": "8489"
+      "detail": "8494"
     },
     {
       "name": "version",
@@ -23,6 +23,41 @@
       "name": "straight path has 17 nodes",
       "ok": true,
       "detail": "17"
+    },
+    {
+      "name": "chunk tree has sixteen 32-tile chunks",
+      "ok": true,
+      "detail": "16"
+    },
+    {
+      "name": "current chunk is the seat chunk",
+      "ok": true,
+      "detail": "2,2"
+    },
+    {
+      "name": "LOD ladder selects 0, 1, 2 by ring",
+      "ok": true,
+      "detail": "2"
+    },
+    {
+      "name": "chunk ids are seed-derived and stable",
+      "ok": true,
+      "detail": "-861203951"
+    },
+    {
+      "name": "chunk ids differ across seeds",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "all resident chunks carry a skirt",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "resident detail set is non-empty",
+      "ok": true,
+      "detail": "4"
     },
     {
       "name": "empty plot",
@@ -380,9 +415,9 @@
       "detail": "2192949435"
     },
     {
-      "name": "save format is 8",
+      "name": "save format is 9",
       "ok": true,
-      "detail": "8"
+      "detail": "9"
     },
     {
       "name": "exact seed image loads",
@@ -537,12 +572,12 @@
     {
       "name": "save length is stable",
       "ok": true,
-      "detail": "495/495"
+      "detail": "499/499"
     },
     {
       "name": "same seed is deterministic",
       "ok": true,
-      "detail": "495 bytes"
+      "detail": "499 bytes"
     },
     {
       "name": "save loads",
@@ -585,5 +620,5 @@
       "detail": "1"
     }
   ],
-  "bytes": 78745
+  "bytes": 91899
 }

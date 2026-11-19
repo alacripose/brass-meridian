@@ -49,9 +49,14 @@ export const H = {
   seasonProgress: 38,
   worldKm: 39,
   streamEpoch: 40,
+  lod: 41,
+  chunkCount: 42,
+  chunkIndex: 43,
+  activeChunks: 44,
+  chunkEpoch: 45,
 } as const;
 
-export const TOWER_BASE = 41;
+export const TOWER_BASE = 46;
 export const TOWER_STRIDE = 16;
 export const ENEMY_BASE = TOWER_BASE + 96 * TOWER_STRIDE;
 export const ENEMY_STRIDE = 12;
@@ -94,6 +99,23 @@ export type WorldView = {
   km: number;
   epoch: number;
 };
+
+export type ChunkView = {
+  face: number;
+  qx: number;
+  qz: number;
+  lod: number;
+  ring: number;
+  height: number;
+  x: number;
+  z: number;
+  active: boolean;
+  skirt: number;
+  idLo: number;
+  idHi: number;
+};
+
+export const LOD_NAMES = ["Near", "Mid", "Far"] as const;
 
 export const PLACE = {
   ok: 0,
@@ -164,6 +186,13 @@ type Exports = {
   sim_clear_map(): number;
   sim_custom(field: number): number;
   sim_wave_curve(wave: number, field: number): number;
+  sim_chunk_count(): number;
+  sim_chunk(index: number, field: number): number;
+  sim_chunk_current(field: number): number;
+  sim_chunk_lod(face: number, qx: number, qz: number): number;
+  sim_chunk_height(face: number, qx: number, qz: number): number;
+  sim_chunk_id_lo(face: number, qx: number, qz: number): number;
+  sim_chunk_id_hi(face: number, qx: number, qz: number): number;
 };
 
 export type TowerView = {
@@ -250,6 +279,11 @@ export type Snapshot = {
   map: number;
   threatDistrict: number;
   world: WorldView;
+  lod: number;
+  chunks: ChunkView[];
+  currentChunk: ChunkView;
+  activeChunks: number;
+  chunkEpoch: number;
   path: Array<[number, number]>;
   towers: TowerView[];
   enemies: EnemyView[];
@@ -497,6 +531,25 @@ export class Sim {
     const projectileCount = f[H.projectiles];
     const fxCount = f[H.fx];
     const pathCount = f[H.pathCount];
+    const core = this.ex;
+    const chunkCount = core.sim_chunk_count();
+    const chunks: ChunkView[] = [];
+    for (let i = 0; i < chunkCount; i++) {
+      chunks.push({
+        face: core.sim_chunk(i, 0),
+        qx: core.sim_chunk(i, 1),
+        qz: core.sim_chunk(i, 2),
+        lod: core.sim_chunk(i, 3),
+        ring: core.sim_chunk(i, 4),
+        height: core.sim_chunk(i, 5),
+        x: core.sim_chunk(i, 6),
+        z: core.sim_chunk(i, 7),
+        active: core.sim_chunk(i, 8) === 1,
+        skirt: core.sim_chunk(i, 9),
+        idLo: core.sim_chunk_id_lo(core.sim_chunk(i, 0), core.sim_chunk(i, 1), core.sim_chunk(i, 2)),
+        idHi: core.sim_chunk_id_hi(core.sim_chunk(i, 0), core.sim_chunk(i, 1), core.sim_chunk(i, 2)),
+      });
+    }
 
     const towers: TowerView[] = [];
     for (let i = 0; i < towerCount; i++) {
@@ -610,6 +663,11 @@ export class Sim {
         km: f[H.worldKm],
         epoch: f[H.streamEpoch],
       },
+      lod: f[H.lod],
+      chunks,
+      currentChunk: chunks[Math.max(0, f[H.chunkIndex])],
+      activeChunks: f[H.activeChunks],
+      chunkEpoch: f[H.chunkEpoch],
       path,
       towers,
       enemies,
