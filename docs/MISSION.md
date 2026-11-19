@@ -10,7 +10,7 @@ The vertical slice and both frontier cuts are built and tagged. The public repos
 
 Pages serves the build at https://alacripose.github.io/brass-meridian/.
 
-The `v0.1.0` release carries the built game and the changelog section.
+The `v0.3.0` release carries the built game and the changelog section at https://github.com/alacripose/brass-meridian/releases/tag/v0.3.0.
 
 The 0.3 frontier cut is published. Three districts sit on a paid track chain, and each wave raids one district.
 
@@ -22,7 +22,9 @@ The 0.3 frontier cut is published. Three districts sit on a paid track chain, an
 - The production build succeeds.
 - The gate checks prose, ledgers, tickets, progress, ABI, receipts, and secrets.
 - CI passes both jobs. Pages returns 200 and the wasm is `application/wasm`.
-- The release zip has the page and the wasm.
+- The release zip has 6 files, the page, and the wasm.
+- The release wasm is 53,959 bytes and matches the live Pages wasm hash.
+- The release asset was downloaded and its wasm returned snapshot 8,480, ABI 1, and track costs 14 and 22.
 - The preview DOM showed three track nodes, costs 14 and 22, a raid arrow, and a live raid note.
 - A travel click charged 14 brass and moved the active node to Coldwater.
 - A wave click showed the raid HUD and the clear-bonus toast.

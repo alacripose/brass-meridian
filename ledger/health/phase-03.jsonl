@@ -3,3 +3,4 @@
 {"seq":3,"at":"2026-11-19T16:02:44.000Z","ticket":"T-0014","claim":"The headless probe passes 46 checks.","ev":"artifacts/receipts/probe.json","ok":true}
 {"seq":4,"at":"2026-11-19T16:02:44.000Z","ticket":"T-0014","claim":"The production build and 35-check gate pass.","ev":"artifacts/receipts/gate.json","ok":true}
 {"seq":5,"at":"2026-11-19T16:02:44.000Z","ticket":"T-0014","claim":"The preview DOM shows tracks, costs, and the raid edge.","ev":"artifacts/receipts/build.json","ok":true}
+{"seq":6,"at":"2026-11-19T16:08:16.000Z","ticket":"T-0014","claim":"The v0.3.0 asset and live Pages wasm both report track costs 14 and 22.","ev":"artifacts/receipts/release-0.3.0.json","ok":true}

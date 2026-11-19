@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "at": "2026-11-19T16:04:33.835Z",
+  "at": "2026-11-19T16:08:31.401Z",
   "passed": 35,
   "total": 35,
   "percent": 85.2,
@@ -28,7 +28,7 @@
     {
       "name": "ledger has rows",
       "ok": true,
-      "detail": "48 rows"
+      "detail": "49 rows"
     },
     {
       "name": "ledger failures",
