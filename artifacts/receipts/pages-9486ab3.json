@@ -1,0 +1,13 @@
+{
+  "kind": "pages-fetch",
+  "url": "https://alacripose.github.io/brass-meridian/",
+  "status": 200,
+  "title": "Brass Meridian",
+  "canvas": { "width": 1281, "height": 720, "webgl": true },
+  "assets": {
+    "js": "200",
+    "css": "200",
+    "wasm": "200"
+  },
+  "at": "2026-11-20T00:30:00.000Z"
+}
