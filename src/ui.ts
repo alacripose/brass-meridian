@@ -1,4 +1,19 @@
-import { CITY, COPY, DISTRICTS, ENEMIES, TOWERS } from "./copy";
+import {
+  AUTO_LOGS,
+  AUTO_STATES,
+  CITY,
+  CONTRACTS,
+  COPY,
+  DISTRICTS,
+  ECO_ACTIONS,
+  ECO_CAUSES,
+  ENEMIES,
+  PREDATORS,
+  PREY,
+  SCAVENGER,
+  TOWERS,
+} from "./copy";
+import { exampleMap, loadMapMeta, MAP_BUDGET } from "./map";
 import type { Snapshot } from "./sim";
 
 export type HudModel = {
@@ -10,6 +25,11 @@ export type HudModel = {
   repairCost: () => number;
   mapTowerCount: (map: number) => number;
   trackCost: (map: number) => number;
+  expedition: (field: number) => number;
+  expeditionContract: (contract: number, field: number) => number;
+  eco: (field: number) => number;
+  automation: (field: number) => number;
+  custom: (field: number) => number;
 };
 
 export type HudActions = {
@@ -30,6 +50,12 @@ export type HudActions = {
   onReset: () => void;
   onClose: () => void;
   onCancelBuild: () => void;
+  onStartExpedition: (contract: number) => void;
+  onEco: (kind: number) => void;
+  onAutoToggle: (kind: number) => void;
+  onConvoy: () => void;
+  onImportMap: (text: string) => void;
+  onRestoreMap: () => void;
 };
 
 type SheetKind = "build" | "tower" | "city" | "map" | "intel";
@@ -270,6 +296,31 @@ export class Hud {
       case "cancelBuild":
         this.actions.onCancelBuild();
         break;
+      case "startExpedition":
+        this.actions.onStartExpedition(kind);
+        break;
+      case "eco":
+        this.actions.onEco(kind);
+        break;
+      case "autoToggle":
+        this.actions.onAutoToggle(kind);
+        break;
+      case "convoy":
+        this.actions.onConvoy();
+        break;
+      case "surveyLoad": {
+        const field = this.sheetBody.querySelector<HTMLTextAreaElement>(".survey-text");
+        this.actions.onImportMap(field?.value ?? "");
+        break;
+      }
+      case "surveyExample": {
+        const field = this.sheetBody.querySelector<HTMLTextAreaElement>(".survey-text");
+        if (field) field.value = exampleMap();
+        break;
+      }
+      case "surveyRestore":
+        this.actions.onRestoreMap();
+        break;
       default:
         break;
     }
@@ -400,7 +451,7 @@ export class Hud {
         return;
       }
     }
-    this.sheetTitle.textContent =
+    const sheetLabel =
       this.sheetKind === "build"
         ? COPY.build
         : this.sheetKind === "city"
@@ -410,6 +461,8 @@ export class Hud {
           : this.sheetKind === "intel"
             ? COPY.intel
             : TOWERS[snap.towers[this.selected].kind].name;
+    this.sheetTitle.textContent = sheetLabel;
+    this.sheet.setAttribute("aria-label", sheetLabel);
     this.sheetBody.innerHTML =
       this.sheetKind === "build"
         ? this.buildSheet(snap)
@@ -494,7 +547,62 @@ export class Hud {
           ${max ? COPY.maxed : `${level === 0 ? COPY.build : COPY.upgrade} · ${money(brass)}${ingots > 0 ? ` + ${money(ingots)}i` : ""}`}
         </button>
       </article>`;
-    }).join("")}</div>`;
+    }).join("")}</div>${this.lineCard(snap)}${this.marshCard(snap)}`;
+  }
+
+  private lineCard(_snap: Snapshot): string {
+    const state = Math.round(this.model.automation(0));
+    const buffer = this.model.automation(1);
+    const shells = this.model.automation(2);
+    const convoy = this.model.automation(3) > 0.5;
+    const eta = this.model.automation(4);
+    const on = this.model.automation(5) > 0.5;
+    const rule = this.model.automation(6) > 0.5;
+    const log = Math.round(this.model.automation(7));
+    const stateText = convoy ? `Convoy ${eta.toFixed(1)}s` : AUTO_STATES[Math.max(0, Math.min(3, state))];
+    const bufferPct = Math.min(100, (buffer / 6) * 100);
+    const shellPct = Math.min(100, (shells / 40) * 100);
+    return `<section class="subblock">
+      <div class="subhead"><span class="micro">${COPY.line}</span><span class="tag ${state === 3 ? "danger" : state === 1 ? "good" : ""}">${stateText}</span></div>
+      <div class="line-grid">
+        <div><span>${COPY.lineBuffer}</span><b>${buffer.toFixed(0)} / 6</b><i class="meter"><em style="width:${bufferPct}%"></em></i></div>
+        <div><span>${COPY.lineMagazine}</span><b>${shells.toFixed(0)}</b><i class="meter"><em style="width:${shellPct}%"></em></i></div>
+      </div>
+      <p class="micro">${COPY.lineShells} +${Math.min(40, Math.round(shells))}%</p>
+      <div class="row-actions wrap">
+        <button type="button" class="ghost compact" data-act="autoToggle" data-kind="0">${on ? COPY.lineOn : COPY.lineOff}</button>
+        <button type="button" class="ghost compact" data-act="autoToggle" data-kind="1">${rule ? COPY.lineRuleOn : COPY.lineRuleOff}</button>
+        <button type="button" class="primary compact" data-act="convoy" ${convoy || buffer < 1 ? "disabled" : ""}>${COPY.lineDispatch}</button>
+      </div>
+      <p class="micro">${COPY.lineRule}: ${COPY.lineRuleNote}</p>
+      <p class="foot">${COPY.lineLog}: ${AUTO_LOGS[Math.max(0, Math.min(AUTO_LOGS.length - 1, log))]}</p>
+    </section>`;
+  }
+
+  private marshCard(_snap: Snapshot): string {
+    const soil = this.model.eco(0);
+    const water = this.model.eco(1);
+    const veg = this.model.eco(2);
+    const prey = [this.model.eco(3), this.model.eco(4), this.model.eco(5)];
+    const pred = [this.model.eco(6), this.model.eco(7)];
+    const scav = this.model.eco(8);
+    const cause = Math.round(this.model.eco(9));
+    const row = (name: string, value: number, max: number) =>
+      `<div class="eco-row"><span>${name}</span><i class="meter"><em style="width:${Math.min(100, (value / max) * 100)}%"></em></i><b>${Math.round(value)}</b></div>`;
+    return `<section class="subblock">
+      <div class="subhead"><span class="micro">${COPY.marsh}</span><span class="tag">${COPY.marshHabitat}</span></div>
+      <div class="eco-grid">
+        <div>${row("Soil", soil, 100)}${row("Water", water, 100)}${row("Cover", veg, 100)}</div>
+        <div>${PREY.map((name, i) => row(name, prey[i], 120)).join("")}${PREDATORS.map((name, i) => row(name, pred[i], 60)).join("")}${row(SCAVENGER, scav, 40)}</div>
+      </div>
+      <p class="micro">${COPY.marshCause}: ${ECO_CAUSES[Math.max(0, Math.min(ECO_CAUSES.length - 1, cause))]} ${COPY.marshDormant}</p>
+      <div class="row-actions wrap">
+        ${ECO_ACTIONS.map((action, kind) => {
+          const cost = kind === 0 ? 10 : kind === 1 ? 12 : 0;
+          return `<button type="button" class="ghost compact" data-act="eco" data-kind="${kind}" ${cost > 0 ? `data-need-brass="${cost}"` : ""}>${action.name}</button>`;
+        }).join("")}
+      </div>
+    </section>`;
   }
 
   private mapSheet(snap: Snapshot): string {
@@ -552,7 +660,61 @@ export class Hud {
       </div>
       <p class="raid-note">${COPY.raid}: <b>${DISTRICTS[threat].name}</b>. ${COPY.raidNote}</p>
       <p class="foot">${COPY.mapFoot}</p>
-      <div class="city-list">${cards}</div>`;
+      <div class="city-list">${cards}</div>
+      ${this.contractSection(snap)}${this.surveySection()}`;
+  }
+
+  private contractSection(snap: Snapshot): string {
+    const active = this.model.expedition(0) > 0.5;
+    const current = Math.round(this.model.expedition(1));
+    const leg = Math.round(this.model.expedition(2));
+    if (active) {
+      const contract = CONTRACTS[Math.max(0, Math.min(CONTRACTS.length - 1, current))];
+      return `<section class="subblock">
+        <div class="subhead"><span class="micro">${COPY.contracts}</span><span class="tag good">${COPY.contractActive}</span></div>
+        <p><b>${contract.name}</b> ${COPY.contractLeg} ${leg + 1} / 3</p>
+        <p class="micro">${contract.boon} ${COPY.boonStack}</p>
+      </section>`;
+    }
+    const cards = CONTRACTS.map((contract, id) => {
+      const fee = Math.round(this.model.expeditionContract(id, 0));
+      const pay = Math.round(this.model.expeditionContract(id, 1));
+      const relic = Math.round(this.model.expeditionContract(id, 3));
+      const done = this.model.expeditionContract(id, 4) > 0.5;
+      const disabled = snap.phase !== 0 || snap.brass < fee;
+      return `<article class="city-row">
+        <div class="city-main">
+          <div class="city-title"><h3>${contract.name}</h3><span class="tag ${done ? "good" : ""}">${done ? COPY.contractDone : COPY.contractNew}</span></div>
+          <p>${contract.role}</p>
+          <div class="city-facts"><span>${COPY.contractFee} <b>${money(fee)}</b></span><span>${COPY.contractPay} <b>${money(pay)}</b></span><span>${COPY.contractRelic} <b>${relic} / 3</b></span></div>
+          <p class="micro">${contract.boon}</p>
+        </div>
+        <button type="button" class="primary compact" data-act="startExpedition" data-kind="${id}" ${disabled ? "disabled" : ""}>${COPY.contractStart}</button>
+      </article>`;
+    }).join("");
+    return `<section class="subblock">
+      <div class="subhead"><span class="micro">${COPY.contracts}</span><span class="tag">${COPY.contractRelic} 3</span></div>
+      <p class="micro">${COPY.contractBusy} ${COPY.boonStack}</p>
+      <div class="city-list">${cards}</div>
+    </section>`;
+  }
+
+  private surveySection(): string {
+    const custom = this.model.custom(0) > 0.5;
+    const count = Math.round(this.model.custom(1));
+    const meta = loadMapMeta();
+    const lead = custom && meta ? `${meta.name} ${COPY.surveyBy} ${meta.author}.` : COPY.surveyNone;
+    return `<section class="subblock">
+      <div class="subhead"><span class="micro">${COPY.survey}</span><span class="tag ${custom ? "good" : ""}">${custom ? COPY.surveyCustom : COPY.surveyNone}</span></div>
+      <p class="micro">${lead} ${COPY.surveyBudget}: ${count} / ${MAP_BUDGET}.</p>
+      <p class="micro">${COPY.surveyLead}</p>
+      <textarea class="survey-text" rows="4" spellcheck="false" placeholder="Paste a survey file"></textarea>
+      <div class="row-actions wrap">
+        <button type="button" class="primary compact" data-act="surveyLoad">${COPY.surveyLoad}</button>
+        <button type="button" class="ghost compact" data-act="surveyExample">${COPY.surveyExample}</button>
+        <button type="button" class="ghost compact" data-act="surveyRestore" ${custom ? "" : "disabled"}>${COPY.surveyRestore}</button>
+      </div>
+    </section>`;
   }
 
   private intelSheet(snap: Snapshot): string {

@@ -11,6 +11,16 @@ export const REFUSALS = {
   secret: "secret-in-repo",
   snapshot: "snapshot-drift",
   weaken: "test-weakened",
+  mapSealed: "map-sealed",
+  mapBudget: "map-budget",
+  mapAuthor: "map-author",
+  mapGenerator: "map-generator",
+  mapJson: "map-json",
+  contractBusy: "contract-busy",
+  contractFee: "contract-fee",
+  lineEmpty: "line-empty",
+  lineBlocked: "line-blocked",
+  offlineCap: "offline-capped",
 } as const;
 
 export type RefusalId = (typeof REFUSALS)[keyof typeof REFUSALS];

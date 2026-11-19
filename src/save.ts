@@ -1,6 +1,7 @@
 import type { Sim } from "./sim";
 
 const KEY = "brass-meridian.save.v2";
+const STAMP = "brass-meridian.saved-at";
 
 function toBase64(bytes: Uint8Array): string {
   let binary = "";
@@ -29,9 +30,21 @@ export function hasSave(): boolean {
 export function saveGame(sim: Sim): boolean {
   try {
     localStorage.setItem(KEY, toBase64(sim.saveBytes()));
+    localStorage.setItem(STAMP, String(Date.now()));
     return true;
   } catch {
     return false;
+  }
+}
+
+/** Seconds since the last save, for the capped offline line catch-up. */
+export function secondsSinceSave(): number {
+  try {
+    const raw = Number(localStorage.getItem(STAMP) ?? "0");
+    if (!Number.isFinite(raw) || raw <= 0) return 0;
+    return Math.max(0, (Date.now() - raw) / 1000);
+  } catch {
+    return 0;
   }
 }
 
@@ -48,6 +61,7 @@ export function loadGame(sim: Sim): boolean {
 export function clearSave(): void {
   try {
     localStorage.removeItem(KEY);
+    localStorage.removeItem(STAMP);
   } catch {
     // A blocked storage area is not a game-breaking state.
   }

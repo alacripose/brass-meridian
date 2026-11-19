@@ -3,6 +3,32 @@
 All notable changes to Brass Meridian are recorded here.
 The format follows Keep a Changelog, and versions use semantic numbering.
 
+## [0.4.0] - 2026-11-19
+
+### Added
+
+- Three expedition contracts with a fee, three legs, a relic, and a boon.
+- One Coldwater marsh with soil, water, cover, six species, and a visible cause.
+- One shell line with a buffer, convoy, repair rule, fault log, and offline cap.
+- Community survey maps with schema, budget, author, and connectivity checks.
+- A survey example and one-step restore to authored Ashfall.
+- Save format 5 with shells, expeditions, ecology, automation, and survey cells.
+- A version 4 save fixture from the 0.3 wasm.
+- Twenty-three Rust tests, twenty-seven client tests, and eighty-three probe checks.
+
+### Changed
+
+- The City sheet now shows the marsh and the shell line as inspectable cards.
+- The Map sheet now shows contracts and the survey importer.
+- Offline production resumes from the last save time, capped at four hours.
+- Progress is re-baselined to 5.2 percent of the full game scope.
+
+### Limits
+
+- Expedition tracks are not seeded and loadouts are not limited yet.
+- Survey maps have a cell budget, not a measured performance budget.
+- Music, localization, and a physical-phone check remain open.
+
 ## [0.3.0] - 2026-11-19
 
 ### Added

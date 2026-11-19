@@ -19,7 +19,7 @@ The city is not a separate menu. Each work changes the line.
 - Workshop coils raise damage.
 - Depot stores core spares.
 
-This is version 0.3. The defensive slice is playable end to end.
+This is version 0.4. The defensive slice and the first frontier systems are playable end to end.
 
 Three districts share one core. Ashfall is the far foundry.
 
@@ -28,6 +28,15 @@ The Switchyard holds the tight approach. Coldwater opens a wider flank.
 Tracks cost brass and build time. Travel is allowed between waves. Each district keeps its own towers.
 
 One district is raided each wave. Meet the raid for a clear bonus, or lose core when it lands elsewhere.
+
+## Frontier systems
+
+- Expeditions pay a fee for three short waves, a relic, and a permanent boon.
+- The Coldwater marsh tracks soil, water, cover, and six species with a named cause.
+- The shell line turns ingots into shells, convoys, a repair rule, and offline stock.
+- Survey maps can replace Ashfall rubble after schema and route checks.
+
+A contract win adds one relic, up to three. Expedition waves do not advance the normal count.
 
 ## Play
 
@@ -54,8 +63,11 @@ Tap **Build**, choose a tower, then tap a plot. Tap a tower to upgrade or sell.
 3. Keep the route open. A wall that seals the core is refused.
 4. Spend wave income on towers and city works.
 5. Hold ten waves, then face the endless frontier.
-6. Pay a track hop between waves. Both builds stay.
+6. Pay a track hop between waves. All three builds stay.
 7. Move to the raid district for a clear bonus.
+8. Launch a contract from the Map sheet between waves.
+9. Work the marsh or the shell line from the City sheet.
+10. Import a survey map, or restore the authored Ashfall field.
 
 ### Towers
 
@@ -93,14 +105,14 @@ The wasm step needs a Rust toolchain with `wasm32-unknown-unknown`.
 
 | Check | Evidence |
 | --- | --- |
-| 18 client tests | `artifacts/receipts/test.json` |
-| 15 core tests | `artifacts/receipts/rust-test.json` |
-| 46 headless probes | `artifacts/receipts/probe.json` |
+| 27 client tests | `artifacts/receipts/test.json` |
+| 23 core tests | `artifacts/receipts/rust-test.json` |
+| 83 headless probes | `artifacts/receipts/probe.json` |
 | Production build | `artifacts/receipts/build.json` |
 | Repository gate | `artifacts/receipts/gate.json` |
 | Release v0.3.0 | `artifacts/receipts/release-0.3.0.json` |
 
-The probe covers route legality, track costs, raid edges, wave spawns, city income, deterministic bytes, and save recovery.
+The probe covers route legality, contracts, the marsh, the shell line, survey maps, deterministic bytes, and save recovery.
 
 `STATUS.md` is generated from weighted phases. It carries the project percentage and the open limits.
 

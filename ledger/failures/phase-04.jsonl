@@ -1,0 +1,5 @@
+{"seq":1,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0009","claim":"The snapshot damage field multiplied tower damage a second time.","ev":"core/src/lib.rs","ok":true}
+{"seq":2,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0010","claim":"The marsh speed rule never reached the snapshot.","ev":"src/sim.ts","ok":true}
+{"seq":3,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0012","claim":"A survey with a sealed plot passed the first validator.","ev":"src/map.ts","ok":true}
+{"seq":4,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0011","claim":"A version 4 save had no saved time, so offline pay was zero.","ev":"src/save.ts","ok":true}
+{"seq":5,"at":"2026-11-19T20:55:44.125Z","ticket":"T-0012","claim":"The sheet said Build after Frontier or Intel opened.","ev":"src/ui.ts","ok":true}
