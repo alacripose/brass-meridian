@@ -12,7 +12,7 @@ Pages serves the build at https://alacripose.github.io/brass-meridian/.
 
 The `v0.1.0` release carries the built game and the changelog section.
 
-The 0.2 frontier cut is built locally. Two districts keep separate tower sets and travel only between waves.
+The 0.2 frontier cut is published. Two districts keep separate tower sets and travel only between waves.
 
 ## What is proved
 
@@ -26,11 +26,12 @@ The 0.2 frontier cut is built locally. Two districts keep separate tower sets an
 
 ## Next 120 minutes
 
-1. Prove, tag, and publish `v0.2.0`.
-2. Finish T-0008 with tracks, threat edges, and a region zoom.
+1. Start T-0014: tracks, threat edges, and a region zoom.
+2. Then T-0009 expeditions.
 
 ## After that
 
+- T-0014 frontier tracks and threat edges.
 - T-0009 expeditions.
 - T-0010 ecology.
 - T-0011 automation.
