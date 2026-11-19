@@ -207,19 +207,39 @@ new Uint8Array(v4Ex.memory.buffer).set(v4, v4Ptr);
 check("v4 save loads", v4Ex.sim_load(v4Ptr, v4.length) === 0);
 check("v4 save keeps three districts", v4Ex.sim_map_tower_count(0) === 1 && v4Ex.sim_map_tower_count(1) === 1 && v4Ex.sim_map_tower_count(2) === 1);
 
-// The exact family seed is 64-bit and must survive the format 6 image.
+// The exact family seed is 64-bit and must survive the format 7 image.
 const exact = boot(1);
 exact.sim_init64(849435875, 2192949435);
 check("exact seed low half", exact.sim_seed_lo() === 849435875, `${exact.sim_seed_lo()}`);
 check("exact seed high half", (exact.sim_seed_hi() >>> 0) === 2192949435, `${exact.sim_seed_hi() >>> 0}`);
 const exactBytes = save(exact);
-check("save format is 6", exactBytes[4] === 6, `${exactBytes[4]}`);
+check("save format is 7", exactBytes[4] === 7, `${exactBytes[4]}`);
 const exactLoad = boot(1);
 const exactPtr = exactLoad.sim_snapshot_ptr();
 new Uint8Array(exactLoad.memory.buffer).set(exactBytes, exactPtr);
 check("exact seed image loads", exactLoad.sim_load(exactPtr, exactBytes.length) === 0);
 check("exact seed low half survives", exactLoad.sim_seed_lo() === 849435875, `${exactLoad.sim_seed_lo()}`);
 check("exact seed high half survives", (exactLoad.sim_seed_hi() >>> 0) === 2192949435, `${exactLoad.sim_seed_hi() >>> 0}`);
+
+// Named sub-seeds are stable streams. The wave stream feeds combat.
+const named = boot(7);
+check("terrain sub-seed low", named.sim_sub_seed_lo(0) === 1471097255, `${named.sim_sub_seed_lo(0)}`);
+check("terrain sub-seed high", (named.sim_sub_seed_hi(0) >>> 0) === 1553007854, `${named.sim_sub_seed_hi(0) >>> 0}`);
+check("waves sub-seed low", (named.sim_sub_seed_lo(2) >>> 0) === 3993002000, `${named.sim_sub_seed_lo(2) >>> 0}`);
+check("waves sub-seed high", (named.sim_sub_seed_hi(2) >>> 0) === 2010320174, `${named.sim_sub_seed_hi(2) >>> 0}`);
+check("sub-seeds are distinct", named.sim_sub_seed_lo(0) !== named.sim_sub_seed_lo(1));
+
+// One real second is eight world seconds. The clock survives a save.
+check("clock starts at zero", named.sim_clock(0) === 0, `${named.sim_clock(0)}`);
+named.sim_step(1000);
+check("one real second is eight world seconds", Math.abs(named.sim_clock(0) - 8000) < 0.01, `${named.sim_clock(0)}`);
+check("clock day is one", named.sim_clock(1) === 1, `${named.sim_clock(1)}`);
+const clockBytes = save(named);
+const clockLoad = boot(1);
+const clockPtr = clockLoad.sim_snapshot_ptr();
+new Uint8Array(clockLoad.memory.buffer).set(clockBytes, clockPtr);
+check("clock image loads", clockLoad.sim_load(clockPtr, clockBytes.length) === 0);
+check("clock survives a save", Math.abs(clockLoad.sim_clock(0) - 8000) < 0.01, `${clockLoad.sim_clock(0)}`);
 
 // Determinism: same seed, same commands, same byte image.
 const aEx = boot(9001);

@@ -14,14 +14,15 @@ Every later system sits on the planet, the clock and the save. Build it before t
 ## Checks
 
 - [ ] Six cube-sphere faces, each a 32-cubed octree.
-- [x] A 64-bit seed survives the format 6 image.
-- [ ] One master seed with named sub-seeds.
+- [x] A 64-bit seed survives the format 7 image.
+- [x] One master seed with named sub-seeds.
 - [ ] A 40,075 km real bound, or 5,009 km at 1/8 engine scale.
-- [ ] One real second is eight world seconds.
+- [x] One real second is eight world seconds.
+- [x] A 24 hour day is derived from the world clock.
 - [ ] Five camera stops from first person to planet.
 - [ ] A continuous stream across a face or site boundary.
 - [ ] Terrain carve and build persist across a save.
-- [ ] Format 6 journal, checkpoint and three slots.
+- [ ] Format 7 journal, checkpoint and three slots.
 - [ ] Three slots and a one-way 0.4 import.
 - [ ] A measured spawn budget and a 60 fps phone run.
 

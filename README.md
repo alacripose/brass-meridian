@@ -107,9 +107,9 @@ The wasm step needs a Rust toolchain with `wasm32-unknown-unknown`.
 
 | Check | Evidence |
 | --- | --- |
-| 28 client tests | `artifacts/receipts/test.json` |
-| 25 core tests | `artifacts/receipts/rust-test.json` |
-| 89 headless probes | `artifacts/receipts/probe.json` |
+| 30 client tests | `artifacts/receipts/test.json` |
+| 28 core tests | `artifacts/receipts/rust-test.json` |
+| 99 headless probes | `artifacts/receipts/probe.json` |
 | Production build | `artifacts/receipts/build.json` |
 | Repository gate | `artifacts/receipts/gate.json` |
 | 6.0 interview | `docs/QUESTIONS-6.0.md` |

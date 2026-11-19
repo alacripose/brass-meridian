@@ -14,7 +14,7 @@ import {
   TOWERS,
 } from "./copy";
 import { exampleMap, loadMapMeta, MAP_BUDGET } from "./map";
-import type { Snapshot } from "./sim";
+import type { ClockView, Snapshot } from "./sim";
 
 export type HudModel = {
   towerCost: (kind: number) => number;
@@ -30,6 +30,7 @@ export type HudModel = {
   eco: (field: number) => number;
   automation: (field: number) => number;
   custom: (field: number) => number;
+  clock: () => ClockView;
 };
 
 export type HudActions = {
@@ -131,6 +132,7 @@ export class Hud {
         <div class="wave-meta">
           <span class="eyebrow">${COPY.wave} <b data-k="wave">1</b></span>
           <span class="wave-state" data-k="waveState">${COPY.buildPhase}</span>
+          <span class="clock" data-k="clock">DAY 1 00:00</span>
         </div>
         <div class="wave-track"><i data-k="wavefill"></i></div>
         <button type="button" class="call" data-act="call" data-k="call">
@@ -395,6 +397,11 @@ export class Hud {
     const bar = this.root.querySelector<HTMLElement>('[data-k="corebar"]');
     if (bar) bar.style.width = `${Math.max(0, Math.min(100, (snap.core / Math.max(1, snap.coreMax)) * 100))}%`;
     set("wave", `${snap.wave}`);
+    const clock = this.model.clock();
+    set(
+      "clock",
+      `DAY ${clock.day} ${String(clock.hour).padStart(2, "0")}:${String(clock.minute).padStart(2, "0")}`,
+    );
 
     let stateText: string = COPY.buildPhase;
     if (snap.phase === 1) stateText = `${COPY.raid}: ${DISTRICTS[snap.threatDistrict].name}`;

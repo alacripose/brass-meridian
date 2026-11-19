@@ -48,6 +48,7 @@ const model: HudModel = {
   eco: (field) => sim.eco(field),
   automation: (field) => sim.automation(field),
   custom: (field) => sim.custom(field),
+  clock: () => sim.clock(),
 };
 
 function cancelBuild() {

@@ -151,7 +151,7 @@ try {
   check("wasm snapshot length", ex.sim_snapshot_len() === 8480, `${ex.sim_snapshot_len()}`);
   check("wasm ABI version", ex.sim_version() === 1, `${ex.sim_version()}`);
   check("64-bit seed ABI", typeof ex.sim_init64 === "function" && typeof ex.sim_seed_lo === "function" && typeof ex.sim_seed_hi === "function");
-  check("save format 6 is declared", read("core/src/lib.rs").includes("w.push(6)"));
+  check("save format 7 is declared", read("core/src/lib.rs").includes("w.push(7)"));
   const ts = read("src/sim.ts");
   check("TS stride mirrors the core", ts.includes("TOWER_STRIDE = 16") && ts.includes("ENEMY_STRIDE = 12"));
   check("TS path base mirrors the core", ts.includes("PROJ_STRIDE = 10") && ts.includes("FX_STRIDE = 8"));

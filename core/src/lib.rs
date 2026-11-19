@@ -120,6 +120,39 @@ fn threat_for(wave: u32, seed: u64) -> u8 {
     ((wave as usize + (seed as usize % MAP_COUNT)) % MAP_COUNT) as u8
 }
 
+const SUB_SEED_NAMES: [&str; 6] = [
+    "terrain",
+    "sites",
+    "waves",
+    "ecology",
+    "expeditions",
+    "surveys",
+];
+const WAVES_SUB_SEED: usize = 2;
+const ECOLOGY_SUB_SEED: usize = 3;
+const WORLD_MS_PER_REAL_MS: f64 = 8.0;
+const WORLD_DAY_MS: f64 = 86_400_000.0;
+
+fn fnv1a(name: &str) -> u64 {
+    let mut hash = 0xcbf2_9ce4_8422_2325u64;
+    for byte in name.as_bytes() {
+        hash ^= *byte as u64;
+        hash = hash.wrapping_mul(0x100_0000_01b3);
+    }
+    hash
+}
+
+fn mix64(mut value: u64) -> u64 {
+    value = value.wrapping_add(0x9E37_79B9_7F4A_7C15);
+    value = (value ^ (value >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+    value = (value ^ (value >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+    value ^ (value >> 31)
+}
+
+fn named_sub_seed(master: u64, name: &str) -> u64 {
+    mix64(master ^ fnv1a(name))
+}
+
 fn tower_stats(kind: u8, level: u8) -> (f32, f32, f32, f32) {
     let l = level as f32;
     match kind {
@@ -398,6 +431,8 @@ struct Auto {
 
 struct Sim {
     seed: u64,
+    sub_seeds: [u64; SUB_SEED_NAMES.len()],
+    world_ms: f64,
     rng: u32,
     brass: f32,
     ingots: f32,
@@ -445,10 +480,14 @@ struct Sim {
 
 impl Sim {
     fn new(seed: u64) -> Self {
-        let low = seed as u32;
+        let sub_seeds = std::array::from_fn(|i| named_sub_seed(seed, SUB_SEED_NAMES[i]));
+        let wave_seed = sub_seeds[WAVES_SUB_SEED];
+        let ecology_seed = sub_seeds[ECOLOGY_SUB_SEED];
         let mut sim = Sim {
             seed,
-            rng: if low == 0 { 0x9E37_79B9 } else { low },
+            sub_seeds,
+            world_ms: 0.0,
+            rng: if wave_seed as u32 == 0 { 0x9E37_79B9 } else { wave_seed as u32 },
             brass: 150.0,
             ingots: 0.0,
             shells: 0.0,
@@ -462,7 +501,7 @@ impl Sim {
             kills: 0,
             city: [0; 4],
             map: 0,
-            threat: threat_for(1, seed),
+            threat: threat_for(1, wave_seed),
             wave_bonus: 1.0,
             exp_active: false,
             exp_contract: 0,
@@ -471,9 +510,9 @@ impl Sim {
             discoveries: 0,
             exp_result: 0,
             eco: Eco {
-                soil: 62.0,
-                water: 58.0,
-                veg: 54.0,
+                soil: 58.0 + (ecology_seed % 9) as f32,
+                water: 54.0 + ((ecology_seed >> 8) % 9) as f32,
+                veg: 50.0 + ((ecology_seed >> 16) % 9) as f32,
                 prey: [38.0, 30.0, 24.0],
                 pred: [11.0, 8.0],
                 scav: 9.0,
@@ -1627,6 +1666,23 @@ impl Sim {
         }
     }
 
+    fn advance_clock(&mut self, real_ms: f64) {
+        if self.phase == 2 || !real_ms.is_finite() || real_ms <= 0.0 {
+            return;
+        }
+        self.world_ms += real_ms * WORLD_MS_PER_REAL_MS;
+    }
+
+    fn clock_field(&self, field: u32) -> f64 {
+        match field {
+            0 => self.world_ms,
+            1 => (self.world_ms / WORLD_DAY_MS).floor() + 1.0,
+            2 => ((self.world_ms % WORLD_DAY_MS) / 3_600_000.0).floor(),
+            3 => ((self.world_ms % 3_600_000.0) / 60_000.0).floor(),
+            _ => 0.0,
+        }
+    }
+
     fn tick(&mut self, dt: f32) {
         if self.phase == 2 {
             return;
@@ -1685,7 +1741,7 @@ impl Sim {
                 self.spawn_index = 0;
                 self.boss_wave = false;
                 self.wave_bonus = 1.0;
-                self.threat = threat_for(self.wave, self.seed);
+                self.threat = threat_for(self.wave, self.sub_seeds[WAVES_SUB_SEED]);
             }
         }
         self.fill_snapshot();
@@ -1796,7 +1852,7 @@ impl Sim {
     fn save_bytes(&mut self) -> &[u8] {
         let mut w = Vec::with_capacity(4608);
         w.extend_from_slice(b"BMG1");
-        w.push(6); // save format
+        w.push(7); // save format
         w.push(self.map);
         w.push(self.threat);
         w.extend_from_slice(&self.wave_bonus.to_le_bytes());
@@ -1911,6 +1967,7 @@ impl Sim {
             }
             w.extend_from_slice(&bits.to_le_bytes());
         }
+        w.extend_from_slice(&self.world_ms.to_le_bytes());
         self.save_buf = w;
         &self.save_buf
     }
@@ -1918,7 +1975,7 @@ impl Sim {
     fn load_bytes(&mut self, bytes: &[u8]) -> i32 {
         if bytes.len() < 6
             || &bytes[0..4] != b"BMG1"
-            || !(2..=6).contains(&bytes[4])
+            || !(2..=7).contains(&bytes[4])
         {
             return -1;
         }
@@ -1987,8 +2044,8 @@ impl Sim {
                 f32::from_bits(self.u32())
             }
             fn f64(&mut self) -> f64 {
-                let hi = self.u32() as u64;
                 let lo = self.u32() as u64;
+                let hi = self.u32() as u64;
                 f64::from_bits((hi << 32) | lo)
             }
             fn u64(&mut self) -> u64 {
@@ -2018,7 +2075,7 @@ impl Sim {
         fresh.core_max = r.f32();
         fresh.wave = r.u32().max(1);
         if format < 4 {
-            fresh.threat = threat_for(fresh.wave, seed);
+            fresh.threat = threat_for(fresh.wave, fresh.sub_seeds[WAVES_SUB_SEED]);
         }
         fresh.phase = r.u8().min(2);
         fresh.countdown = r.f32();
@@ -2242,6 +2299,9 @@ impl Sim {
                     }
                 }
             }
+            if format >= 7 {
+                fresh.world_ms = r.f64().max(0.0);
+            }
             if fresh.core_max > 0.0 {
                 fresh.core_max = 20.0
                     + fresh.city[3] as f32 * 4.0
@@ -2318,8 +2378,26 @@ pub extern "C" fn sim_seed_hi() -> u32 {
 }
 
 #[no_mangle]
+pub extern "C" fn sim_sub_seed_lo(index: u32) -> u32 {
+    with_sim(|s| s.sub_seeds.get(index as usize).copied().unwrap_or(0) as u32)
+}
+
+#[no_mangle]
+pub extern "C" fn sim_sub_seed_hi(index: u32) -> u32 {
+    with_sim(|s| {
+        (s.sub_seeds.get(index as usize).copied().unwrap_or(0) >> 32) as u32
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn sim_clock(field: u32) -> f64 {
+    with_sim(|s| s.clock_field(field))
+}
+
+#[no_mangle]
 pub extern "C" fn sim_step(ms: u32) {
     with_sim(|s| {
+        s.advance_clock(ms.min(1000) as f64);
         let total = (ms.min(1000) as f32) / 1000.0;
         let mut left = total;
         while left > 0.0001 {
@@ -2997,10 +3075,52 @@ mod tests {
         let seed = 9_418_646_105_956_113_635u64;
         let mut a = Sim::new(seed);
         let bytes = a.save_bytes().to_vec();
-        assert_eq!(bytes[4], 6);
+        assert_eq!(bytes[4], 7);
         let mut b = Sim::new(1);
         assert_eq!(b.load_bytes(&bytes), 0);
         assert_eq!(b.seed, seed);
+    }
+
+    #[test]
+    fn named_sub_seeds_are_stable_and_feed_the_wave_stream() {
+        let s = Sim::new(7);
+        assert_eq!(s.sub_seeds[0], 6_670_117_944_832_240_039);
+        assert_eq!(s.sub_seeds[WAVES_SUB_SEED], 8_634_259_405_812_031_504);
+        assert_ne!(s.sub_seeds[0], s.sub_seeds[1]);
+        assert_eq!(s.rng, 3_993_002_000);
+        assert_eq!(
+            s.threat,
+            threat_for(1, s.sub_seeds[WAVES_SUB_SEED])
+        );
+        assert_eq!(s.sub_seeds, Sim::new(7).sub_seeds);
+        assert_ne!(s.sub_seeds, Sim::new(8).sub_seeds);
+    }
+
+    #[test]
+    fn one_real_second_is_eight_world_seconds() {
+        let mut s = Sim::new(7);
+        s.advance_clock(1000.0);
+        assert_eq!(s.clock_field(0), 8000.0);
+        assert_eq!(s.clock_field(1), 1.0);
+        assert_eq!(s.clock_field(2), 0.0);
+        s.advance_clock(3.0 * 3600.0 * 1000.0);
+        assert_eq!(s.clock_field(1), 2.0);
+        assert_eq!(s.clock_field(2), 0.0);
+        let stopped = s.clock_field(0);
+        s.phase = 2;
+        s.advance_clock(1000.0);
+        assert_eq!(s.clock_field(0), stopped);
+    }
+
+    #[test]
+    fn a_save_keeps_the_world_clock() {
+        let mut a = Sim::new(41);
+        a.advance_clock(12_345.0);
+        let bytes = a.save_bytes().to_vec();
+        let mut b = Sim::new(1);
+        assert_eq!(b.load_bytes(&bytes), 0);
+        assert_eq!(b.world_ms, a.world_ms);
+        assert_eq!(b.world_ms, 98_760.0);
     }
 
     #[test]

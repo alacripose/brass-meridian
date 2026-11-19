@@ -124,6 +124,18 @@ A status line quotes the retired inventory as 6.0 completion.
 
 The figure measured the old field, three districts and 120 waves. The gate now requires the 6.0 label and a measured count.
 
+## `save-f64-order`
+
+A loader reads an f64 high word before the low word. Format 7 reads little-endian and the clock round-trip test refuses drift.
+
+## `sub-seed-fnv`
+
+A named sub-seed uses a mistyped FNV prime. The pinned vector test refuses the wrong stream.
+
+## `signed-wasm-probe`
+
+A probe compares a wasm u32 as a signed JS number. Mask with `>>> 0` before the compare.
+
 ## `delivery-scan`
 
 A tracked file carries a secret, key, env file, or machine-local path.

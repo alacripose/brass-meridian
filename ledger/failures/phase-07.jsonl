@@ -1,0 +1,3 @@
+{"seq":1,"at":"2026-11-20T00:50:00.000Z","ticket":"T-0016","claim":"The first FNV prime was mistyped and the pinned sub-seed vector failed.","ev":"core/src/lib.rs","ok":true}
+{"seq":2,"at":"2026-11-20T00:50:00.000Z","ticket":"T-0016","claim":"The first waves sub-seed probe compared a signed low half.","ev":"tools/probe.mjs","ok":true}
+{"seq":3,"at":"2026-11-20T00:50:00.000Z","ticket":"T-0016","claim":"The loader read f64 high-word first while the writer was little-endian.","ev":"core/src/lib.rs","ok":true}

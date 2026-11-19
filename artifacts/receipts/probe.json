@@ -1,8 +1,8 @@
 {
   "ok": true,
   "kind": "headless-probe",
-  "at": "2026-11-19T22:16:22.782Z",
-  "sha256": "6ae9dd0f6606180180fc1f5bc4c554242d238d3093594bf632dd0da101f4bb5c",
+  "at": "2026-11-19T22:26:30.452Z",
+  "sha256": "73f05a972dc8a4c81ec76f9082a957b0347600b641a979cac9cbfb43de510738",
   "checks": [
     {
       "name": "snapshot length",
@@ -112,7 +112,7 @@
     {
       "name": "raid district is known",
       "ok": true,
-      "detail": "1"
+      "detail": "0"
     },
     {
       "name": "switch back home",
@@ -232,7 +232,7 @@
     {
       "name": "sluice raises water",
       "ok": true,
-      "detail": "76"
+      "detail": "77"
     },
     {
       "name": "sluice becomes the cause",
@@ -380,9 +380,9 @@
       "detail": "2192949435"
     },
     {
-      "name": "save format is 6",
+      "name": "save format is 7",
       "ok": true,
-      "detail": "6"
+      "detail": "7"
     },
     {
       "name": "exact seed image loads",
@@ -400,14 +400,64 @@
       "detail": "2192949435"
     },
     {
+      "name": "terrain sub-seed low",
+      "ok": true,
+      "detail": "1471097255"
+    },
+    {
+      "name": "terrain sub-seed high",
+      "ok": true,
+      "detail": "1553007854"
+    },
+    {
+      "name": "waves sub-seed low",
+      "ok": true,
+      "detail": "3993002000"
+    },
+    {
+      "name": "waves sub-seed high",
+      "ok": true,
+      "detail": "2010320174"
+    },
+    {
+      "name": "sub-seeds are distinct",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "clock starts at zero",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "one real second is eight world seconds",
+      "ok": true,
+      "detail": "8000"
+    },
+    {
+      "name": "clock day is one",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "clock image loads",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "clock survives a save",
+      "ok": true,
+      "detail": "8000"
+    },
+    {
       "name": "save length is stable",
       "ok": true,
-      "detail": "474/474"
+      "detail": "482/482"
     },
     {
       "name": "same seed is deterministic",
       "ok": true,
-      "detail": "474 bytes"
+      "detail": "482 bytes"
     },
     {
       "name": "save loads",
@@ -450,5 +500,5 @@
       "detail": "1"
     }
   ],
-  "bytes": 66882
+  "bytes": 71067
 }

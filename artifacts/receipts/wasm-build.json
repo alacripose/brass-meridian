@@ -1,9 +1,9 @@
 {
   "ok": true,
   "kind": "wasm-build",
-  "at": "2026-11-19T22:16:18.990Z",
-  "bytes": 66882,
-  "sha256": "6ae9dd0f6606180180fc1f5bc4c554242d238d3093594bf632dd0da101f4bb5c",
+  "at": "2026-11-19T22:26:26.626Z",
+  "bytes": 71067,
+  "sha256": "73f05a972dc8a4c81ec76f9082a957b0347600b641a979cac9cbfb43de510738",
   "target": "wasm32-unknown-unknown",
-  "ms": 97
+  "ms": 115
 }

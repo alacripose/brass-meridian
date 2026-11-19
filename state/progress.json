@@ -30,20 +30,19 @@
     {
       "id": "A02",
       "name": "Seed and clock",
-      "have": 2,
+      "have": 5,
       "need": 6,
-      "percent": 33.3,
+      "percent": 83.3,
       "evidence": [
         "core/src/lib.rs",
-        "docs/RECONCILIATION.md"
+        "src/sim.ts",
+        "tools/probe.mjs",
+        "docs/ARCHITECTURE.md"
       ],
       "missing": [
-        "named sub-seeds",
-        "1:8 clock",
-        "24 hour day",
         "four seasons"
       ],
-      "next": "Add named sub-seeds and the 1:8 clock."
+      "next": "Add four seasons with a visible ecology effect."
     },
     {
       "id": "A03",
@@ -740,19 +739,18 @@
         "docs/ARCHITECTURE.md"
       ],
       "missing": [
-        "format 6 snapshot",
         "journal",
         "checkpoint",
         "three slots",
         "0.4 import"
       ],
-      "next": "Add the first format 6 journal block."
+      "next": "Add the first format 7 journal block."
     }
   ],
   "totals": {
-    "have": 55,
+    "have": 58,
     "need": 1213,
-    "percent": 4.5
+    "percent": 4.8
   },
   "todo": [
     {
@@ -763,7 +761,7 @@
     {
       "id": "A02",
       "title": "Seed and clock",
-      "next": "Add named sub-seeds and the 1:8 clock."
+      "next": "Add four seasons with a visible ecology effect."
     },
     {
       "id": "A03",
@@ -963,7 +961,7 @@
     {
       "id": "A42",
       "title": "Save and persistence",
-      "next": "Add the first format 6 journal block."
+      "next": "Add the first format 7 journal block."
     }
   ],
   "limits": [
