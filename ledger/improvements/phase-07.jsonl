@@ -1,3 +1,6 @@
 {"seq":1,"at":"2026-11-20T00:50:00.000Z","ticket":"T-0016","claim":"The clock save test pins f64 little-endian order.","ev":"tests/sim.test.ts","ok":true}
 {"seq":2,"at":"2026-11-20T00:50:00.000Z","ticket":"T-0016","claim":"The sub-seed vector test pins the six named streams.","ev":"core/src/lib.rs","ok":true}
 {"seq":3,"at":"2026-11-20T00:50:00.000Z","ticket":"T-0016","claim":"The probe masks wasm u32 lows before comparing.","ev":"tools/probe.mjs","ok":true}
+{"seq":4,"at":"2026-11-20T01:30:00.000Z","ticket":"T-0016","claim":"A completed scope area may carry an empty gap without failing the gate.","ev":"tools/gate.mjs","ok":true}
+{"seq":5,"at":"2026-11-20T01:30:00.000Z","ticket":"T-0016","claim":"The scope now counts four world capabilities and six clock capabilities.","ev":"state/scope.json","ok":true}
+{"seq":6,"at":"2026-11-20T01:30:00.000Z","ticket":"T-0016","claim":"Three new refusals name season units, stream epoch loads, and idle clock probes.","ev":"docs/REFUSALS.md","ok":true}

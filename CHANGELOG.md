@@ -7,8 +7,12 @@ The format follows Keep a Changelog, and versions use semantic numbering.
 
 ### Added
 
-- A 100-row reconciliation ledger with evidence and verdicts.
-- A measured 6.0 inventory: 58 of 1,213 capabilities, or 4.8 percent.
+- A bounded six-face cube-sphere at 1:8 scale, 5,009.375 km around.
+- Six named faces with face seats, 4 by 4 regions and seam-neighbour streaming.
+- Four 6-hour seasons driven by the 1:8 clock, with spawn and ecology shifts.
+- Save format 8 with six tower lists, the face seat and stream epoch.
+- A version 7 save fixture, so older images still load on the centre seat.
+- A measured 6.0 inventory: 63 of 1,213 capabilities, or 5.2 percent.
 - A format 7 save block that preserves the full 64-bit seed and the world clock.
 - Six named sub-seeds for terrain, sites, waves, ecology, expeditions and surveys.
 - A 1:8 world clock with a 24 hour day and a live HUD timer.
@@ -18,8 +22,9 @@ The format follows Keep a Changelog, and versions use semantic numbering.
 
 ### Changed
 
-- The planet replaces the flat field, three districts and 120 authored waves.
-- Tests now cover 28 Rust cases, 30 client cases, and 99 probes.
+- The snapshot grows to 8,489 floats, with world and season header slots.
+- The map sheet draws the cube net, a seat pad and the season wheel.
+- Tests now cover 34 Rust cases, 33 client cases, and 115 probes.
 
 ## [0.4.0] - 2026-11-19
 

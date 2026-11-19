@@ -30,11 +30,14 @@ for (const area of areas) {
   for (const path of area.evidence ?? []) {
     if (!existsSync(resolve(root, path))) problems.push(`${area.id} evidence missing: ${path}`);
   }
-  if (!Array.isArray(area.missing) || !area.missing.length) problems.push(`${area.id} has no missing list`);
-  if ((area.missing ?? []).length > Math.max(1, area.need - area.have)) {
+  if (!Array.isArray(area.missing)) problems.push(`${area.id} has no missing list`);
+  if (area.have < area.need && !(area.missing ?? []).length) {
+    problems.push(`${area.id} has a gap but no missing item`);
+  }
+  if ((area.missing ?? []).length > Math.max(0, area.need - area.have)) {
     problems.push(`${area.id} lists more missing than the gap`);
   }
-  if (!area.next) problems.push(`${area.id} has no next step`);
+  if (area.have < area.need && !area.next) problems.push(`${area.id} has no next step`);
   totalHave += area.have;
   totalNeed += area.need;
   summary.push({
@@ -67,9 +70,9 @@ const progress = {
   })),
   limits: [
     "No accounts, server, or multiplayer.",
-    "The planet, cube-sphere and voxel LOD are not built.",
+    "The cube-sphere faces are built without voxel LOD or carving.",
     "Region zoom is a 6.0 gate and is not built.",
-    "The 64-bit seed is stored, but named sub-seeds are not.",
+    "The vertical slice is single digit against the full family corpus.",
     "The percentage counts measured capabilities, not hours.",
   ],
 };

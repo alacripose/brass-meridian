@@ -40,9 +40,18 @@ export const H = {
   map: 29,
   raid: 30,
   pathCount: 31,
+  worldFace: 32,
+  worldX: 33,
+  worldZ: 34,
+  worldRegion: 35,
+  worldRegions: 36,
+  season: 37,
+  seasonProgress: 38,
+  worldKm: 39,
+  streamEpoch: 40,
 } as const;
 
-export const TOWER_BASE = 32;
+export const TOWER_BASE = 41;
 export const TOWER_STRIDE = 16;
 export const ENEMY_BASE = TOWER_BASE + 96 * TOWER_STRIDE;
 export const ENEMY_STRIDE = 12;
@@ -62,11 +71,28 @@ export const SUB_SEED_NAMES = [
   "surveys",
 ] as const;
 
+export const SEASONS = ["Greenwake", "Highsun", "Emberfall", "Longdark"] as const;
+export type SeasonName = (typeof SEASONS)[number];
+
 export type ClockView = {
   worldMs: number;
   day: number;
   hour: number;
   minute: number;
+  season: number;
+  seasonProgress: number;
+};
+
+export type WorldView = {
+  face: number;
+  x: number;
+  z: number;
+  region: number;
+  regions: number;
+  season: number;
+  seasonProgress: number;
+  km: number;
+  epoch: number;
 };
 
 export const PLACE = {
@@ -92,6 +118,13 @@ type Exports = {
   sim_sub_seed_lo(index: number): number;
   sim_sub_seed_hi(index: number): number;
   sim_clock(field: number): number;
+  sim_world_travel(face: number): number;
+  sim_world_step(dx: number, dz: number): number;
+  sim_world_field(field: number): number;
+  sim_world_region_count(): number;
+  sim_world_region(index: number, field: number): number;
+  sim_world_point(face: number, x: number, z: number, axis: number): number;
+  sim_world_km(): number;
   sim_step(ms: number): void;
   sim_place(gx: number, gz: number, kind: number): number;
   sim_can_place(gx: number, gz: number, kind: number): number;
@@ -216,6 +249,7 @@ export type Snapshot = {
   cityMax: number;
   map: number;
   threatDistrict: number;
+  world: WorldView;
   path: Array<[number, number]>;
   towers: TowerView[];
   enemies: EnemyView[];
@@ -277,7 +311,41 @@ export class Sim {
       day: Math.floor(this.ex.sim_clock(1)),
       hour: Math.floor(this.ex.sim_clock(2)),
       minute: Math.floor(this.ex.sim_clock(3)),
+      season: this.ex.sim_clock(4),
+      seasonProgress: this.ex.sim_clock(5),
     };
+  }
+
+  worldTravel(face: number): number {
+    return this.ex.sim_world_travel(face);
+  }
+
+  worldStep(dx: number, dz: number): number {
+    return this.ex.sim_world_step(dx, dz);
+  }
+
+  worldField(field: number): number {
+    return this.ex.sim_world_field(field);
+  }
+
+  worldRegionCount(): number {
+    return this.ex.sim_world_region_count();
+  }
+
+  worldRegion(index: number, field: number): number {
+    return this.ex.sim_world_region(index, field);
+  }
+
+  worldPoint(face: number, x: number, z: number, axis: number): number {
+    return this.ex.sim_world_point(face, x, z, axis);
+  }
+
+  worldKm(): number {
+    return this.ex.sim_world_km();
+  }
+
+  season(): number {
+    return this.ex.sim_clock(4);
   }
 
   step(ms: number): void {
@@ -531,6 +599,17 @@ export class Sim {
       cityMax: f[H.cityMax],
       map: f[H.map],
       threatDistrict: f[H.raid],
+      world: {
+        face: f[H.worldFace],
+        x: f[H.worldX],
+        z: f[H.worldZ],
+        region: f[H.worldRegion],
+        regions: f[H.worldRegions],
+        season: f[H.season],
+        seasonProgress: f[H.seasonProgress],
+        km: f[H.worldKm],
+        epoch: f[H.streamEpoch],
+      },
       path,
       towers,
       enemies,

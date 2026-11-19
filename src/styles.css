@@ -820,6 +820,84 @@ button:disabled {
   height: auto;
 }
 
+.world-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px 10px;
+  margin: 4px 0 8px;
+  padding: 8px;
+  border: 1px solid var(--line-soft);
+  background: rgba(217, 168, 95, 0.04);
+}
+
+.world-strip div {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+
+.world-strip span {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.world-strip b {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--brass-hi);
+  white-space: nowrap;
+}
+
+.season-wheel {
+  display: flex;
+  gap: 4px;
+  margin: 0 0 8px;
+  overflow-x: auto;
+}
+
+.season-chip {
+  flex: 1 0 auto;
+  padding: 4px 6px;
+  border: 1px solid var(--line-soft);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-align: center;
+}
+
+.season-chip.on {
+  border-color: var(--brass);
+  color: var(--brass-hi);
+  background: rgba(217, 168, 95, 0.08);
+}
+
+.seat-pad {
+  display: grid;
+  grid-template-areas: ". up ." "left . right" ". down .";
+  grid-template-columns: repeat(3, 36px);
+  gap: 4px;
+  justify-content: center;
+  margin: 6px 0;
+}
+
+.seat-btn {
+  width: 36px;
+  height: 30px;
+  border: 1px solid var(--line-soft);
+  background: rgba(7, 17, 19, 0.6);
+  color: var(--brass-hi);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.seat-btn.up { grid-area: up; }
+.seat-btn.left { grid-area: left; }
+.seat-btn.right { grid-area: right; }
+.seat-btn.down { grid-area: down; }
+
 .track-line {
   stroke: var(--brass);
   stroke-width: 2;

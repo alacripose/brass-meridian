@@ -19,8 +19,17 @@ const H = {
   map: 29,
   raid: 30,
   pathCount: 31,
+  worldFace: 32,
+  worldX: 33,
+  worldZ: 34,
+  worldRegion: 35,
+  worldRegions: 36,
+  season: 37,
+  seasonProgress: 38,
+  worldKm: 39,
+  streamEpoch: 40,
 };
-const SNAPSHOT = 8480;
+const SNAPSHOT = 8489;
 
 function boot(seed) {
   const instance = new WebAssembly.Instance(new WebAssembly.Module(wasm), {});
@@ -97,7 +106,7 @@ check("flank route is legal", flank[H.pathSteps] > 0 && flank[H.pathSteps] <= 40
 check("track to the flank costs 14", mapEx.sim_track_cost(0, 1) === 14, `${mapEx.sim_track_cost(0, 1)}`);
 check("track to the foundry costs 22", mapEx.sim_track_cost(1, 2) === 22, `${mapEx.sim_track_cost(1, 2)}`);
 check("no far track", mapEx.sim_track_cost(0, 2) === -1, `${mapEx.sim_track_cost(0, 2)}`);
-check("raid district is known", flank[H.raid] >= 0 && flank[H.raid] <= 2, `${flank[H.raid]}`);
+check("raid district is known", flank[H.raid] >= 0 && flank[H.raid] <= 5, `${flank[H.raid]}`);
 check("switch back home", mapEx.sim_switch_map(0) === 0);
 check("far travel refuses", mapEx.sim_switch_map(2) === -3);
 
@@ -213,13 +222,55 @@ exact.sim_init64(849435875, 2192949435);
 check("exact seed low half", exact.sim_seed_lo() === 849435875, `${exact.sim_seed_lo()}`);
 check("exact seed high half", (exact.sim_seed_hi() >>> 0) === 2192949435, `${exact.sim_seed_hi() >>> 0}`);
 const exactBytes = save(exact);
-check("save format is 7", exactBytes[4] === 7, `${exactBytes[4]}`);
+check("save format is 8", exactBytes[4] === 8, `${exactBytes[4]}`);
 const exactLoad = boot(1);
 const exactPtr = exactLoad.sim_snapshot_ptr();
 new Uint8Array(exactLoad.memory.buffer).set(exactBytes, exactPtr);
 check("exact seed image loads", exactLoad.sim_load(exactPtr, exactBytes.length) === 0);
 check("exact seed low half survives", exactLoad.sim_seed_lo() === 849435875, `${exactLoad.sim_seed_lo()}`);
 check("exact seed high half survives", (exactLoad.sim_seed_hi() >>> 0) === 2192949435, `${exactLoad.sim_seed_hi() >>> 0}`);
+
+// The world is six bounded cube faces with deterministic region streaming.
+const worldEx = boot(7);
+check("world starts on face zero", worldEx.sim_world_field(0) === 0, `${worldEx.sim_world_field(0)}`);
+check("world starts at the centre", worldEx.sim_world_field(1) === 16 && worldEx.sim_world_field(2) === 16);
+check("world bound is 5,009 km", Math.abs(worldEx.sim_world_km() - 5009.375) < 0.001, `${worldEx.sim_world_km()}`);
+check("cell is a real distance", worldEx.sim_world_cell_km() > 39 && worldEx.sim_world_cell_km() < 40, `${worldEx.sim_world_cell_km()}`);
+const centreRegions = worldEx.sim_world_region_count();
+check("centre streams a region block", centreRegions >= 6 && centreRegions <= 16, `${centreRegions}`);
+const regionIds = new Set();
+for (let i = 0; i < centreRegions; i++) regionIds.add(`${worldEx.sim_world_region(i, 0)}:${worldEx.sim_world_region(i, 1)}`);
+check("stream ids are unique", regionIds.size === centreRegions, `${regionIds.size}/${centreRegions}`);
+let seam = null;
+for (let i = 0; i < 40; i++) worldEx.sim_world_step(1, 0);
+const edge = snap(worldEx);
+check("world clamps at the face edge", edge[H.worldX] === 31, `${edge[H.worldX]}`);
+check("world refuses to leave the face", worldEx.sim_world_step(1, 0) === -2);
+check("edge stays at 31", snap(worldEx)[H.worldX] === 31, `${snap(worldEx)[H.worldX]}`);
+for (let i = 0; i < worldEx.sim_world_region_count(); i++) {
+  if (worldEx.sim_world_region(i, 0) !== 0) seam = worldEx.sim_world_region(i, 0);
+}
+check("edge streams a neighbour face", seam !== null, `${seam}`);
+const p0 = worldEx.sim_world_point(1, 16, 16, 0);
+const p1 = worldEx.sim_world_point(1, 16, 16, 1);
+const p2 = worldEx.sim_world_point(1, 16, 16, 2);
+check("cube point sits on the sphere", Math.abs(Math.hypot(p0, p1, p2) - 1) < 0.0001, `${Math.hypot(p0, p1, p2)}`);
+check("world travels to six faces", [1, 2, 3, 4, 5].every((face) => worldEx.sim_world_travel(face) === 0));
+check("season zero at the start", worldEx.sim_clock(4) === 0, `${worldEx.sim_clock(4)}`);
+const seasonEx = boot(7);
+const seasonBase = save(seasonEx);
+const seasons = [0, 1, 2, 3].map((season) => {
+  const image = Buffer.from(seasonBase);
+  image.writeDoubleLE(21_600_000 * season, image.length - 15);
+  const loaded = boot(1);
+  const ptr = loaded.sim_snapshot_ptr();
+  new Uint8Array(loaded.memory.buffer).set(image, ptr);
+  const code = loaded.sim_load(ptr, image.length);
+  return { code, value: loaded.sim_clock(4), progress: loaded.sim_clock(5) };
+});
+check("season save images load", seasons.every((item) => item.code === 0), seasons.map((item) => item.code).join(","));
+check("four seasons follow the world clock", seasons.every((item, index) => item.value === index), seasons.map((item) => item.value).join(","));
+check("season progress is a fraction", seasons.every((item) => item.progress >= 0 && item.progress <= 1), seasons.map((item) => item.progress.toFixed(2)).join(","));
 
 // Named sub-seeds are stable streams. The wave stream feeds combat.
 const named = boot(7);

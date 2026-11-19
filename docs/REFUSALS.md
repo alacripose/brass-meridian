@@ -148,6 +148,24 @@ A save or ABI path stores fewer than 64 bits of the master seed.
 
 Format 6 and the wasm probe refuse it. The seed is the world identity, not a cosmetic number.
 
+## `season-real-ms`
+
+A season test treats world milliseconds as real milliseconds.
+
+The clock runs at 1:8. Divide by eight before crossing a season edge.
+
+## `stream-epoch-load`
+
+A load recomputes a stream and bumps the saved epoch.
+
+Restore the saved epoch after the stream settles. A reload is not a move.
+
+## `idle-clock-stop`
+
+A probe expects the clock to run while the core is defeated.
+
+The clock stops on defeat. Patch world time in a fixture instead of idling.
+
 ## `release-unverified`
 
 A tag is pushed without a green CI run on the same commit.

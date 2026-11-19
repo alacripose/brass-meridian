@@ -131,11 +131,11 @@ try {
   const scopePercent = need ? Math.round((have / need) * 1000) / 10 : 0;
   const countsOk = areas.every((area) => Number.isInteger(area.have) && Number.isInteger(area.need) && area.need > 0 && area.have >= 0 && area.have <= area.need);
   const evidenceOk = areas.every((area) => Array.isArray(area.evidence) && area.evidence.length > 0 && area.evidence.every((path) => existsSync(resolve(root, path))));
-  const gapOk = areas.every((area) => Array.isArray(area.missing) && area.missing.length > 0 && area.missing.length <= Math.max(1, area.need - area.have));
+  const gapOk = areas.every((area) => Array.isArray(area.missing) && area.missing.length <= Math.max(0, area.need - area.have));
   check("scope label is 6.0", scope?.label === "6.0");
   check("scope has measured counts", areas.length >= 18 && countsOk, `${areas.length} areas`);
   check("scope evidence exists", evidenceOk);
-  check("scope names a gap and a next step", gapOk && areas.every((area) => Boolean(area.next)));
+  check("scope names a gap and a next step", gapOk && areas.every((area) => area.have >= area.need || Boolean(area.next)));
   check("scope percentage is single digit", scopePercent > 0 && scopePercent < 10, `${scopePercent}%`);
   check("progress mirrors scope", progress?.totals?.have === have && progress?.totals?.need === need && progress?.totals?.percent === scopePercent, `${progress?.totals?.have}/${progress?.totals?.need}`);
   check("scope drops the old figure", !read("README.md").includes("5.5%") && !read("STATUS.md").includes("5.5%"), "old figure");
@@ -148,10 +148,11 @@ try {
   const wasm = readFileSync(resolve(root, "public/brass_core.wasm"));
   const instance = new WebAssembly.Instance(new WebAssembly.Module(wasm), {});
   const ex = instance.exports;
-  check("wasm snapshot length", ex.sim_snapshot_len() === 8480, `${ex.sim_snapshot_len()}`);
+  check("wasm snapshot length", ex.sim_snapshot_len() === 8489, `${ex.sim_snapshot_len()}`);
   check("wasm ABI version", ex.sim_version() === 1, `${ex.sim_version()}`);
   check("64-bit seed ABI", typeof ex.sim_init64 === "function" && typeof ex.sim_seed_lo === "function" && typeof ex.sim_seed_hi === "function");
-  check("save format 7 is declared", read("core/src/lib.rs").includes("w.push(7)"));
+  check("save format 8 is declared", read("core/src/lib.rs").includes("w.push(8)"));
+  check("world ABI is exported", typeof ex.sim_world_step === "function" && typeof ex.sim_world_region === "function" && Math.abs(ex.sim_world_km() - 5009.375) < 0.001);
   const ts = read("src/sim.ts");
   check("TS stride mirrors the core", ts.includes("TOWER_STRIDE = 16") && ts.includes("ENEMY_STRIDE = 12"));
   check("TS path base mirrors the core", ts.includes("PROJ_STRIDE = 10") && ts.includes("FX_STRIDE = 8"));

@@ -22,13 +22,62 @@ describe("snapshot bridge", () => {
     expect(snap.wave).toBe(1);
     expect(snap.canCall).toBe(true);
     expect(snap.map).toBe(0);
+    expect(snap.world.face).toBe(0);
+    expect(snap.world.regions).toBeGreaterThanOrEqual(6);
     expect(snap.towerCount).toBe(0);
-    expect(SNAPSHOT_FLOATS).toBe(8480);
+    expect(SNAPSHOT_FLOATS).toBe(8489);
   });
 
   it("keeps the grid dimensions the renderer draws", () => {
     expect(GRID_W).toBe(17);
     expect(GRID_H).toBe(13);
+  });
+
+  it("bounds a six-face cube world and streams its neighbours", () => {
+    const sim = fresh(7);
+    expect(sim.worldField(0)).toBe(0);
+    const count = sim.worldRegionCount();
+    expect(count).toBeGreaterThanOrEqual(6);
+    expect(count).toBeLessThanOrEqual(16);
+    const ids = new Set<number>();
+    for (let i = 0; i < count; i++) {
+      ids.add(sim.worldRegion(i, 0) * 100 + sim.worldRegion(i, 1));
+    }
+    expect(ids.size).toBe(count);
+    const point = [0, 1, 2].map((axis) => sim.worldPoint(1, 16, 16, axis));
+    expect(Math.hypot(...point)).toBeCloseTo(1, 4);
+    for (let i = 0; i < 80; i++) sim.worldStep(1, 0);
+    const snap = sim.snapshot();
+    expect(snap.world.x).toBe(31);
+    expect(sim.worldStep(1, 0)).toBe(-2);
+    expect(sim.snapshot().world.x).toBe(31);
+  });
+
+  it("moves six face seats and keeps the stream state in saves", () => {
+    const sim = fresh(7);
+    for (let i = 0; i < 40; i++) sim.worldStep(0, 1);
+    expect(sim.switchMap(3)).toBe(0);
+    const snap = sim.snapshot();
+    expect(snap.map).toBe(3);
+    expect(snap.world.face).toBe(3);
+    expect(snap.world.x).toBe(16);
+    const restored = Sim.fromBytes(wasm);
+    expect(restored.loadBytes(sim.saveBytes())).toBe(0);
+    expect(restored.snapshot().world.face).toBe(3);
+    expect(restored.snapshot().world.regions).toBe(snap.world.regions);
+    expect(restored.snapshot().world.epoch).toBe(snap.world.epoch);
+  });
+
+  it("loads a version 7 save onto the centred world", () => {
+    const image = new Uint8Array(readFileSync(resolve(process.cwd(), "tests/fixtures/save-v7.bin")));
+    const sim = Sim.fromBytes(wasm);
+    expect(sim.loadBytes(image)).toBe(0);
+    const snap = sim.snapshot();
+    expect(snap.map).toBe(0);
+    expect(snap.world.face).toBe(0);
+    expect(snap.world.x).toBe(16);
+    expect(sim.clock().worldMs).toBe(8000);
+    expect(sim.clock().season).toBe(0);
   });
 });
 
@@ -134,7 +183,7 @@ describe("waves and city", () => {
   it("reports a raid district inside the frontier", () => {
     const snap = fresh().snapshot();
     expect(snap.threatDistrict).toBeGreaterThanOrEqual(0);
-    expect(snap.threatDistrict).toBeLessThanOrEqual(2);
+    expect(snap.threatDistrict).toBeLessThanOrEqual(5);
   });
 });
 
@@ -157,7 +206,7 @@ describe("save image", () => {
     expect(clock.hour).toBe(0);
     expect(clock.minute).toBe(0);
     const image = sim.saveBytes();
-    expect(image[4]).toBe(7);
+    expect(image[4]).toBe(8);
     const loaded = Sim.fromBytes(wasm);
     expect(loaded.loadBytes(image)).toBe(0);
     expect(loaded.clock().worldMs).toBe(8000);
@@ -201,7 +250,7 @@ describe("save image", () => {
     expect(sim.loadBytes(new Uint8Array([1, 2, 3, 4, 5, 6]))).not.toBe(0);
   });
 
-  it("round-trips three districts and the raid edge", () => {
+  it("round-trips six districts and the raid edge", () => {
     const sim = fresh(77);
     sim.switchMap(1);
     expect(sim.place(8, 6, 3)).toBe(PLACE.ok);

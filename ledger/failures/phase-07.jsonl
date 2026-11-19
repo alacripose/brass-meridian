@@ -1,3 +1,6 @@
 {"seq":1,"at":"2026-11-20T00:50:00.000Z","ticket":"T-0016","claim":"The first FNV prime was mistyped and the pinned sub-seed vector failed.","ev":"core/src/lib.rs","ok":true}
 {"seq":2,"at":"2026-11-20T00:50:00.000Z","ticket":"T-0016","claim":"The first waves sub-seed probe compared a signed low half.","ev":"tools/probe.mjs","ok":true}
 {"seq":3,"at":"2026-11-20T00:50:00.000Z","ticket":"T-0016","claim":"The loader read f64 high-word first while the writer was little-endian.","ev":"core/src/lib.rs","ok":true}
+{"seq":4,"at":"2026-11-20T01:30:00.000Z","ticket":"T-0016","claim":"A season test spent world milliseconds as real milliseconds and stopped one edge short.","ev":"core/src/lib.rs","ok":true}
+{"seq":5,"at":"2026-11-20T01:30:00.000Z","ticket":"T-0016","claim":"A format eight load recomputed the stream and bumped the saved epoch.","ev":"core/src/lib.rs","ok":true}
+{"seq":6,"at":"2026-11-20T01:30:00.000Z","ticket":"T-0016","claim":"A probe idled through defeat and expected the stopped clock to reach a season.","ev":"tools/probe.mjs","ok":true}

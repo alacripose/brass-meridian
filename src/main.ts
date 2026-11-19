@@ -180,6 +180,12 @@ function buildHud(hasSaved: boolean) {
         hud.showToast(COPY.noBrass, "bad");
       }
     },
+    onWorldStep: (dx, dz) => {
+      const code = sim.worldStep(dx, dz);
+      hud.showToast(code === 0 ? COPY.worldMoved : COPY.worldEdge, code === 0 ? "good" : "bad");
+      hud.openSheet("map");
+      refreshHover();
+    },
     onRepair: () => {
       const code = sim.repair();
       if (code === 0) {
