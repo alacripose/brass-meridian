@@ -38,7 +38,7 @@ export const H = {
   repairCost: 27,
   cityMax: 28,
   map: 29,
-  threat: 30,
+  raid: 30,
   pathCount: 31,
 } as const;
 
@@ -80,6 +80,7 @@ type Exports = {
   sim_call_wave(): number;
   sim_switch_map(map: number): number;
   sim_map_tower_count(map: number): number;
+  sim_track_cost(from: number, to: number): number;
   sim_snapshot_len(): number;
   sim_snapshot_ptr(): number;
   sim_cell_state(gx: number, gz: number): number;
@@ -179,7 +180,7 @@ export type Snapshot = {
   repairCost: number;
   cityMax: number;
   map: number;
-  threat: number;
+  threatDistrict: number;
   path: Array<[number, number]>;
   towers: TowerView[];
   enemies: EnemyView[];
@@ -250,6 +251,10 @@ export class Sim {
 
   mapTowerCount(map: number): number {
     return this.ex.sim_map_tower_count(map);
+  }
+
+  trackCost(from: number, to: number): number {
+    return this.ex.sim_track_cost(from, to);
   }
 
   cellState(gx: number, gz: number): number {
@@ -403,7 +408,7 @@ export class Sim {
       repairCost: f[H.repairCost],
       cityMax: f[H.cityMax],
       map: f[H.map],
-      threat: f[H.threat],
+      threatDistrict: f[H.raid],
       path,
       towers,
       enemies,

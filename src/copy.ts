@@ -64,6 +64,7 @@ export const ENEMIES: EnemyCopy[] = [
 export const DISTRICTS = [
   { name: "Switchyard", role: "The home gate." },
   { name: "Coldwater", role: "A wider flank." },
+  { name: "Ashfall", role: "The far foundry." },
 ] as const;
 
 export const COPY = {
@@ -92,8 +93,15 @@ export const COPY = {
   frontier: "Frontier",
   here: "Here",
   travel: "Travel",
-  mapFoot: "Travel between waves. Each district keeps its towers.",
+  mapFoot: "Tracks cost brass and build time. Meet the raid for a clear bonus.",
   mapLocked: "Finish the wave first.",
+  trackMissing: "No track to that district.",
+  noTrack: "No track",
+  raid: "Raid",
+  raidHeld: "Raid met. Clear bonus.",
+  raidHit: "Raid leaked at",
+  raidNote: "Meet the raid: +50% clear.",
+  track: "Track",
   traveled: "Arrived at",
   close: "Close",
   brass: "Brass",

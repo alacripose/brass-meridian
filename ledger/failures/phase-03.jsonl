@@ -1,0 +1,3 @@
+{"seq":1,"at":"2026-11-19T16:02:44.000Z","ticket":"T-0014","claim":"The core did not compile while stored replaced other_towers.","ev":"artifacts/receipts/rust-test.json","ok":false}
+{"seq":2,"at":"2026-11-19T16:02:44.000Z","ticket":"T-0014","claim":"The three-district save test expected the wrong tower kind.","ev":"tests/sim.test.ts","ok":false}
+{"seq":3,"at":"2026-11-19T16:02:44.000Z","ticket":"T-0014","claim":"The probe tested far travel from an adjacent district.","ev":"tools/probe.mjs","ok":false}

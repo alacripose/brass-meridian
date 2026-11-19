@@ -85,6 +85,18 @@ describe("maze placement", () => {
     expect(sim.snapshot().towerCount).toBe(1);
     expect(sim.mapTowerCount(1)).toBe(1);
   });
+
+  it("charges track brass and refuses a far hop", () => {
+    const sim = fresh();
+    expect(sim.trackCost(0, 1)).toBe(14);
+    expect(sim.trackCost(1, 2)).toBe(22);
+    expect(sim.trackCost(0, 2)).toBe(-1);
+    expect(sim.switchMap(2)).toBe(-3);
+    expect(sim.switchMap(1)).toBe(0);
+    expect(sim.snapshot().brass).toBe(136);
+    expect(sim.switchMap(2)).toBe(0);
+    expect(sim.snapshot().brass).toBe(114);
+  });
 });
 
 describe("waves and city", () => {
@@ -117,6 +129,12 @@ describe("waves and city", () => {
     const sim = fresh();
     expect(sim.repair()).toBe(-2);
   });
+
+  it("reports a raid district inside the frontier", () => {
+    const snap = fresh().snapshot();
+    expect(snap.threatDistrict).toBeGreaterThanOrEqual(0);
+    expect(snap.threatDistrict).toBeLessThanOrEqual(2);
+  });
 });
 
 describe("save image", () => {
@@ -145,6 +163,25 @@ describe("save image", () => {
     expect(sim.loadBytes(new Uint8Array([1, 2, 3, 4, 5, 6]))).not.toBe(0);
   });
 
+  it("round-trips three districts and the raid edge", () => {
+    const sim = fresh(77);
+    sim.switchMap(1);
+    expect(sim.place(8, 6, 3)).toBe(PLACE.ok);
+    sim.switchMap(2);
+    expect(sim.place(8, 6, 0)).toBe(PLACE.ok);
+    const before = sim.snapshot();
+    const restored = Sim.fromBytes(wasm);
+    expect(restored.loadBytes(sim.saveBytes())).toBe(0);
+    const after = restored.snapshot();
+    expect(after.map).toBe(2);
+    expect(after.threatDistrict).toBe(before.threatDistrict);
+    expect(after.towers[0].kind).toBe(0);
+    expect(restored.mapTowerCount(0)).toBe(0);
+    expect(restored.mapTowerCount(1)).toBe(1);
+    expect(restored.switchMap(1)).toBe(0);
+    expect(restored.snapshot().towers[0].kind).toBe(3);
+  });
+
   it("loads a version 2 save on the Switchyard", () => {
     const image = new Uint8Array(readFileSync(resolve(process.cwd(), "tests/fixtures/save-v2.bin")));
     const sim = Sim.fromBytes(wasm);
@@ -152,5 +189,17 @@ describe("save image", () => {
     const snap = sim.snapshot();
     expect(snap.map).toBe(0);
     expect(snap.towerCount).toBe(1);
+  });
+
+  it("loads a version 3 save with both frontier districts", () => {
+    const image = new Uint8Array(readFileSync(resolve(process.cwd(), "tests/fixtures/save-v3.bin")));
+    const sim = Sim.fromBytes(wasm);
+    expect(sim.loadBytes(image)).toBe(0);
+    const snap = sim.snapshot();
+    expect(snap.map).toBe(0);
+    expect(snap.towerCount).toBe(1);
+    expect(sim.mapTowerCount(1)).toBe(1);
+    expect(sim.switchMap(1)).toBe(0);
+    expect(sim.snapshot().towers[0].kind).toBe(1);
   });
 });

@@ -17,6 +17,7 @@ const H = {
   enemies: 14,
   pathSteps: 25,
   map: 29,
+  raid: 30,
   pathCount: 31,
 };
 const SNAPSHOT = 8480;
@@ -77,7 +78,20 @@ check("flank is active", flank[H.map] === 1, `${flank[H.map]}`);
 check("flank starts empty", flank[H.towers] === 0, `${flank[H.towers]}`);
 check("home keeps its tower", mapEx.sim_map_tower_count(0) === 1, `${mapEx.sim_map_tower_count(0)}`);
 check("flank route is legal", flank[H.pathSteps] > 0 && flank[H.pathSteps] <= 40, `${flank[H.pathSteps]}`);
+check("track to the flank costs 14", mapEx.sim_track_cost(0, 1) === 14, `${mapEx.sim_track_cost(0, 1)}`);
+check("track to the foundry costs 22", mapEx.sim_track_cost(1, 2) === 22, `${mapEx.sim_track_cost(1, 2)}`);
+check("no far track", mapEx.sim_track_cost(0, 2) === -1, `${mapEx.sim_track_cost(0, 2)}`);
+check("raid district is known", flank[H.raid] >= 0 && flank[H.raid] <= 2, `${flank[H.raid]}`);
 check("switch back home", mapEx.sim_switch_map(0) === 0);
+check("far travel refuses", mapEx.sim_switch_map(2) === -3);
+
+const ashEx = boot(42);
+check("hop to the flank", ashEx.sim_switch_map(1) === 0);
+check("hop to the foundry", ashEx.sim_switch_map(2) === 0);
+const ash = snap(ashEx);
+check("foundry is active", ash[H.map] === 2, `${ash[H.map]}`);
+check("foundry tower placed", ashEx.sim_place(8, 6, 3) === 0);
+check("foundry keeps its tower", ashEx.sim_map_tower_count(2) === 1, `${ashEx.sim_map_tower_count(2)}`);
 
 const waveEx = boot(7);
 check("wave preview is eight drudges", waveEx.sim_preview_count(0) === 8, `${waveEx.sim_preview_count(0)}`);
@@ -117,6 +131,22 @@ check("save loads", loadCode === 0, `${loadCode}`);
 check("loaded towers match", after[H.towers] === snap(aEx)[H.towers], `${after[H.towers]}`);
 check("loaded enemies match", after[H.enemies] === snap(aEx)[H.enemies], `${after[H.enemies]}`);
 check("loaded route matches", after[H.pathSteps] === snap(aEx)[H.pathSteps], `${after[H.pathSteps]}`);
+
+const raidSaveEx = boot(5);
+raidSaveEx.sim_place(8, 6, 3);
+raidSaveEx.sim_switch_map(1);
+raidSaveEx.sim_place(8, 6, 3);
+raidSaveEx.sim_switch_map(2);
+raidSaveEx.sim_place(8, 6, 3);
+const raidBytes = save(raidSaveEx);
+const raidLoadEx = boot(1);
+const raidPtr = raidLoadEx.sim_snapshot_ptr();
+new Uint8Array(raidLoadEx.memory.buffer).set(raidBytes, raidPtr);
+check("three-district save loads", raidLoadEx.sim_load(raidPtr, raidBytes.length) === 0);
+const raidAfter = snap(raidLoadEx);
+check("loaded map is the foundry", raidAfter[H.map] === 2, `${raidAfter[H.map]}`);
+check("loaded raid matches", raidAfter[H.raid] === snap(raidSaveEx)[H.raid], `${raidAfter[H.raid]}`);
+check("loaded flank keeps a tower", raidLoadEx.sim_map_tower_count(1) === 1, `${raidLoadEx.sim_map_tower_count(1)}`);
 
 const ok = checks.every((c) => c.ok);
 const receipt = {

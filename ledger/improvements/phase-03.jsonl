@@ -1,0 +1,4 @@
+{"seq":1,"at":"2026-11-19T16:02:44.000Z","ticket":"T-0014","claim":"A track cost export makes adjacency visible to the client.","ev":"artifacts/receipts/probe.json","ok":true}
+{"seq":2,"at":"2026-11-19T16:02:44.000Z","ticket":"T-0014","claim":"Away raids leak core and defended raids earn a bonus.","ev":"artifacts/receipts/rust-test.json","ok":true}
+{"seq":3,"at":"2026-11-19T16:02:44.000Z","ticket":"T-0014","claim":"Save format 4 stores three sets, the raid, and the bonus.","ev":"artifacts/receipts/probe.json","ok":true}
+{"seq":4,"at":"2026-11-19T16:02:44.000Z","ticket":"T-0014","claim":"Travel buttons show their cost and no-track state.","ev":"artifacts/receipts/build.json","ok":true}

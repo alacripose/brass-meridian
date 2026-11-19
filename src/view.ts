@@ -300,6 +300,7 @@ export class Battlefield {
     // Keep these cells in step with terrain() in the core.
     this.buildRubble(0, [[4, 2], [4, 3], [5, 2], [12, 10], [13, 10], [12, 9]]);
     this.buildRubble(1, [[7, 3], [7, 4], [8, 3], [8, 9], [9, 9], [9, 8]]);
+    this.buildRubble(2, [[3, 8], [4, 8], [3, 9], [11, 2], [12, 2], [11, 3]]);
 
     this.buildCity();
   }

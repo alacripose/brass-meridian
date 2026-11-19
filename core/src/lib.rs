@@ -20,7 +20,10 @@ const MAX_ENEMIES: usize = 320;
 const MAX_PROJ: usize = 192;
 const MAX_FX: usize = 128;
 const MAX_PATH_PTS: usize = 64;
-const MAP_COUNT: usize = 2;
+const MAP_COUNT: usize = 3;
+const TRACK_COST: [[i32; MAP_COUNT]; MAP_COUNT] = [[0, 14, -1], [14, 0, 22], [-1, 22, 0]];
+const TRACK_TIME: [[f32; MAP_COUNT]; MAP_COUNT] =
+    [[0.0, 1.5, 0.0], [1.5, 0.0, 2.5], [0.0, 2.5, 0.0]];
 
 // Snapshot layout. Shared with src/sim.ts; a version bump means both change.
 const H_VERSION: usize = 0;
@@ -53,7 +56,7 @@ const H_CAN_CALL: usize = 26;
 const H_REPAIR_COST: usize = 27;
 const H_CITY_MAX: usize = 28;
 const H_MAP: usize = 29;
-const H_THREAT: usize = 30;
+const H_RAID: usize = 30;
 const H_PATH_COUNT: usize = 31;
 
 const TOWER_BASE: usize = 32;
@@ -101,11 +104,19 @@ fn terrain(map: u8, gx: usize, gz: usize) -> bool {
             (gx, gz),
             (4, 2) | (4, 3) | (5, 2) | (12, 10) | (13, 10) | (12, 9)
         ),
-        _ => matches!(
+        1 => matches!(
             (gx, gz),
             (7, 3) | (7, 4) | (8, 3) | (8, 9) | (9, 9) | (9, 8)
         ),
+        _ => matches!(
+            (gx, gz),
+            (3, 8) | (4, 8) | (3, 9) | (11, 2) | (12, 2) | (11, 3)
+        ),
     }
+}
+
+fn threat_for(wave: u32, seed: u32) -> u8 {
+    ((wave as usize + (seed as usize % MAP_COUNT)) % MAP_COUNT) as u8
 }
 
 fn tower_stats(kind: u8, level: u8) -> (f32, f32, f32, f32) {
@@ -341,8 +352,10 @@ struct Sim {
     kills: u32,
     city: [u8; 4],
     map: u8,
+    threat: u8,
+    wave_bonus: f32,
     towers: Vec<Tower>,
-    other_towers: Vec<Tower>,
+    stored: [Vec<Tower>; MAP_COUNT],
     enemies: Vec<Enemy>,
     projectiles: Vec<Projectile>,
     fx: Vec<Fx>,
@@ -377,8 +390,10 @@ impl Sim {
             kills: 0,
             city: [0; 4],
             map: 0,
+            threat: threat_for(1, seed),
+            wave_bonus: 1.0,
             towers: Vec::new(),
-            other_towers: Vec::new(),
+            stored: [Vec::new(), Vec::new(), Vec::new()],
             enemies: Vec::new(),
             projectiles: Vec::new(),
             fx: Vec::new(),
@@ -653,7 +668,20 @@ impl Sim {
         if self.phase != 0 || !self.enemies.is_empty() {
             return -2;
         }
-        std::mem::swap(&mut self.towers, &mut self.other_towers);
+        let from = self.map as usize;
+        let to = map as usize;
+        let cost = TRACK_COST[from][to];
+        if cost < 0 {
+            return -3;
+        }
+        if self.brass < cost as f32 {
+            return -4;
+        }
+        self.brass -= cost as f32;
+        self.countdown = (self.countdown - TRACK_TIME[from][to]).max(0.2);
+        let active = std::mem::replace(&mut self.towers, Vec::new());
+        self.stored[from] = active;
+        self.towers = std::mem::replace(&mut self.stored[to], Vec::new());
         self.map = map;
         self.projectiles.clear();
         self.fx.clear();
@@ -710,6 +738,21 @@ impl Sim {
         }
         let bonus = (self.countdown.max(0.0) * 2.0).round();
         self.brass += bonus;
+        let defended = self.map == self.threat;
+        self.wave_bonus = if defended { 1.5 } else { 1.0 };
+        if !defended {
+            self.core -= (2.0 + self.wave as f32 * 0.5).min(10.0);
+            if self.core <= 0.0 {
+                self.core = 0.0;
+                self.phase = 2;
+                self.spawn_queue.clear();
+                self.spawn_index = 0;
+                self.enemies.clear();
+                self.projectiles.clear();
+                self.fill_snapshot();
+                return 0;
+            }
+        }
         self.phase = 1;
         self.spawn_queue = composition(self.wave);
         self.spawn_index = 0;
@@ -1098,15 +1141,17 @@ impl Sim {
 
         if self.phase == 1 && self.spawn_index >= self.spawn_queue.len() && self.enemies.is_empty()
         {
-            self.brass += 18.0 + self.wave as f32 * 5.0;
+            self.brass += (18.0 + self.wave as f32 * 5.0) * self.wave_bonus;
             self.ingots += 2.0 + (self.wave / 3) as f32;
-            self.score += 100 * self.wave;
+            self.score += (100.0 * self.wave as f32 * self.wave_bonus) as u32;
             self.wave += 1;
             self.phase = 0;
             self.countdown = 12.0;
             self.spawn_queue.clear();
             self.spawn_index = 0;
             self.boss_wave = false;
+            self.wave_bonus = 1.0;
+            self.threat = threat_for(self.wave, self.seed);
         }
         self.fill_snapshot();
     }
@@ -1146,8 +1191,7 @@ impl Sim {
         s[H_REPAIR_COST] = repair_cost();
         s[H_CITY_MAX] = 3.0;
         s[H_MAP] = self.map as f32;
-        s[H_THREAT] =
-            (self.spawn_queue.len().saturating_sub(self.spawn_index) + self.enemies.len()) as f32;
+        s[H_RAID] = self.threat as f32;
         s[H_PATH_COUNT] = self.path_pts.len() as f32;
 
         for (i, t) in self.towers.iter().take(MAX_TOWERS).enumerate() {
@@ -1212,8 +1256,10 @@ impl Sim {
     fn save_bytes(&mut self) -> &[u8] {
         let mut w = Vec::with_capacity(4096);
         w.extend_from_slice(b"BMG1");
-        w.push(3); // save format
+        w.push(4); // save format
         w.push(self.map);
+        w.push(self.threat);
+        w.extend_from_slice(&self.wave_bonus.to_le_bytes());
         w.extend_from_slice(&self.seed.to_le_bytes());
         w.extend_from_slice(&self.rng.to_le_bytes());
         for v in [self.brass, self.ingots, self.core, self.core_max] {
@@ -1235,13 +1281,16 @@ impl Sim {
         for k in &self.spawn_queue {
             w.push(*k);
         }
-        w.extend_from_slice(&(self.towers.len() as u16).to_le_bytes());
-        for t in &self.towers {
-            push_tower(&mut w, t);
-        }
-        w.extend_from_slice(&(self.other_towers.len() as u16).to_le_bytes());
-        for t in &self.other_towers {
-            push_tower(&mut w, t);
+        for map in 0..MAP_COUNT {
+            let list = if map == self.map as usize {
+                &self.towers
+            } else {
+                &self.stored[map]
+            };
+            w.extend_from_slice(&(list.len() as u16).to_le_bytes());
+            for t in list {
+                push_tower(&mut w, t);
+            }
         }
         w.extend_from_slice(&(self.enemies.len() as u16).to_le_bytes());
         for e in &self.enemies {
@@ -1277,7 +1326,10 @@ impl Sim {
     }
 
     fn load_bytes(&mut self, bytes: &[u8]) -> i32 {
-        if bytes.len() < 6 || &bytes[0..4] != b"BMG1" || (bytes[4] != 2 && bytes[4] != 3) {
+        if bytes.len() < 6
+            || &bytes[0..4] != b"BMG1"
+            || (bytes[4] != 2 && bytes[4] != 3 && bytes[4] != 4)
+        {
             return -1;
         }
         let format = bytes[4];
@@ -1292,6 +1344,21 @@ impl Sim {
         if map as usize >= MAP_COUNT {
             return -2;
         }
+        if format == 3 && map > 1 {
+            return -2;
+        }
+        let threat = if format >= 4 {
+            let value = bytes.get(start).copied().unwrap_or(0);
+            let bonus = bytes
+                .get(start + 1..start + 5)
+                .and_then(|b| b.try_into().ok())
+                .map(f32::from_le_bytes)
+                .unwrap_or(1.0);
+            start += 5;
+            (value, bonus)
+        } else {
+            (0, 1.0)
+        };
         struct R<'a> {
             b: &'a [u8],
             p: usize,
@@ -1343,12 +1410,21 @@ impl Sim {
         let seed = r.u32();
         let mut fresh = Sim::new(seed);
         fresh.map = map;
+        fresh.threat = if format >= 4 {
+            threat.0.min((MAP_COUNT - 1) as u8)
+        } else {
+            0
+        };
+        fresh.wave_bonus = threat.1.max(1.0).min(2.0);
         fresh.rng = r.u32();
         fresh.brass = r.f32();
         fresh.ingots = r.f32();
         fresh.core = r.f32();
         fresh.core_max = r.f32();
         fresh.wave = r.u32().max(1);
+        if format < 4 {
+            fresh.threat = threat_for(fresh.wave, seed);
+        }
         fresh.phase = r.u8().min(2);
         fresh.countdown = r.f32();
         fresh.sim_ms = r.f64();
@@ -1372,39 +1448,9 @@ impl Sim {
         }
         fresh.spawn_index = spawn_index.min(fresh.spawn_queue.len());
 
-        let tower_count = r.u16() as usize;
-        if tower_count > MAX_TOWERS {
-            return -2;
-        }
-        for _ in 0..tower_count {
-            let kind = r.u8();
-            let level = r.u8().min(2);
-            let gx = r.u8() as usize;
-            let gz = r.u8() as usize;
-            let cd = r.f32();
-            let spent = r.f32();
-            let angle = r.f32();
-            let id = r.u32();
-            if gx >= GW || gz >= GH {
-                return -2;
-            }
-            fresh.towers.push(Tower {
-                kind,
-                level,
-                gx,
-                gz,
-                cd,
-                spent,
-                angle,
-                id,
-            });
-        }
-        if format >= 3 {
-            let other_count = r.u16() as usize;
-            if other_count > MAX_TOWERS {
-                return -2;
-            }
-            for _ in 0..other_count {
+        let read_towers = |r: &mut R, count: usize| -> Option<Vec<Tower>> {
+            let mut out = Vec::with_capacity(count);
+            for _ in 0..count {
                 let kind = r.u8();
                 let level = r.u8().min(2);
                 let gx = r.u8() as usize;
@@ -1414,9 +1460,9 @@ impl Sim {
                 let angle = r.f32();
                 let id = r.u32();
                 if gx >= GW || gz >= GH {
-                    return -2;
+                    return None;
                 }
-                fresh.other_towers.push(Tower {
+                out.push(Tower {
                     kind,
                     level,
                     gx,
@@ -1426,6 +1472,42 @@ impl Sim {
                     angle,
                     id,
                 });
+            }
+            Some(out)
+        };
+        let set_count = if format >= 4 {
+            MAP_COUNT
+        } else if format == 3 {
+            2
+        } else {
+            1
+        };
+        let mut sets: [Vec<Tower>; MAP_COUNT] = [Vec::new(), Vec::new(), Vec::new()];
+        for slot in 0..set_count {
+            let count = r.u16() as usize;
+            if count > MAX_TOWERS {
+                return -2;
+            }
+            let key = if format == 3 {
+                if slot == 0 {
+                    map as usize
+                } else {
+                    1 - map as usize
+                }
+            } else if format == 2 {
+                0
+            } else {
+                slot
+            };
+            match read_towers(&mut r, count) {
+                Some(list) => sets[key] = list,
+                None => return -2,
+            }
+        }
+        fresh.towers = std::mem::replace(&mut sets[map as usize], Vec::new());
+        for i in 0..MAP_COUNT {
+            if i != map as usize {
+                fresh.stored[i] = std::mem::replace(&mut sets[i], Vec::new());
             }
         }
         let enemy_count = r.u16() as usize;
@@ -1753,15 +1835,24 @@ pub extern "C" fn sim_switch_map(map: u32) -> i32 {
 #[no_mangle]
 pub extern "C" fn sim_map_tower_count(map: u32) -> u32 {
     with_sim(|s| {
-        let map = map as u8;
-        if map == s.map {
+        let map = map as usize;
+        if map >= MAP_COUNT {
+            return 0;
+        }
+        if map == s.map as usize {
             s.towers.len() as u32
-        } else if map as usize == 1 - s.map as usize {
-            s.other_towers.len() as u32
         } else {
-            0
+            s.stored[map].len() as u32
         }
     })
+}
+
+#[no_mangle]
+pub extern "C" fn sim_track_cost(from: u32, to: u32) -> i32 {
+    if from as usize >= MAP_COUNT || to as usize >= MAP_COUNT {
+        return -1;
+    }
+    TRACK_COST[from as usize][to as usize]
 }
 
 #[no_mangle]
@@ -1923,17 +2014,53 @@ mod tests {
     #[test]
     fn maps_keep_separate_towers() {
         let mut s = fresh();
+        s.brass = 500.0;
         assert_eq!(s.place(8, 6, 0), 0);
         assert_eq!(s.switch_map(1), 0);
         assert_eq!(s.map, 1);
         assert!(s.towers.is_empty());
         assert_eq!(s.place(8, 6, 1), 0);
+        assert_eq!(s.switch_map(2), 0);
+        assert!(s.towers.is_empty());
+        assert_eq!(s.place(8, 6, 2), 0);
+        assert_eq!(s.switch_map(1), 0);
+        assert_eq!(s.towers[0].kind, 1);
+        assert_eq!(s.stored[0][0].kind, 0);
+        assert_eq!(s.stored[2][0].kind, 2);
         assert_eq!(s.switch_map(0), 0);
         assert_eq!(s.map, 0);
         assert_eq!(s.towers.len(), 1);
         assert_eq!(s.towers[0].kind, 0);
-        assert_eq!(s.other_towers.len(), 1);
-        assert_eq!(s.other_towers[0].kind, 1);
+    }
+
+    #[test]
+    fn tracks_cost_brass_and_refuse_a_far_hop() {
+        let mut s = fresh();
+        s.brass = 500.0;
+        assert_eq!(s.switch_map(2), -3);
+        assert_eq!(s.brass, 500.0);
+        assert_eq!(s.switch_map(1), 0);
+        assert_eq!(s.brass, 486.0);
+        assert_eq!(s.switch_map(2), 0);
+        assert_eq!(s.brass, 464.0);
+        assert_eq!(s.switch_map(0), -3);
+    }
+
+    #[test]
+    fn a_raid_leaks_when_the_player_is_away() {
+        let mut away = fresh();
+        away.threat = 1;
+        away.core = 20.0;
+        assert_eq!(away.start_wave(), 0);
+        assert!(away.core < 20.0);
+        assert_eq!(away.wave_bonus, 1.0);
+
+        let mut home = fresh();
+        home.threat = 0;
+        home.core = 20.0;
+        assert_eq!(home.start_wave(), 0);
+        assert_eq!(home.core, 20.0);
+        assert_eq!(home.wave_bonus, 1.5);
     }
 
     #[test]
@@ -1947,16 +2074,26 @@ mod tests {
     #[test]
     fn save_round_trip_keeps_both_maps() {
         let mut a = fresh();
+        a.brass = 500.0;
+        a.threat = 2;
+        a.wave_bonus = 1.5;
         assert_eq!(a.place(8, 6, 0), 0);
         assert_eq!(a.switch_map(1), 0);
         assert_eq!(a.place(8, 5, 2), 0);
+        assert_eq!(a.switch_map(2), 0);
+        assert_eq!(a.place(8, 5, 1), 0);
         let bytes = a.save_bytes().to_vec();
         let mut b = Sim::new(1);
         assert_eq!(b.load_bytes(&bytes), 0);
-        assert_eq!(b.map, 1);
+        assert_eq!(b.map, 2);
+        assert_eq!(b.threat, 2);
+        assert_eq!(b.wave_bonus, 1.5);
         assert_eq!(b.towers.len(), 1);
+        assert_eq!(b.towers[0].kind, 1);
+        assert_eq!(b.stored[0].len(), 1);
+        assert_eq!(b.stored[1].len(), 1);
+        assert_eq!(b.switch_map(1), 0);
         assert_eq!(b.towers[0].kind, 2);
-        assert_eq!(b.other_towers.len(), 1);
         assert_eq!(b.switch_map(0), 0);
         assert_eq!(b.towers[0].kind, 0);
     }

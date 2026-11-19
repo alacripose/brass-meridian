@@ -1,8 +1,8 @@
 {
   "ok": true,
   "kind": "headless-probe",
-  "at": "2026-11-19T15:40:20.530Z",
-  "sha256": "5027776d65cd30f76f418f0c34743a3c5b2c726d8b15c5f4f76c13c1212516e5",
+  "at": "2026-11-19T16:04:32.327Z",
+  "sha256": "8ebfd3ba7312128f9cdf9e394963fcad5ac5e4b04173ef7be8d032cc35e08c42",
   "checks": [
     {
       "name": "snapshot length",
@@ -95,9 +95,59 @@
       "detail": "16"
     },
     {
+      "name": "track to the flank costs 14",
+      "ok": true,
+      "detail": "14"
+    },
+    {
+      "name": "track to the foundry costs 22",
+      "ok": true,
+      "detail": "22"
+    },
+    {
+      "name": "no far track",
+      "ok": true,
+      "detail": "-1"
+    },
+    {
+      "name": "raid district is known",
+      "ok": true,
+      "detail": "1"
+    },
+    {
       "name": "switch back home",
       "ok": true,
       "detail": ""
+    },
+    {
+      "name": "far travel refuses",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "hop to the flank",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "hop to the foundry",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "foundry is active",
+      "ok": true,
+      "detail": "2"
+    },
+    {
+      "name": "foundry tower placed",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "foundry keeps its tower",
+      "ok": true,
+      "detail": "1"
     },
     {
       "name": "wave preview is eight drudges",
@@ -137,12 +187,12 @@
     {
       "name": "save length is stable",
       "ok": true,
-      "detail": "340/340"
+      "detail": "347/347"
     },
     {
       "name": "same seed is deterministic",
       "ok": true,
-      "detail": "340 bytes"
+      "detail": "347 bytes"
     },
     {
       "name": "save loads",
@@ -163,7 +213,27 @@
       "name": "loaded route matches",
       "ok": true,
       "detail": "16"
+    },
+    {
+      "name": "three-district save loads",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "loaded map is the foundry",
+      "ok": true,
+      "detail": "2"
+    },
+    {
+      "name": "loaded raid matches",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "loaded flank keeps a tower",
+      "ok": true,
+      "detail": "1"
     }
   ],
-  "bytes": 52617
+  "bytes": 53940
 }
