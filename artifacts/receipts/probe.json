@@ -1,7 +1,7 @@
 {
   "ok": true,
   "kind": "headless-probe",
-  "at": "2026-11-19T16:04:32.327Z",
+  "at": "2026-11-19T16:08:29.938Z",
   "sha256": "8ebfd3ba7312128f9cdf9e394963fcad5ac5e4b04173ef7be8d032cc35e08c42",
   "checks": [
     {
