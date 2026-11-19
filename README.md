@@ -23,7 +23,7 @@ This is version 0.1. The defensive slice is playable end to end. The wider front
 
 ## Play
 
-Open the GitHub Pages link when the deploy is green: `https://alacripose.github.io/brass-meridian/`
+Play at `https://alacripose.github.io/brass-meridian/`. The first release is `https://github.com/alacripose/brass-meridian/releases/tag/v0.1.0`.
 
 Tap **Build**, choose a tower, then tap a plot. Tap a tower to upgrade or sell.
 
@@ -88,6 +88,7 @@ The wasm step needs a Rust toolchain with `wasm32-unknown-unknown`.
 | 24 headless probes | `artifacts/receipts/probe.json` |
 | Production build | `artifacts/receipts/build.json` |
 | Repository gate | `artifacts/receipts/gate.json` |
+| Release v0.1.0 | `artifacts/receipts/release-0.1.0.json` |
 
 The probe covers route legality, wave spawns, city income, deterministic bytes, and save recovery.
 

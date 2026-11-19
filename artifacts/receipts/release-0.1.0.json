@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "kind": "release",
+  "tag": "v0.1.0",
+  "url": "https://github.com/alacripose/brass-meridian/releases/tag/v0.1.0",
+  "zip": "brass-meridian-v0.1.0.zip",
+  "zip_bytes": 186197,
+  "zip_sha256": "1f36c52a9634df1bb719b110b7317bf6fe13490719ca3dcd592af690ca1db3dc",
+  "files": 6,
+  "wasm_bytes": 51011,
+  "wasm_sha256": "17309b99ed618c6d94b314e18f1451e9409593c0b9ad3fee3d3963f2fe80478c",
+  "index_bytes": 981,
+  "has_index": true,
+  "has_wasm": true,
+  "at": "2026-11-19T15:36:00Z"
+}

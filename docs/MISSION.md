@@ -6,11 +6,11 @@ This file is the resume point after a Freebuff pause. Update it before a long br
 
 Last update: 2026-11-19.
 
-The vertical slice is built. The public repository is live and CI is green.
+The vertical slice is built, published, and tagged. The public repository is live and CI is green.
 
 Pages serves the build at https://alacripose.github.io/brass-meridian/.
 
-The `v0.1.0` release is the last step of this slice.
+The `v0.1.0` release carries the built game and the changelog section.
 
 ## What is proved
 
@@ -20,11 +20,12 @@ The `v0.1.0` release is the last step of this slice.
 - The production build succeeds.
 - The gate checks prose, ledgers, tickets, progress, ABI, receipts, and secrets.
 - CI passes both jobs. Pages returns 200 and the wasm is `application/wasm`.
+- The release zip has 6 files, the page, and the wasm.
 
 ## Next 120 minutes
 
-1. Tag `v0.1.0` and confirm the release asset.
-2. Start ticket T-0008: the frontier map graph.
+1. Start ticket T-0008: the frontier map graph.
+2. Add the district view, two build states, and save migration.
 
 ## After that
 
