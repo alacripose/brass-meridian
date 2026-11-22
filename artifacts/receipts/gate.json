@@ -1,7 +1,7 @@
 {
-  "ok": true,
-  "at": "2026-11-19T23:24:58.069Z",
-  "passed": 48,
+  "ok": false,
+  "at": "2026-11-22T13:27:18.974Z",
+  "passed": 47,
   "total": 48,
   "percent": 5.4,
   "checks": [
@@ -17,8 +17,8 @@
     },
     {
       "name": "two-second prose",
-      "ok": true,
-      "detail": ""
+      "ok": false,
+      "detail": "AGENTS.md:sentence:59 words"
     },
     {
       "name": "ledger schema and evidence",
@@ -28,7 +28,7 @@
     {
       "name": "ledger has rows",
       "ok": true,
-      "detail": "214 rows"
+      "detail": "215 rows"
     },
     {
       "name": "ledger failures",
@@ -38,7 +38,7 @@
     {
       "name": "ledger health",
       "ok": true,
-      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl,phase-07.jsonl"
+      "detail": "phase-01.jsonl,phase-02.jsonl,phase-03.jsonl,phase-04.jsonl,phase-06.jsonl,phase-07.jsonl,phase-08.jsonl"
     },
     {
       "name": "ledger probes",
