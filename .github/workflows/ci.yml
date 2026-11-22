@@ -22,6 +22,8 @@ jobs:
       VITE_BASE: /brass-meridian/
     steps:
       - uses: actions/checkout@v4
+      - name: Refuse secrets and personal details
+        run: python3 tools/secrets_gate.py --selftest && python3 tools/secrets_gate.py --check
       - uses: actions/setup-node@v4
         with:
           node-version: 22
